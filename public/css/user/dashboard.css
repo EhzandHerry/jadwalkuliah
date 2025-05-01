@@ -1,0 +1,113 @@
+/* Basic styles for the body */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f7f7f7;
+}
+
+/* Header styles */
+header {
+    display: flex;
+    justify-content: center; /* Center the title */
+    align-items: center;
+    background-color: #34495e;
+    color: white;
+    padding: 15px 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 28px;
+    flex-grow: 1; /* Allow the title to take the available space */
+    text-align: center; /* Ensure title is centered */
+}
+
+/* Adjust position for the logout button */
+header .logout-btn-container {
+    position: absolute;
+    right: 20px;
+}
+
+.logout-btn {
+    padding: 10px 15px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+    background-color: #c0392b;
+}
+
+/* Title for the section */
+h2 {
+    font-size: 22px;
+    color: #333;
+    text-align: center;
+    margin: 80px 0 20px 0; /* Added top margin to create space for the header */
+}
+
+/* Table styles */
+table {
+    width: 90%;
+    margin: 0 auto;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+    font-size: 16px;
+}
+
+th {
+    background-color: #16a085;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f1f1f1;
+}
+
+tr:hover {
+    background-color: #e8f5e9;
+}
+
+/* Empty state message */
+td[colspan="5"] {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+}
+
+/* Responsive styling for smaller screens */
+@media screen and (max-width: 768px) {
+    table {
+        width: 100%;
+    }
+
+    th, td {
+        font-size: 14px;
+    }
+
+    header h1 {
+        font-size: 24px;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+}

@@ -1,0 +1,78 @@
+/* Apply a full-screen background image */
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: url('/images/login.jpg') no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Container to center the login box */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5); /* Dark overlay for readability */
+}
+
+/* Styling the login box */
+.login-box {
+    background: rgba(0, 0, 0, 0.3); /* Transparent background with slight darkening */
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 350px;
+    text-align: center;
+    backdrop-filter: blur(10px); /* Optional: adds a blur effect to the background */
+}
+
+/* Title styling */
+.login-box h2 {
+    margin-bottom: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    color: white; /* White text */
+}
+
+/* Subtitle styling */
+.login-box p {
+    margin-bottom: 30px;
+    font-size: 16px;
+    color: white; /* White text */
+}
+
+/* Input fields styling */
+.login-box input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+/* Button styling */
+.login-box button {
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Hover effect for the button */
+.login-box button:hover {
+    background-color: #45a049;
+}
+
+/* Adjust input focus */
+.login-box input:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
