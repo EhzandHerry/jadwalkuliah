@@ -62,30 +62,63 @@ class AdminController extends Controller
 }
 
     // Ruang Kelas CRUD
-    public function indexRuangKelas()
-    {
-        $ruangKelas = RuangKelas::all();
-        return view('admin.ruang_kelas.index', compact('ruangKelas'));
-    }
+public function indexRuangKelas()
+{
+    $ruangKelas = RuangKelas::all();
+    return view('admin.ruang_kelas.index', compact('ruangKelas'));
+}
 
-    public function createRuangKelas()
-    {
-        return view('admin.ruang_kelas.create');
-    }
+public function createRuangKelas()
+{
+    return view('admin.ruang_kelas.create');
+}
 
-    public function storeRuangKelas(Request $request)
-    {
-        $request->validate([
-            'kode_ruangan' => 'required|unique:ruang_kelas,kode_ruangan',
-            'nama_ruangan' => 'required',
-            'lantai' => 'required|integer',
-            'nama_gedung' => 'required',
-        ]);
+public function storeRuangKelas(Request $request)
+{
+    $request->validate([
+        'kode_ruangan' => 'required|unique:ruang_kelas,kode_ruangan',
+        'nama_ruangan' => 'required',
+        'lantai' => 'required|integer',
+        'nama_gedung' => 'required',
+    ]);
 
-        RuangKelas::create($request->all());
+    RuangKelas::create($request->all());
 
-        return redirect()->route('admin.ruang_kelas.index')->with('success', 'Ruang Kelas berhasil ditambahkan.');
-    }
+    return redirect()->route('admin.ruang_kelas.index')->with('success', 'Ruang Kelas berhasil ditambahkan.');
+}
+
+public function editRuangKelas($id)
+{
+    $ruang = RuangKelas::findOrFail($id); // Find the room by ID
+    return view('admin.ruang_kelas.edit', compact('ruang')); // Pass the room data to the view
+}
+
+public function updateRuangKelas(Request $request, $id)
+{
+    $request->validate([
+        'kode_ruangan' => 'required',
+        'nama_ruangan' => 'required',
+        'lantai' => 'required|integer',
+        'nama_gedung' => 'required',
+    ]);
+
+    // Find the room and update it
+    $ruang = RuangKelas::findOrFail($id);
+    $ruang->update($request->all()); // Update the room data with the new input
+
+    return redirect()->route('admin.ruang_kelas.index')->with('success', 'Ruang Kelas updated successfully!');
+}
+
+
+public function destroyRuangKelas($id)
+{
+    // Delete the ruang kelas
+    $ruang = RuangKelas::findOrFail($id);
+    $ruang->delete();
+
+    return redirect()->route('admin.ruang_kelas.index')->with('success', 'Ruang Kelas berhasil dihapus.');
+}
+
 
     public function updateUnique(Request $request, $kelasId)
 {
@@ -191,6 +224,21 @@ public function updateDosen(Request $request, $kelasId)
     $kelas->save(); // Simpan perubahan
 
     return redirect()->route('admin.mata_kuliah.index')->with('success', 'Dosen berhasil diperbarui di kelas.');
+}
+
+public function listDosen()
+{
+    $dosen = User::where('is_admin', false)->get();
+    return view('admin.listdosen.index', compact('dosen'));
+}
+
+public function showDosen($id)
+{
+    // Find the dosen by ID
+    $dosen = User::findOrFail($id);
+
+    // Return the detail view and pass the dosen data
+    return view('admin.listdosen.detail', compact('dosen'));
 }
 
 

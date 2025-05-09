@@ -1,0 +1,98 @@
+/* Styling for the Ruang Kelas index page */
+.ruang-kelas-container {
+    padding: 20px;
+    background-color: #ffffff;
+    margin-left: 200px; /* Adjust for sidebar width */
+    width: calc(100% - 200px); /* Subtract sidebar width */
+    box-sizing: border-box;
+    min-height: 100vh;
+}
+
+/* Title styling */
+.ruang-kelas-container h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+/* Button for adding Ruang Kelas */
+.add-ruang-btn {
+    display: inline-block;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+/* Table styling */
+.ruang-kelas-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Adds subtle shadow */
+}
+
+/* Table header styling */
+.ruang-kelas-table th {
+    background-color: #16a085;
+    color: white;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: bold;
+    border: 1px solid #ddd;
+}
+
+/* Table cell styling */
+.ruang-kelas-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+/* Edit button styling */
+.edit-ruang-btn {
+    padding: 5px 10px;
+    background-color: #f39c12;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.edit-ruang-btn:hover {
+    opacity: 0.8;
+}
+
+/* Delete button styling */
+.delete-btn {
+    padding: 5px 10px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.delete-btn:hover {
+    background-color: #c0392b; /* Darker red */
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .ruang-kelas-container {
+        margin-left: 0;
+    }
+
+    .ruang-kelas-table th, .ruang-kelas-table td {
+        padding: 8px;
+    }
+
+    .add-ruang-btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}

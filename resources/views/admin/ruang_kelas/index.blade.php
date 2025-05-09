@@ -5,30 +5,43 @@
 @section('header_title', 'Manajemen Ruang Kelas')
 
 @section('content')
-<h1>Daftar Ruang Kelas</h1>
+    <div class="ruang-kelas-container">
+        <h1>Daftar Ruang Kelas</h1>
 
-<a href="{{ route('admin.ruang_kelas.create') }}" style="margin-top: 20px; display: inline-block; padding: 10px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">Tambah Ruang Kelas</a>
+        <a href="{{ route('admin.ruang_kelas.create') }}" class="add-ruang-btn">Tambah Ruang Kelas</a>
 
-<table border="1" style="margin-top: 20px;">
-    <thead>
-        <tr>
-            <th>Kode</th>
-            <th>Gedung</th>
-            <th>Lantai</th>
-            <th>Nama Ruangan</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach ($ruangKelas as $ruang)
-        <tr>
-            <td>{{ $ruang->kode_ruangan }}</td>
-            <td>{{ $ruang->nama_gedung }}</td>
-            <td>{{ $ruang->lantai }}</td>
-            <td>{{ $ruang->nama_ruangan }}</td>
-        </tr>
-        @endforeach
-    </tbody>
-</table>
+        <table class="ruang-kelas-table">
+            <thead>
+                <tr>
+                    <th>Kode</th>
+                    <th>Gedung</th>
+                    <th>Lantai</th>
+                    <th>Nama Ruangan</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($ruangKelas as $ruang)
+                    <tr>
+                        <td>{{ $ruang->kode_ruangan }}</td>
+                        <td>{{ $ruang->nama_gedung }}</td>
+                        <td>{{ $ruang->lantai }}</td>
+                        <td>{{ $ruang->nama_ruangan }}</td>
+                        <td>
+                            <a href="{{ route('admin.ruang_kelas.edit', $ruang->id) }}" class="edit-ruang-btn">Edit</a>
+                            <form action="{{ route('admin.ruang_kelas.destroy', $ruang->id) }}" method="POST" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="delete-btn">Hapus</button>
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 @endsection
 
-
+@push('css')
+    <link rel="stylesheet" href="{{ asset('css/admin/ruang_kelas/index.css') }}">
+@endpush

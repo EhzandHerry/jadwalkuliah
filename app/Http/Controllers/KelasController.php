@@ -45,6 +45,28 @@ class KelasController extends Controller
     return redirect()->route('admin.kelas.index')->with('success', 'Kelas berhasil ditambahkan.');
 }
 
+// Edit Kelas method in KelasController
+public function edit($id)
+{
+    $kelas = Kelas::findOrFail($id); // Find the class by ID
+    $ruangKelas = RuangKelas::all(); // Get all available rooms
+    return view('admin.kelas.edit', compact('kelas', 'ruangKelas')); // Pass data to the view
+}
+
+// Update Kelas method in KelasController
+public function update(Request $request, $id)
+{
+    $kelas = Kelas::findOrFail($id); // Find the class by ID
+
+    // Only update the ruang_kelas_id
+    $kelas->ruang_kelas_id = $request->ruang_kelas_id; 
+    $kelas->save(); // Save the updated data
+
+    return redirect()->route('admin.kelas.index')->with('success', 'Kelas updated successfully!');
+}
+
+
+
 public function assignRuangKelas(Request $request, $kelasId)
 {
     $request->validate([

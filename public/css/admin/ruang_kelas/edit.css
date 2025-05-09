@@ -1,0 +1,84 @@
+/* Ensure full width and reset margin and padding for body */
+
+
+/* Main content container */
+.edit-ruang-container {
+    padding: 40px 30px;
+    background-color: #fff;
+    margin-left: 0; /* Remove left margin to match layout */
+    margin-right: 0; /* Remove right margin to match layout */
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Adding shadow for the form */
+    max-width: 900px; /* Make sure it doesn't stretch too much */
+    margin: auto; /* Center the form */
+}
+
+/* Title */
+.edit-ruang-container h1 {
+    color: #333;
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+/* Form styling */
+.edit-ruang-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Input fields styling */
+.edit-ruang-container input[type="text"],
+.edit-ruang-container input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f7f7f7;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+.edit-ruang-container input[type="text"]:focus,
+.edit-ruang-container input[type="number"]:focus {
+    border-color: #16a085;
+    outline: none;
+}
+
+/* Button styling */
+.edit-ruang-container button {
+    padding: 12px 20px;
+    background-color: #16a085;
+    color: white;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    align-self: center;
+}
+
+.edit-ruang-container button:hover {
+    background-color: #1abc9c;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .edit-ruang-container {
+        padding: 30px 20px;
+    }
+
+    .edit-ruang-container form {
+        gap: 10px;
+    }
+
+    .edit-ruang-container input[type="text"],
+    .edit-ruang-container input[type="number"] {
+        padding: 10px;
+        font-size: 14px;
+    }
+}

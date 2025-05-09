@@ -15,19 +15,22 @@
     </header>
     
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <ul>
-            <li><a href="{{ route('admin.mata_kuliah.index') }}">Manajemen Mata Kuliah</a></li>
-            <li><a href="{{ route('admin.ruang_kelas.index') }}">Manajemen Ruang Kelas</a></li>
-            <li><a href="{{ route('admin.kelas.index') }}">Manajemen Kelas</a></li>
-        </ul>
-        <div class="logout-container">
-            <form action="/logout" method="POST">
-                @csrf
-                <button type="submit">Logout</button>
-            </form>
-        </div>
+   <!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <ul>
+        <li><a href="{{ route('admin.mata_kuliah.index') }}">Manajemen Mata Kuliah</a></li>
+        <li><a href="{{ route('admin.ruang_kelas.index') }}">Manajemen Ruang Kelas</a></li>
+        <li><a href="{{ route('admin.kelas.index') }}">Manajemen Kelas</a></li>
+        <li><a href="{{ route('admin.dosen.index') }}">Dosen</a></li>
+    </ul>
+    <div class="logout-container">
+        <form action="/logout" method="POST">
+            @csrf
+            <button type="submit">Logout</button>
+        </form>
     </div>
+</div>
+
 
     <!-- Content section -->
     <div class="content" id="content">

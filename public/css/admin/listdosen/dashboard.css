@@ -1,0 +1,29 @@
+.dosen-list-container {
+    padding: 20px;
+}
+
+.dosen-list-container h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.dosen-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.dosen-table th, .dosen-table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.dosen-table th {
+    background-color: #16a085;
+    color: white;
+}
+
+.dosen-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}

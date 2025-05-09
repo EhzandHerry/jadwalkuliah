@@ -1,0 +1,24 @@
+.dosen-detail-container {
+    padding: 20px;
+}
+
+.dosen-details {
+    margin-bottom: 20px;
+}
+
+.dosen-details p {
+    font-size: 18px;
+    margin: 5px 0;
+}
+
+.back-btn {
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.back-btn:hover {
+    background-color: #0056b3;
+}

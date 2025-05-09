@@ -54,6 +54,11 @@ Route::put('/admin/mata-kuliah/{kelasId}/edit-dosen', [AdminController::class, '
         Route::get('/admin/ruang-kelas', [AdminController::class, 'indexRuangKelas'])->name('admin.ruang_kelas.index');
         Route::get('/admin/ruang-kelas/create', [AdminController::class, 'createRuangKelas'])->name('admin.ruang_kelas.create');
         Route::post('/admin/ruang-kelas/store', [AdminController::class, 'storeRuangKelas'])->name('admin.ruang_kelas.store');
+        // Ruang Kelas Routes (added edit and destroy routes)
+Route::get('/admin/ruang-kelas/{id}/edit', [AdminController::class, 'editRuangKelas'])->name('admin.ruang_kelas.edit');
+Route::put('/admin/ruang-kelas/{id}/update', [AdminController::class, 'updateRuangKelas'])->name('admin.ruang_kelas.update');
+Route::delete('/admin/ruang-kelas/{id}/destroy', [AdminController::class, 'destroyRuangKelas'])->name('admin.ruang_kelas.destroy');
+
 
         // Kelas Routes
         Route::get('/admin/kelas', [KelasController::class, 'index'])->name('admin.kelas.index');
@@ -61,6 +66,16 @@ Route::put('/admin/mata-kuliah/{kelasId}/edit-dosen', [AdminController::class, '
         Route::post('/admin/kelas/store', [KelasController::class, 'store'])->name('admin.kelas.store');
 
         Route::post('/admin/kelas/{kelasId}/assign-ruang', [KelasController::class, 'assignRuangKelas'])->name('admin.kelas.assignRuang');
+        // Edit Kelas Route (added for edit functionality)
+Route::get('/admin/kelas/{id}/edit', [KelasController::class, 'edit'])->name('admin.kelas.edit');
+// Update Kelas Route
+Route::put('/admin/kelas/{id}/update', [KelasController::class, 'update'])->name('admin.kelas.update');
+
+
+// Route for the Dosen list page
+Route::get('/admin/dosen', [AdminController::class, 'listDosen'])->name('admin.dosen.index');
+// Route for the Dosen detail page
+Route::get('/admin/dosen/{id}', [AdminController::class, 'showDosen'])->name('admin.dosen.show');
 
     });
 
