@@ -27,3 +27,58 @@
 .dosen-table tr:nth-child(even) {
     background-color: #f2f2f2;
 }
+
+.btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 5px;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    margin: 5px;
+    cursor: pointer;
+}
+
+/* Detail Button */
+.btn-detail {
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border: none;
+}
+
+.btn-detail:hover {
+    background-color: #45a049;
+}
+
+/* Delete Button */
+.btn-delete {
+    background-color: #f44336; /* Red */
+    color: white;
+    border: none;
+}
+
+.btn-delete:hover {
+    background-color: #e41f1f;
+}
+
+/* Add Dosen Button */
+.btn-add {
+    background-color: #008CBA; /* Blue */
+    color: white;
+    border: none;
+}
+
+.btn-add:hover {
+    background-color: #007B9E;
+}
+
+/* Add Dosen Button */
+.btn-update {
+    background-color: #008CBA; /* Blue */
+    color: white;
+    border: none;
+}
+
+.btn-update:hover {
+    background-color: #007B9E;
+}

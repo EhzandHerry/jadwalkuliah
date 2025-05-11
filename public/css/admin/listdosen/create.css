@@ -1,0 +1,38 @@
+.add-dosen-container {
+    margin: 30px;
+}
+
+.add-dosen-container h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.add-dosen-container form {
+    display: flex;
+    flex-direction: column;
+}
+
+.add-dosen-container label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.add-dosen-container input {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.add-dosen-container button {
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.add-dosen-container button:hover {
+    background-color: #45a049;
+}

@@ -181,7 +181,7 @@ public function addDosen($kelasId)
     return view('admin.mata_kuliah.add-dosen', compact('kelas', 'dosen'));
 }
 
-public function editDosen($kelasId)
+public function editDosenKelas($kelasId)
 {
     // Ambil data kelas
     $kelas = Kelas::findOrFail($kelasId);
@@ -209,7 +209,7 @@ public function assignDosen(Request $request, $kelasId)
     return redirect()->route('admin.mata_kuliah.index')->with('success', 'Dosen berhasil ditambahkan ke kelas.');
 }
 
-public function updateDosen(Request $request, $kelasId)
+public function updateDosenKelas(Request $request, $kelasId)
 {
     // Validasi bahwa unique_number ada dan sesuai dengan dosen yang ada
     $request->validate([
@@ -241,5 +241,76 @@ public function showDosen($id)
     return view('admin.listdosen.detail', compact('dosen'));
 }
 
+public function createDosen()
+{
+    return view('admin.listdosen.create');
+}
+
+public function storeDosen(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'password' => 'required|string|min:8',
+        'phone' => 'required|string|max:15',
+        'unique_number' => 'required|unique:users,unique_number',
+    ]);
+
+    // Create new dosen (user) with is_admin set to false
+    User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => bcrypt($request->password),
+        'phone' => $request->phone,
+        'unique_number' => $request->unique_number,
+        'is_admin' => false,
+    ]);
+
+    return redirect()->route('admin.dosen.index')->with('success', 'Dosen berhasil ditambahkan.');
+}
+
+public function deleteDosen($id)
+{
+    // Find the dosen by ID
+    $dosen = User::findOrFail($id);
+
+    // Delete the dosen
+    $dosen->delete();
+
+    // Redirect back to the list with a success message
+    return redirect()->route('admin.dosen.index')->with('success', 'Dosen berhasil dihapus.');
+}
+
+public function editDosen($id)
+{
+    // Find the dosen by ID
+    $dosen = User::findOrFail($id);
+
+    // Return the edit view and pass the dosen data
+    return view('admin.listdosen.edit', compact('dosen'));
+}
+
+public function updateDosen(Request $request, $id)
+{
+    // Validate the input data
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email,' . $id,
+        'phone' => 'required|string|max:15',
+        'unique_number' => 'required|unique:users,unique_number,' . $id,
+    ]);
+
+    // Find the dosen by ID and update the data
+    $dosen = User::findOrFail($id);
+    $dosen->update([
+        'name' => $request->name,
+        'email' => $request->email,
+        'phone' => $request->phone,
+        'unique_number' => $request->unique_number,
+    ]);
+
+    // Redirect to the list page with a success message
+    return redirect()->route('admin.dosen.index')->with('success', 'Dosen berhasil diperbarui.');
+}
 
 }

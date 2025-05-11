@@ -1,0 +1,36 @@
+/* Update Dosen Form */
+.update-dosen-container {
+    margin: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+}
+
+.update-dosen-container .form-group {
+    margin-bottom: 15px;
+}
+
+.update-dosen-container .form-group label {
+    display: block;
+    font-weight: bold;
+}
+
+.update-dosen-container .form-group input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.update-dosen-container .btn-update {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.update-dosen-container .btn-update:hover {
+    background-color: #45a049;
+}

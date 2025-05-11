@@ -41,13 +41,13 @@ Route::middleware('auth')->group(function () {
 Route::get('/admin/mata-kuliah/kelas/{kelas}/add-dosen', [AdminController::class, 'addDosen'])->name('admin.mata_kuliah.addDosen');
 
 // Route untuk edit dosen di kelas
-Route::get('/admin/mata-kuliah/kelas/{kelas}/edit-dosen', [AdminController::class, 'editDosen'])->name('admin.mata_kuliah.editDosen');
+Route::get('/admin/mata-kuliah/kelas/{kelas}/edit-dosen', [AdminController::class, 'editDosenKelas'])->name('admin.mata_kuliah.editDosen');
 
 // Route untuk menambah dosen ke kelas
 Route::post('/admin/mata-kuliah/{kelasId}/add-dosen', [AdminController::class, 'assignDosen'])->name('admin.mata_kuliah.assignDosen');
 
 // Route untuk memperbarui dosen di kelas
-Route::put('/admin/mata-kuliah/{kelasId}/edit-dosen', [AdminController::class, 'updateDosen'])->name('admin.mata_kuliah.updateDosen');
+Route::put('/admin/mata-kuliah/{kelasId}/edit-dosen', [AdminController::class, 'updateDosenKelas'])->name('admin.mata_kuliah.updateDosen');
 
 
         // Ruang Kelas Routes
@@ -76,6 +76,14 @@ Route::put('/admin/kelas/{id}/update', [KelasController::class, 'update'])->name
 Route::get('/admin/dosen', [AdminController::class, 'listDosen'])->name('admin.dosen.index');
 // Route for the Dosen detail page
 Route::get('/admin/dosen/{id}', [AdminController::class, 'showDosen'])->name('admin.dosen.show');
+// Route untuk halaman tambah dosen
+Route::get('/admin/listdosen/create', [AdminController::class, 'createDosen'])->name('admin.dosen.create');
+Route::post('/admin/dosen/store', [AdminController::class, 'storeDosen'])->name('admin.dosen.store');
+// Delete Dosen Route
+Route::delete('/admin/dosen/{id}', [AdminController::class, 'deleteDosen'])->name('admin.dosen.delete');
+Route::get('/admin/dosen/{id}/edit', [AdminController::class, 'editDosen'])->name('admin.dosen.edit');
+Route::put('/admin/dosen/{id}', [AdminController::class, 'updateDosen'])->name('admin.dosen.update');
+
 
     });
 
