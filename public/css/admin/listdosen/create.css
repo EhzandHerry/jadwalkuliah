@@ -1,38 +1,70 @@
-.add-dosen-container {
-    margin: 30px;
+body, html {
+    height: 100%;               /* Full height of the viewport */
+    margin: 0;                  /* Remove margin */
+    overflow: hidden;           /* Disable scrolling */
 }
 
-.add-dosen-container h1 {
+.add-dosen-container {
+    display: flex;
+    justify-content: center;    /* Center horizontally */
+    align-items: center;        /* Center vertically */
+    height: 100vh;               /* Full viewport height */
+    max-width: 100%;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+.add-dosen-form {
+    max-width: 600px;            /* Limit form width */
+    width: 100%;                 /* Allow the form to scale */
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.add-dosen-form h1 {
     font-size: 2rem;
+    text-align: center;
     margin-bottom: 20px;
 }
 
-.add-dosen-container form {
-    display: flex;
-    flex-direction: column;
+.add-dosen-form .form-group {
+    margin-bottom: 15px;
 }
 
-.add-dosen-container label {
+.add-dosen-form label {
+    font-size: 1rem;
     margin-bottom: 5px;
     font-weight: bold;
 }
 
-.add-dosen-container input {
-    margin-bottom: 10px;
+.add-dosen-form input {
     padding: 10px;
+    font-size: 1rem;
     border: 1px solid #ddd;
     border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;      /* Ensure padding is included in width */
 }
 
-.add-dosen-container button {
+.add-dosen-form input:focus {
+    border-color: #4CAF50;
+}
+
+.add-dosen-form button {
     padding: 10px;
     background-color: #4CAF50;
     color: white;
     border: none;
     border-radius: 5px;
+    font-size: 1rem;
     cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
 }
 
-.add-dosen-container button:hover {
+.add-dosen-form button:hover {
     background-color: #45a049;
 }

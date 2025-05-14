@@ -22,6 +22,7 @@
         <li><a href="{{ route('admin.ruang_kelas.index') }}">Manajemen Ruang Kelas</a></li>
         <li><a href="{{ route('admin.kelas.index') }}">Manajemen Kelas</a></li>
         <li><a href="{{ route('admin.dosen.index') }}">Dosen</a></li>
+        <li><a href="{{ route('admin.available.dashboard') }}">Available Time Dashboard</a></li>
     </ul>
     <div class="logout-container">
         <form action="/logout" method="POST">

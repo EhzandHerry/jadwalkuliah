@@ -43,4 +43,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function available()
+{
+    return $this->hasMany(Available::class); // A user can have multiple available times
+}
+
 }

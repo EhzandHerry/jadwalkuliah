@@ -1,0 +1,92 @@
+body, html {
+    height: 100%;               /* Full height of the viewport */
+    margin: 0;                  /* Remove margin */
+    overflow: hidden;           /* Disable scrolling */
+}
+
+/* Full Page Flexbox Centering (not body) */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;  /* Full height of the viewport */
+    padding: 20px;  /* Padding to avoid touching the edge */
+}
+
+/* Form container with proper width and padding */
+.available-form {
+    width: 100%;
+    max-width: 600px;  /* Maximum width of the form */
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    text-align: center;
+    box-sizing: border-box; /* Ensure padding is included in the width */
+}
+
+/* Heading */
+.available-form h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Form group styling */
+.available-form .form-group {
+    margin-bottom: 20px;
+}
+
+/* Label styling */
+.available-form label {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: block;
+    color: #555;
+}
+
+/* Input field and select box styling */
+.available-form input,
+.available-form select {
+    padding: 12px;
+    font-size: 1rem;
+    width: 100%; /* Take full width */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box; /* Ensure padding is included in width */
+}
+
+.available-form input:focus,
+.available-form select:focus {
+    border-color: #007bff;  /* Highlight on focus */
+    outline: none;
+}
+
+/* Button styling */
+.available-form button {
+    padding: 12px 25px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%; /* Make the button span full width */
+    transition: background-color 0.3s ease;
+    margin-top: 20px; /* Space between button and the form fields */
+}
+
+.available-form button:hover {
+    background-color: #45a049;
+}
+
+/* Responsive Design for smaller screens */
+@media (max-width: 768px) {
+    .available-form {
+        padding: 20px;  /* Reduce padding for smaller screens */
+    }
+    .available-form h1 {
+        font-size: 1.5rem;
+    }
+}

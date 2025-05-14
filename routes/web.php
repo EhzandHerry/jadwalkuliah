@@ -84,6 +84,18 @@ Route::delete('/admin/dosen/{id}', [AdminController::class, 'deleteDosen'])->nam
 Route::get('/admin/dosen/{id}/edit', [AdminController::class, 'editDosen'])->name('admin.dosen.edit');
 Route::put('/admin/dosen/{id}', [AdminController::class, 'updateDosen'])->name('admin.dosen.update');
 
+// Route to show available times for the dosen
+Route::get('/admin/available/dashboard', [AdminController::class, 'showAvailableTimes'])->name('admin.available.dashboard');
+// Show available time form for a dosen
+Route::get('/admin/dosen/{id}/available', [AdminController::class, 'editAvailableTime'])->name('admin.available.edit');
+// Store available time for a dosen
+Route::post('/admin/dosen/{id}/available', [AdminController::class, 'storeAvailableTimes'])->name('admin.dosen.storeAvailable');
+// Route to manage available times for a specific dosen
+Route::get('/admin/dosen/{id}/available', [AdminController::class, 'manageAvailable'])->name('admin.available.manage');
+// Route to show the form for adding new available time
+Route::get('/admin/dosen/{id}/available/add', [AdminController::class, 'addAvailableTime'])->name('admin.available.add');
+// Route to delete available time
+Route::delete('/admin/available/{id}', [AdminController::class, 'deleteAvailableTime'])->name('admin.available.delete');
 
     });
 

@@ -7,6 +7,7 @@ use App\Models\MataKuliah;
 use App\Models\RuangKelas;
 use App\Models\User;
 use App\Models\Kelas;
+use App\Models\Available;
 
 class AdminController extends Controller
 {
@@ -312,5 +313,78 @@ public function updateDosen(Request $request, $id)
     // Redirect to the list page with a success message
     return redirect()->route('admin.dosen.index')->with('success', 'Dosen berhasil diperbarui.');
 }
+
+// Show available time slots for a specific dosen
+public function showAvailableTimes()
+{
+    // Get all dosen who are not admin
+    $dosen = User::where('is_admin', false)->get(); // Fetch only non-admin users
+    return view('admin.available.dashboard', compact('dosen'));
+}
+
+
+
+// Store available time for a dosen
+public function storeAvailableTimes(Request $request, $id)
+{
+    $request->validate([
+        'hari' => 'required|string',
+        'start_time' => 'required|date_format:H:i',
+        'end_time' => 'required|date_format:H:i|after:start_time',
+    ]);
+
+    // Find the dosen by ID
+    $dosen = User::findOrFail($id);
+
+    // Store the available time for the dosen
+    $dosen->available()->create([
+        'hari' => $request->hari,
+        'start_time' => $request->start_time,
+        'end_time' => $request->end_time,
+    ]);
+
+    return redirect()->route('admin.available.manage', $id)->with('success', 'Available time has been added successfully.');
+}
+
+
+public function editAvailableTime($id)
+{
+    // Find the dosen by ID
+    $dosen = User::findOrFail($id);
+    
+    // Return the form to fill available time
+    return view('admin.available.edit', compact('dosen'));
+}
+
+public function manageAvailable($id)
+{
+    // Find the dosen by ID
+    $dosen = User::findOrFail($id);
+
+    // Get the available times for this dosen
+    $availables = $dosen->available;
+
+    return view('admin.available.manage', compact('dosen', 'availables'));
+}
+
+public function addAvailableTime($id)
+{
+    $dosen = User::findOrFail($id);
+
+    return view('admin.available.add', compact('dosen'));
+}
+
+public function deleteAvailableTime($id)
+{
+    // Find the available time by ID
+    $available = Available::findOrFail($id);
+
+    // Delete the available time
+    $available->delete();
+
+    // Redirect back to the manage available time page with a success message
+    return redirect()->back()->with('success', 'Available time deleted successfully.');
+}
+
 
 }
