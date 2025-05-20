@@ -6,6 +6,10 @@
 
 @section('content')
     <h1>Tambah Mata Kuliah</h1>
+
+    <!-- Back Button -->
+    <a href="{{ route('admin.mata_kuliah.index') }}" class="back-btn">Back to Matakuliah List</a>
+
     <form action="{{ route('admin.mata_kuliah.store') }}" method="POST" class="add-matkul-form">
         @csrf
         <input type="text" name="kode_matkul" placeholder="Kode Mata Kuliah" required class="input-field"><br>

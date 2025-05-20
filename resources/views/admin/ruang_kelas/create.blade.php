@@ -8,6 +8,8 @@
     <div class="ruang-kelas-create-container">
         <h1>Tambah Ruang Kelas</h1>
 
+        
+
         <form action="{{ route('admin.ruang_kelas.store') }}" method="POST" class="ruang-kelas-form">
             @csrf
             <input type="text" name="kode_ruangan" placeholder="Kode Ruangan" required class="input-field"><br>
@@ -16,6 +18,9 @@
             <input type="text" name="nama_gedung" placeholder="Nama Gedung" required class="input-field"><br>
             <button type="submit" class="submit-btn">Simpan</button>
         </form>
+
+        <!-- Back Button -->
+        <a href="{{ route('admin.ruang_kelas.index') }}" class="back-btn">Back to Ruang Kelas List</a>
     </div>
 @endsection
 
