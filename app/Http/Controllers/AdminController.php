@@ -93,6 +93,13 @@ public function storeRuangKelas(Request $request)
         ->with('success', 'Ruang Kelas berhasil ditambahkan.');
 }
 
+public function editRuangKelas($id)
+{
+    $ruang = RuangKelas::findOrFail($id);
+    return view('admin.ruang_kelas.edit', compact('ruang'));
+}
+
+
 public function updateRuangKelas(Request $request, $id)
 {
     $request->validate([
