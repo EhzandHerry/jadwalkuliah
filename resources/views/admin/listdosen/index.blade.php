@@ -6,7 +6,11 @@
 
 @section('content')
     <div class="dosen-list-container">
+        
         <h1>Daftar Dosen</h1>
+
+        <!-- Add Dosen Button -->
+        <a href="{{ route('admin.dosen.create') }}" class="btn btn-add">Tambah Dosen</a>
         
         <!-- Dosen Table -->
         <table class="dosen-table">
@@ -14,6 +18,8 @@
                 <tr>
                     <th>Nama Dosen</th>
                     <th>NIDN</th>
+                    <th>Email</th>
+                    <th>Phone</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -22,10 +28,9 @@
                     <tr>
                         <td>{{ $item->name }}</td>
                         <td>{{ $item->unique_number }}</td>
+                        <td>{{ $item->email }}</td>
+                        <td>{{ $item->phone }}</td>
                         <td>
-                            <!-- Detail Button -->
-                            <a href="{{ route('admin.dosen.show', $item->id) }}" class="btn btn-detail">Detail</a>
-                            
                             <!-- Edit Button -->
                             <a href="{{ route('admin.dosen.edit', $item->id) }}" class="btn btn-update">Update</a>
                             
@@ -40,9 +45,6 @@
                 @endforeach
             </tbody>
         </table>
-
-        <!-- Add Dosen Button -->
-        <a href="{{ route('admin.dosen.create') }}" class="btn btn-add">Tambah Dosen</a>
     </div>
 @endsection
 

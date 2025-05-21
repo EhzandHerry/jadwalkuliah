@@ -12,7 +12,9 @@ class RuangKelas extends Model
     protected $table = 'ruang_kelas';
 
     protected $fillable = [
-        'kode_ruangan', 'nama_ruangan', 'lantai', 'nama_gedung'
+        'nama_ruangan',
+        'nama_gedung',
+        'kapasitas',
     ];
 
     // Relasi dengan Kelas
@@ -20,5 +22,4 @@ class RuangKelas extends Model
     {
         return $this->hasMany(Kelas::class, 'ruang_kelas_id');
     }
-
 }

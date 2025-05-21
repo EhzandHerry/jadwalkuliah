@@ -13,20 +13,18 @@
         <table class="ruang-kelas-table">
             <thead>
                 <tr>
-                    <th>Kode</th>
-                    <th>Gedung</th>
-                    <th>Lantai</th>
                     <th>Nama Ruangan</th>
+                    <th>Gedung</th>
+                    <th>Kapasitas</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($ruangKelas as $ruang)
                     <tr>
-                        <td>{{ $ruang->kode_ruangan }}</td>
-                        <td>{{ $ruang->nama_gedung }}</td>
-                        <td>{{ $ruang->lantai }}</td>
                         <td>{{ $ruang->nama_ruangan }}</td>
+                        <td>{{ $ruang->nama_gedung }}</td>
+                        <td>{{ $ruang->kapasitas }}</td>
                         <td>
                             <a href="{{ route('admin.ruang_kelas.edit', $ruang->id) }}" class="edit-ruang-btn">Edit</a>
                             <form action="{{ route('admin.ruang_kelas.destroy', $ruang->id) }}" method="POST" style="display:inline;">

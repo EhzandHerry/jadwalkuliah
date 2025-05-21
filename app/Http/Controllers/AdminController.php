@@ -19,13 +19,11 @@ class AdminController extends Controller
     // Mata Kuliah CRUD
     public function indexMataKuliah()
 {
-    // Eager load kelas with dosen to avoid N+1 problem
     $mataKuliahs = MataKuliah::with('kelas.dosen')->get(); // eager load dosen for each kelas
-    $dosenUniqueNumbers = User::where('is_admin', false)->pluck('unique_number');
-    return view('admin.mata_kuliah.index', compact('mataKuliahs', 'dosenUniqueNumbers'));
+    $dosenList = User::where('is_admin', false)->get(); // Get list of dosen
+
+    return view('admin.mata_kuliah.index', compact('mataKuliahs', 'dosenList'));
 }
-
-
 
     public function createMataKuliah()
     {
@@ -39,6 +37,7 @@ class AdminController extends Controller
         'nama_matkul' => 'required',
         'sks' => 'required|integer',
         'jumlah_kelas' => 'required|integer|min:1',
+        'semester' => 'required',
     ]);
 
     // Simpan data mata kuliah
@@ -46,6 +45,7 @@ class AdminController extends Controller
         'kode_matkul' => $request->kode_matkul,
         'nama_matkul' => $request->nama_matkul,
         'sks' => $request->sks,
+        'semester' => $request->semester,
     ]);
 
     // Simpan data kelas berdasarkan jumlah kelas
@@ -77,39 +77,41 @@ public function createRuangKelas()
 public function storeRuangKelas(Request $request)
 {
     $request->validate([
-        'kode_ruangan' => 'required|unique:ruang_kelas,kode_ruangan',
-        'nama_ruangan' => 'required',
-        'lantai' => 'required|integer',
-        'nama_gedung' => 'required',
+        'nama_ruangan' => 'required|string|max:255',
+        'nama_gedung'  => 'required|string|max:255',
+        'kapasitas'    => 'required|integer|min:1',
     ]);
 
-    RuangKelas::create($request->all());
+    RuangKelas::create($request->only([
+        'nama_ruangan',
+        'nama_gedung',
+        'kapasitas',
+    ]));
 
-    return redirect()->route('admin.ruang_kelas.index')->with('success', 'Ruang Kelas berhasil ditambahkan.');
-}
-
-public function editRuangKelas($id)
-{
-    $ruang = RuangKelas::findOrFail($id); // Find the room by ID
-    return view('admin.ruang_kelas.edit', compact('ruang')); // Pass the room data to the view
+    return redirect()
+        ->route('admin.ruang_kelas.index')
+        ->with('success', 'Ruang Kelas berhasil ditambahkan.');
 }
 
 public function updateRuangKelas(Request $request, $id)
 {
     $request->validate([
-        'kode_ruangan' => 'required',
-        'nama_ruangan' => 'required',
-        'lantai' => 'required|integer',
-        'nama_gedung' => 'required',
+        'nama_ruangan' => 'required|string|max:255',
+        'nama_gedung'  => 'required|string|max:255',
+        'kapasitas'    => 'required|integer|min:1',
     ]);
 
-    // Find the room and update it
     $ruang = RuangKelas::findOrFail($id);
-    $ruang->update($request->all()); // Update the room data with the new input
+    $ruang->update($request->only([
+        'nama_ruangan',
+        'nama_gedung',
+        'kapasitas',
+    ]));
 
-    return redirect()->route('admin.ruang_kelas.index')->with('success', 'Ruang Kelas updated successfully!');
+    return redirect()
+        ->route('admin.ruang_kelas.index')
+        ->with('success', 'Ruang Kelas berhasil diperbarui.');
 }
-
 
 public function destroyRuangKelas($id)
 {
@@ -195,17 +197,20 @@ public function editDosenKelas($kelasId)
 
 public function assignDosen(Request $request, $kelasId)
 {
-    // Validasi bahwa unique_number ada dan sesuai dengan dosen yang ada
+    // Validate that the unique_number exists in the users table
     $request->validate([
-        'unique_number' => 'required|exists:users,unique_number', // pastikan dosen ada
+        'unique_number' => 'required|exists:users,unique_number', // Ensure dosen exists
     ]);
 
-    // Temukan kelas berdasarkan ID
+    // Find the class based on the ID
     $kelas = Kelas::findOrFail($kelasId);
 
-    // Update unique_number (mengassign dosen ke kelas)
-    $kelas->unique_number = $request->unique_number;
-    $kelas->save(); // Simpan perubahan
+    // Find the dosen based on unique_number
+    $dosen = User::where('unique_number', $request->unique_number)->first();
+
+    // Assign the dosen to the class
+    $kelas->unique_number = $dosen->unique_number;
+    $kelas->save();
 
     return redirect()->route('admin.mata_kuliah.index')->with('success', 'Dosen berhasil ditambahkan ke kelas.');
 }

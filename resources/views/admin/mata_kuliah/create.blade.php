@@ -16,6 +16,16 @@
         <input type="text" name="nama_matkul" placeholder="Nama Mata Kuliah" required class="input-field"><br>
         <input type="number" name="sks" placeholder="Jumlah SKS" required class="input-field"><br>
         <input type="number" name="jumlah_kelas" placeholder="Jumlah Kelas" required class="input-field"><br> <!-- Tambahan -->
+
+        <!-- Semester Dropdown -->
+        <div class="form-group">
+            <label for="semester">Semester</label>
+            <select name="semester" id="semester" required class="input-field">
+                <option value="Genap">Genap</option>
+                <option value="Gasal">Gasal</option>
+            </select>
+        </div>
+
         <button type="submit" class="submit-btn">Simpan</button>
     </form>
 @endsection
