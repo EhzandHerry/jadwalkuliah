@@ -1,53 +1,54 @@
-/* Container utama */
-.matkul-index-container {
+.content-container {
   max-width: 1200px;
   margin: 30px auto;
   padding: 0 20px;
+  box-sizing: border-box;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
 }
 
-.matkul-index-container h1 {
-  margin-bottom: 20px;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #2c3e50;
+.content-container h1 {
   text-align: center;
-}
-
-/* Tombol tambah dan hapus */
-.add-matkul-btn, .delete-selected-btn {
-  padding: 10px 15px;
-  border-radius: 5px;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  display: inline-block;
-  margin-bottom: 20px;
-  text-decoration: none;
-  color: white;
-  border: none;
+  margin-top: 0;
+  margin-bottom: 30px;
+  font-weight: 700;
+  font-size: 2.25rem;
+  color: #2c3e50;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  padding-top: 15px;
 }
 
 .add-matkul-btn {
-  background-color: #18b300; /* Merah seperti tombol Simpan di jadwal */
+  background-color: #18b300;
+  padding: 10px 20px;
+  border-radius: 5px;
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.3s ease;
 }
 
 .add-matkul-btn:hover {
+  background-color: #128a00;
+}
+
+.btn-danger {
+  background-color: #e74c3c;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: 600;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-danger:hover {
   background-color: #c0392b;
 }
 
-.delete-selected-btn {
-  background-color: #34495e; /* Warna gelap netral */
-  margin-left: 10px;
-}
-
-.delete-selected-btn:hover {
-  background-color: #2c3e50;
-}
-
-/* Tabel matkul */
 .matkul-table {
   width: 100%;
   border-collapse: collapse;
@@ -60,62 +61,35 @@
 }
 
 .matkul-table thead tr {
-  background-color: #34495e;
-  color: #fff;
-  text-align: left;
+  background-color: #34495e !important;
+  color: #fff !important;
   font-weight: 700;
+  text-align: left;
 }
 
 .matkul-table th, .matkul-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #e0e0e0;
-  vertical-align: middle;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+  vertical-align: middle !important;
 }
 
 .matkul-table tbody tr:hover {
-  background-color: #f0f8ff;
+  background-color: #f0f8ff !important;
 }
 
-/* Checkbox di header dan body */
 .matkul-table th input[type="checkbox"], 
 .matkul-table td input[type="checkbox"] {
   margin: 0;
   vertical-align: middle;
 }
 
-/* Tombol add/edit dosen */
-.add-dosen-btn, .edit-dosen-btn {
-  padding: 6px 12px;
-  border-radius: 5px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: white;
-  text-decoration: none;
-  display: inline-block;
-  cursor: pointer;
-  transition: opacity 0.3s ease;
-}
-
-.add-dosen-btn {
-  background-color: #e74c3c;
-}
-
-.edit-dosen-btn {
-  background-color: #f39c12;
-}
-
-.add-dosen-btn:hover, .edit-dosen-btn:hover {
-  opacity: 0.8;
-}
-
-/* Responsive */
 @media (max-width: 768px) {
   .matkul-table th, .matkul-table td {
-    padding: 8px;
-    font-size: 0.85rem;
+    padding: 8px !important;
+    font-size: 0.85rem !important;
   }
 
-  .add-matkul-btn, .delete-selected-btn {
+  .add-matkul-btn, .btn-danger {
     width: 100%;
     margin-bottom: 10px;
     text-align: center;

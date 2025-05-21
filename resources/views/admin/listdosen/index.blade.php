@@ -49,5 +49,5 @@
 @endsection
 
 @push('css')
-    <link rel="stylesheet" href="{{ asset('css/admin/listdosen/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/listdosen/index.css') }}">
 @endpush

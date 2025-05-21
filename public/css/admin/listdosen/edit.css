@@ -1,42 +1,82 @@
-body, html {
-    height: 100%;               /* Full height of the viewport */
-    margin: 0;                  /* Remove margin */
-    overflow: hidden;           /* Disable scrolling */
-}
-
-/* Update Dosen Form */
+/* Container utama */
 .update-dosen-container {
-    margin: 20px;
-    padding: 20px;
-    background-color: #f9f9f9;
+  max-width: 600px;
+  margin: 30px auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+  padding: 30px 25px;
 }
 
-.update-dosen-container .form-group {
-    margin-bottom: 15px;
+/* Judul form */
+.update-dosen-container h1 {
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #2c3e50;
+  text-align: center;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
 }
 
-.update-dosen-container .form-group label {
-    display: block;
-    font-weight: bold;
+/* Form group */
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
-.update-dosen-container .form-group input {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
+/* Label */
+.form-group label {
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #34495e;
 }
 
-.update-dosen-container .btn-update {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+/* Input fields */
+.form-group input[type="text"],
+.form-group input[type="email"] {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  outline: none;
 }
 
-.update-dosen-container .btn-update:hover {
-    background-color: #45a049;
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus {
+  border-color: #18b300;
+  box-shadow: 0 0 5px #18b300aa;
+}
+
+/* Tombol update */
+button.btn-update {
+  display: block;
+  width: 100%;
+  background-color: #f39c12; /* Warna oranye seperti edit dosen */
+  color: white;
+  padding: 12px 0;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+button.btn-update:hover {
+  background-color: #c87f0a;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .update-dosen-container {
+    padding: 20px 15px;
+  }
 }

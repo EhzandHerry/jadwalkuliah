@@ -1,104 +1,92 @@
-/* Main container for create ruang kelas page */
+/* Container utama */
 .ruang-kelas-create-container {
-    padding: 20px;
-    background-color: #ffffff;
-    margin-left: 200px; /* Adjust for sidebar width */
-    width: calc(100% - 200px); /* Subtract sidebar width */
-    box-sizing: border-box;
-    min-height: 100vh;
+  max-width: 600px;
+  margin: 30px auto;
+  padding: 30px 25px;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
 }
 
-/* Title styling */
+/* Judul halaman */
 .ruang-kelas-create-container h1 {
-    font-size: 2rem;
-    margin-bottom: 20px;
-    font-weight: bold;
-    text-align: center; /* Center the title */
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 30px;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
 }
 
-/* Form styling */
-.ruang-kelas-form {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    width: 50%;
-    margin: 0 auto;
+/* Form group */
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Input field styling */
+/* Label */
+.form-group label {
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #34495e;
+}
+
+/* Input field */
 .input-field {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-    box-sizing: border-box; /* Ensure padding is included in width calculation */
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  outline: none;
 }
 
 .input-field:focus {
-    outline: none;
-    border-color: #16a085; /* Focus effect */
+  border-color: #18b300;
+  box-shadow: 0 0 5px #18b300aa;
 }
 
-/* Submit button styling */
+/* Tombol submit */
 .submit-btn {
-    width: 100%;
-    padding: 12px;
-    background-color: #16a085;
-    color: white;
-    font-size: 18px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  width: 100%;
+  padding: 12px 0;
+  background-color: #18b300; /* Hijau cerah */
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
 }
 
 .submit-btn:hover {
-    background-color: #1abc9c; /* Darker shade of green on hover */
+  background-color: #148a00;
 }
 
-/* Responsive design for small screens */
-@media (max-width: 768px) {
-    .ruang-kelas-create-container {
-        margin-left: 0; /* Remove left margin */
-    }
-
-    .ruang-kelas-form {
-        width: 80%; /* Adjust form width for smaller screens */
-    }
-}
-
-@media (max-width: 480px) {
-    .ruang-kelas-form {
-        width: 100%; /* Full width for very small screens */
-    }
-}
-
-/* Container for the Back Button and Form */
-.ruang-kelas-create-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center content horizontally */
-    justify-content: center; /* Center content vertically */
-    height: 100%; /* Ensure it takes full height */
-    text-align: center; /* Center text */
-}
-
-/* Styling for the back button */
+/* Back button */
 .back-btn {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    margin-bottom: 20px; /* Space between button and form */
+  display: inline-block;
+  margin-top: 20px;
+  color: #18b300;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
 }
 
 .back-btn:hover {
-    background-color: #0056b3;
+  color: #0f5900;
 }
 
-
+/* Responsive */
+@media (max-width: 480px) {
+  .ruang-kelas-create-container {
+    padding: 20px 15px;
+  }
+}

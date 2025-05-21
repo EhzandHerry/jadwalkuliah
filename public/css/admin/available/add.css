@@ -1,92 +1,89 @@
-body, html {
-    height: 100%;               /* Full height of the viewport */
-    margin: 0;                  /* Remove margin */
-    overflow: hidden;           /* Disable scrolling */
+/* Container utama */
+.available-container {
+  max-width: 600px;
+  margin: 30px auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
 }
 
-/* Full Page Flexbox Centering (not body) */
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;  /* Full height of the viewport */
-    padding: 20px;  /* Padding to avoid touching the edge */
-}
-
-/* Form container with proper width and padding */
+/* Container form */
 .available-form {
-    width: 100%;
-    max-width: 600px;  /* Maximum width of the form */
-    background-color: #ffffff;
-    padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    text-align: center;
-    box-sizing: border-box; /* Ensure padding is included in the width */
+  background-color: #fff;
+  padding: 30px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
 }
 
-/* Heading */
+/* Judul form */
 .available-form h1 {
-    font-size: 2rem;
-    color: #333;
-    margin-bottom: 20px;
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #2c3e50;
+  text-align: center;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
 }
 
-/* Form group styling */
-.available-form .form-group {
-    margin-bottom: 20px;
+/* Grup form */
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Label styling */
-.available-form label {
-    font-size: 1rem;
-    font-weight: bold;
-    margin-bottom: 8px;
-    display: block;
-    color: #555;
+/* Label */
+.form-group label {
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #34495e;
 }
 
-/* Input field and select box styling */
-.available-form input,
-.available-form select {
-    padding: 12px;
-    font-size: 1rem;
-    width: 100%; /* Take full width */
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-sizing: border-box; /* Ensure padding is included in width */
+/* Input dan Select */
+.form-group input[type="time"],
+.form-group select {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  outline: none;
 }
 
-.available-form input:focus,
-.available-form select:focus {
-    border-color: #007bff;  /* Highlight on focus */
-    outline: none;
+.form-group input[type="time"]:focus,
+.form-group select:focus {
+  border-color: #18b300;
+  box-shadow: 0 0 5px #18b300aa;
 }
 
-/* Button styling */
-.available-form button {
-    padding: 12px 25px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    width: 100%; /* Make the button span full width */
-    transition: background-color 0.3s ease;
-    margin-top: 20px; /* Space between button and the form fields */
+/* Tombol submit */
+button[type="submit"] {
+  display: block;
+  width: 100%;
+  background-color: #18b300;
+  color: white;
+  padding: 12px 0;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-.available-form button:hover {
-    background-color: #45a049;
+button[type="submit"]:hover {
+  background-color: #0f7a00;
 }
 
-/* Responsive Design for smaller screens */
-@media (max-width: 768px) {
-    .available-form {
-        padding: 20px;  /* Reduce padding for smaller screens */
-    }
-    .available-form h1 {
-        font-size: 1.5rem;
-    }
+/* Responsive */
+@media (max-width: 480px) {
+  .available-container {
+    padding: 0 10px;
+  }
+
+  .available-form {
+    padding: 20px 15px;
+  }
 }
