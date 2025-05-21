@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\KelasController;
 use App\Models\Kelas;
 use App\Models\RuangKelas;
+use App\Models\Jadwal;
 
 // Redirect root '/' ke halaman login
 Route::get('/', function () {
@@ -58,6 +59,9 @@ Route::put('/admin/mata-kuliah/{kelasId}/edit-dosen', [AdminController::class, '
 Route::get('/admin/ruang-kelas/{id}/edit', [AdminController::class, 'editRuangKelas'])->name('admin.ruang_kelas.edit');
 Route::put('/admin/ruang-kelas/{id}/update', [AdminController::class, 'updateRuangKelas'])->name('admin.ruang_kelas.update');
 Route::delete('/admin/ruang-kelas/{id}/destroy', [AdminController::class, 'destroyRuangKelas'])->name('admin.ruang_kelas.destroy');
+
+Route::get('/admin/jadwal', [JadwalController::class, 'index'])->name('admin.jadwal.index');
+Route::post('/admin/jadwal/{id}/assign-ruang', [JadwalController::class, 'assignRuang'])->name('admin.jadwal.assignRuang');
 
 
         // Kelas Routes

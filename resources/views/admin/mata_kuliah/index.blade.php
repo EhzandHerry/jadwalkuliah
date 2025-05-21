@@ -37,6 +37,7 @@
         <th>Kelas</th>
         <th>NIDN</th>
         <th>Nama Dosen</th>
+        <th>Aksi</th>
       </tr>
     </thead>
     <tbody>

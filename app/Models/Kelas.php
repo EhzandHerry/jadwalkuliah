@@ -35,4 +35,11 @@ class Kelas extends Model
         return $this->belongsTo(MataKuliah::class, 'kode_matkul', 'kode_matkul');
     }
 
+    public function jadwal()
+{
+    return $this->hasOne(JadwalKuliah::class, 'kelas', 'kelas')
+        ->where('kode_mata_kuliah', $this->kode_matkul);
+}
+
+
 }
