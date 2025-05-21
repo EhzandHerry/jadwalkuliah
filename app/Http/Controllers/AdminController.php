@@ -12,9 +12,10 @@ use App\Models\Available;
 class AdminController extends Controller
 {
     public function dashboard()
-    {
-        return view('admin.dashboard');
-    }
+{
+    return redirect()->route('admin.mata_kuliah.index');
+}
+
 
     // Mata Kuliah CRUD
     public function indexMataKuliah()
