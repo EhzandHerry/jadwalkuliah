@@ -14,7 +14,10 @@
   </div>
 
   {{-- Form untuk hapus multiple --}}
-  <form action="{{ route('admin.mata_kuliah.destroyMultiple') }}" method="POST" class="mb-3">
+  <form id="delete-multiple-form"
+        action="{{ route('admin.mata_kuliah.destroyMultiple') }}"
+        method="POST"
+        class="mb-3">
     @csrf
     @method('DELETE')
     <button type="submit"
@@ -58,7 +61,6 @@
             <td>{{ $kelas->kelas }}</td>
 
             @if($kelas->dosen)
-              {{-- Sudah ada dosen --}}
               <td>{{ $kelas->dosen->unique_number }}</td>
               <td>{{ $kelas->dosen->name }}</td>
               <td>
@@ -68,7 +70,6 @@
                 </a>
               </td>
             @else
-              {{-- Belum ada dosen: tampilkan dropdown + tombol Assign --}}
               <td>–</td>
               <td>
                 <form action="{{ route('admin.mata_kuliah.assignDosen', ['kelasId' => $kelas->id]) }}"
@@ -80,9 +81,7 @@
                           required>
                     <option value="">Pilih Dosen</option>
                     @foreach($dosenList as $dos)
-                      <option value="{{ $dos->unique_number }}">
-                        {{ $dos->name }}
-                      </option>
+                      <option value="{{ $dos->unique_number }}">{{ $dos->name }}</option>
                     @endforeach
                   </select>
                   <button type="submit"
@@ -108,9 +107,8 @@
 <script>
 function toggleSelectAll() {
   const checked = document.getElementById('select_all').checked;
-  document.querySelectorAll('input[name="kelas_ids[]"]').forEach(cb => {
-    cb.checked = checked;
-  });
+  document.querySelectorAll('input[name="kelas_ids[]"]')
+          .forEach(cb => cb.checked = checked);
 }
 </script>
 @endpush
