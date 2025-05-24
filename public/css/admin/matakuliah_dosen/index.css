@@ -1,0 +1,123 @@
+/* =========== CONTAINER =========== */
+.content-container {
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.content-container h1 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 30px;
+  font-weight: 700;
+  font-size: 2.25rem;
+  color: #2c3e50;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  padding-top: 15px;
+}
+
+/* =========== ALERT =========== */
+.alert {
+  padding: 12px 20px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+/* =========== TABLE =========== */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 0.95rem;
+}
+
+.table thead tr {
+  background-color: #34495e;
+  color: #fff;
+  font-weight: 700;
+  text-align: left;
+}
+
+.table th,
+.table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  vertical-align: middle;
+}
+
+.table tbody tr:hover {
+  background-color: #f0f8ff;
+}
+
+/* =========== FORM CONTROLS =========== */
+.table select {
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  margin-right: 8px;
+}
+
+/* =========== BUTTONS =========== */
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.btn-warning {
+  background-color: #f39c12;
+  color: #fff;
+}
+
+.btn-warning:hover {
+  background-color: #d68910;
+}
+
+.btn-success {
+  background-color: #27ae60;
+  color: #fff;
+}
+
+.btn-success:hover {
+  background-color: #1e8449;
+}
+
+/* =========== RESPONSIVE =========== */
+@media (max-width: 768px) {
+  .table th, .table td {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+  .table select,
+  .btn-sm {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-container {
+    padding: 0 10px;
+  }
+  .table {
+    font-size: 0.85rem;
+  }
+}

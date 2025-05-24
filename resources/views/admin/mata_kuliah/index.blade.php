@@ -20,7 +20,7 @@
         <th>Nama</th>
         <th>SKS</th>
         <th>Semester</th>
-        <th>Kelas</th>
+        <th>Jumlah Kelas</th>
         <th style="width:160px">Aksi</th>
       </tr>
     </thead>

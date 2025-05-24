@@ -70,6 +70,15 @@ Route::get('/admin/ruang-kelas/{id}/edit', [AdminController::class, 'editRuangKe
 Route::put('/admin/ruang-kelas/{id}/update', [AdminController::class, 'updateRuangKelas'])->name('admin.ruang_kelas.update');
 Route::delete('/admin/ruang-kelas/{id}/destroy', [AdminController::class, 'destroyRuangKelas'])->name('admin.ruang_kelas.destroy');
 
+// Matakuliah ⇄ Dosen assignment
+Route::get('/admin/matakuliah-dosen', [AdminController::class, 'indexMatKulDosen'])
+     ->name('admin.matakuliah_dosen.index');
+Route::post('/admin/matakuliah-dosen/{kelas}/assign', [AdminController::class, 'assignDosen'])
+     ->name('admin.matakuliah_dosen.assign');
+Route::put('/admin/matakuliah-dosen/{kelas}/update', [AdminController::class, 'updateDosenKelas'])
+     ->name('admin.matakuliah_dosen.update');
+
+
 Route::get('/admin/jadwal', [JadwalController::class, 'index'])->name('admin.jadwal.index');
 Route::post('/admin/jadwal/{id}/assign-ruang', [JadwalController::class, 'assignRuang'])->name('admin.jadwal.assignRuang');
 

@@ -21,6 +21,7 @@
         <li><a href="{{ route('admin.dosen.index') }}">Manajemen Dosen</a></li>
         <li><a href="{{ route('admin.mata_kuliah.index') }}">Manajemen Matakuliah</a></li>
         <li><a href="{{ route('admin.ruang_kelas.index') }}">Manajemen Ruang Kelas</a></li>
+        <li><a href="{{ route('admin.matakuliah_dosen.index') }}">Matakuliah & Dosen</a></li>
         <li><a href="{{ route('admin.jadwal.index') }}">Manajemen Jadwal</a></li>
         <li><a href="{{ route('admin.available.dashboard') }}">Available Time Dashboard</a></li>
     </ul>

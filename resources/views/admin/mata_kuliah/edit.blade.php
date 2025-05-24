@@ -1,11 +1,11 @@
 @extends('layouts.layout')
 
-@section('title', 'Edit Mata Kuliah')
-@section('header_title', 'Edit Mata Kuliah')
+@section('title', 'Edit Matakuliah')
+@section('header_title', 'Edit Matakuliah')
 
 @section('content')
 <div class="content-container">
-  <h1>Edit Mata Kuliah</h1>
+  <h1>Edit Matakuliah</h1>
 
   <form action="{{ route('admin.mata_kuliah.update', $matkul->id) }}"
         method="POST">
