@@ -81,31 +81,31 @@ public function updateDosenKelas(Request $request, $kelasId)
     }
 
     public function storeMataKuliah(Request $request)
-    {
-        $request->validate([
-            'kode_matkul'   => 'required|unique:mata_kuliah,kode_matkul',
-            'nama_matkul'   => 'required',
-            'sks'           => 'required|integer',
-            'jumlah_kelas'  => 'required|integer|min:1',
-            'semester'      => 'required',
+{
+    $request->validate([
+        'kode_matkul'  => 'required|unique:mata_kuliah,kode_matkul',
+        'nama_matkul'  => 'required',
+        'sks'          => 'required|integer',
+        'semester'     => 'required',
+        'jumlah_kelas' => 'required|integer|min:1',
+    ]);
+
+    $mk = MataKuliah::create($request->only(
+        'kode_matkul','nama_matkul','sks','semester','jumlah_kelas'
+    ));
+
+    $huruf = range('A','Z');
+    for ($i = 0; $i < $mk->jumlah_kelas; $i++) {
+        Kelas::create([
+            'kode_matkul' => $mk->kode_matkul,
+            'kelas'       => $huruf[$i],
         ]);
-
-        $mk = MataKuliah::create($request->only(
-            'kode_matkul','nama_matkul','sks','semester'
-        ));
-
-        // generate kelas A, B, ...
-        $huruf = range('A','Z');
-        for($i=0; $i < (int)$request->jumlah_kelas; $i++){
-            Kelas::create([
-                'kode_matkul' => $mk->kode_matkul,
-                'kelas'       => $huruf[$i],
-            ]);
-        }
-
-        return redirect()->route('admin.mata_kuliah.index')
-                         ->with('success','Mata Kuliah & Kelas berhasil ditambahkan.');
     }
+
+    return redirect()
+        ->route('admin.mata_kuliah.index')
+        ->with('success', 'Mata Kuliah & Kelas berhasil ditambahkan.');
+}
 
     public function editMataKuliah($id)
     {
@@ -114,44 +114,43 @@ public function updateDosenKelas(Request $request, $kelasId)
     }
 
     public function updateMataKuliah(Request $request, $id)
-    {
-        $request->validate([
-            'kode_matkul'   => 'required|unique:mata_kuliah,kode_matkul,'.$id,
-            'nama_matkul'   => 'required',
-            'sks'           => 'required|integer',
-            'semester'      => 'required',
-            'jumlah_kelas'  => 'required|integer|min:1',
-        ]);
+{
+    $request->validate([
+        'kode_matkul'  => 'required|unique:mata_kuliah,kode_matkul,'.$id,
+        'nama_matkul'  => 'required',
+        'sks'          => 'required|integer',
+        'semester'     => 'required',
+        'jumlah_kelas' => 'required|integer|min:1',
+    ]);
 
-        $matkul = MataKuliah::findOrFail($id);
-        $matkul->update($request->only(
-            'kode_matkul','nama_matkul','sks','semester'
-        ));
+    $matkul = MataKuliah::findOrFail($id);
+    $matkul->update($request->only(
+        'kode_matkul','nama_matkul','sks','semester','jumlah_kelas'
+    ));
 
-        // adjust jumlah kelas
-        $existing = $matkul->kelas()->orderBy('kelas')->get();
-        $oldCount = $existing->count();
-        $newCount = (int)$request->jumlah_kelas;
-        $huruf    = range('A','Z');
+    $existing = $matkul->kelas()->orderBy('kelas')->get();
+    $oldCount = $existing->count();
+    $newCount = $matkul->jumlah_kelas;
+    $huruf    = range('A','Z');
 
-        if($newCount > $oldCount) {
-            for($i = $oldCount; $i < $newCount; $i++){
-                Kelas::create([
-                    'kode_matkul' => $matkul->kode_matkul,
-                    'kelas'       => $huruf[$i],
-                ]);
-            }
-        } elseif($newCount < $oldCount) {
-            // hapus kelas teratas
-            $toDelete = $existing->slice($newCount);
-            foreach($toDelete as $k) {
-                $k->delete();
-            }
+    if ($newCount > $oldCount) {
+        for ($i = $oldCount; $i < $newCount; $i++) {
+            Kelas::create([
+                'kode_matkul' => $matkul->kode_matkul,
+                'kelas'       => $huruf[$i],
+            ]);
         }
-
-        return redirect()->route('admin.mata_kuliah.index')
-                         ->with('success','Data Mata Kuliah & Jumlah Kelas diperbarui.');
+    } elseif ($newCount < $oldCount) {
+        $toDelete = $existing->slice($newCount);
+        foreach ($toDelete as $k) {
+            $k->delete();
+        }
     }
+
+    return redirect()
+        ->route('admin.mata_kuliah.index')
+        ->with('success', 'Data Mata Kuliah & Jumlah Kelas diperbarui.');
+}
 
     public function destroyMataKuliah($id)
     {

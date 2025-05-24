@@ -12,7 +12,11 @@ class MataKuliah extends Model
     protected $table = 'mata_kuliah';
 
     protected $fillable = [
-        'kode_matkul', 'nama_matkul', 'sks', 'unique_number', 'semester'
+        'kode_matkul',
+        'nama_matkul',
+        'sks',
+        'semester',
+        'jumlah_kelas',    // ← here
     ];
 
     // Relasi dengan model User (Dosen)

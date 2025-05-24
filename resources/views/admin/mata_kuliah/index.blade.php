@@ -31,7 +31,8 @@
           <td>{{ $matkul->nama_matkul }}</td>
           <td>{{ $matkul->sks }}</td>
           <td>{{ $matkul->semester }}</td>
-          <td>{{ $matkul->kelas->count() }}</td>
+          <td>{{ $matkul->jumlah_kelas }}</td>
+
           <td>
             {{-- Update --}}
             <a href="{{ route('admin.mata_kuliah.edit', $matkul->id) }}"

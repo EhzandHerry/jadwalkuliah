@@ -51,18 +51,16 @@
     </div>
 
     <div class="form-group">
-      <label for="jumlah_kelas">Jumlah Kelas</label>
-      <input type="number"
-             id="jumlah_kelas"
-             name="jumlah_kelas"
-             class="form-control"
-             value="{{ old('jumlah_kelas', $matkul->kelas->count()) }}"
-             min="1"
-             required>
-      <small class="form-text text-muted">
-        Ubah jumlah kelas (A, B, C…) sesuai kebutuhan.
-      </small>
-    </div>
+  <label for="jumlah_kelas">Jumlah Kelas</label>
+  <input type="number"
+         id="jumlah_kelas"
+         name="jumlah_kelas"
+         class="form-control"
+         value="{{ old('jumlah_kelas',$matkul->jumlah_kelas) }}"
+         min="1"
+         required>
+</div>
+
 
     <button type="submit" class="btn btn-primary">
       Update

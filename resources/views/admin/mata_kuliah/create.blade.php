@@ -1,35 +1,99 @@
 @extends('layouts.layout')
 
-@section('title', 'Matakuliah')
-
-@section('header_title', 'Manajemen Matakuliah')
+@section('title', 'Tambah Mata Kuliah')
+@section('header_title', 'Tambah Mata Kuliah')
 
 @section('content')
-    <h1>Tambah Mata Kuliah</h1>
+<div class="content-container">
+  <h1>Tambah Mata Kuliah</h1>
 
-    <!-- Back Button -->
-    <a href="{{ route('admin.mata_kuliah.index') }}" class="back-btn">Back to Matakuliah List</a>
+  {{-- Validation Errors --}}
+  @if ($errors->any())
+    <div class="alert alert-danger">
+      <ul class="mb-0">
+        @foreach ($errors->all() as $error)
+          <li>{{ $error }}</li>
+        @endforeach
+      </ul>
+    </div>
+  @endif
 
-    <form action="{{ route('admin.mata_kuliah.store') }}" method="POST" class="add-matkul-form">
-        @csrf
-        <input type="text" name="kode_matkul" placeholder="Kode Mata Kuliah" required class="input-field"><br>
-        <input type="text" name="nama_matkul" placeholder="Nama Mata Kuliah" required class="input-field"><br>
-        <input type="number" name="sks" placeholder="Jumlah SKS" required class="input-field"><br>
-        <input type="number" name="jumlah_kelas" placeholder="Jumlah Kelas" required class="input-field"><br> <!-- Tambahan -->
+  {{-- Back link --}}
+  <a href="{{ route('admin.mata_kuliah.index') }}" class="back-btn">
+    &larr; Kembali ke Daftar
+  </a>
 
-        <!-- Semester Dropdown -->
-        <div class="form-group">
-            <label for="semester">Semester</label>
-            <select name="semester" id="semester" required class="input-field">
-                <option value="Genap">Genap</option>
-                <option value="Gasal">Gasal</option>
-            </select>
-        </div>
+  {{-- Use your add-matkul-form class on the form itself --}}
+  <form action="{{ route('admin.mata_kuliah.store') }}"
+        method="POST"
+        class="add-matkul-form">
+    @csrf
 
-        <button type="submit" class="submit-btn">Simpan</button>
-    </form>
+    <div class="form-group">
+      <label for="kode_matkul">Kode Mata Kuliah</label>
+      <input type="text"
+             id="kode_matkul"
+             name="kode_matkul"
+             value="{{ old('kode_matkul') }}"
+             required>
+    </div>
+
+    <div class="form-group">
+      <label for="nama_matkul">Nama Mata Kuliah</label>
+      <input type="text"
+             id="nama_matkul"
+             name="nama_matkul"
+             value="{{ old('nama_matkul') }}"
+             required>
+    </div>
+
+    <div class="form-group">
+      <label for="sks">SKS</label>
+      <input type="number"
+             id="sks"
+             name="sks"
+             value="{{ old('sks') }}"
+             min="0"
+             required>
+    </div>
+
+    <div class="form-group">
+      <label for="jumlah_kelas">Jumlah Kelas</label>
+      <input type="number"
+             id="jumlah_kelas"
+             name="jumlah_kelas"
+             value="{{ old('jumlah_kelas') }}"
+             min="1"
+             required>
+      <small>
+        Masukkan berapa banyak kelas (A, B, C…) yang akan dibuat.
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label for="semester">Semester</label>
+      <select id="semester"
+              name="semester"
+              required>
+        <option value="" disabled {{ old('semester') ? '' : 'selected' }}>
+          Pilih Semester
+        </option>
+        <option value="Genap" {{ old('semester')=='Genap' ? 'selected':'' }}>
+          Genap
+        </option>
+        <option value="Gasal" {{ old('semester')=='Gasal' ? 'selected':'' }}>
+          Gasal
+        </option>
+      </select>
+    </div>
+
+    <button type="submit" class="submit-btn">
+      Simpan
+    </button>
+  </form>
+</div>
 @endsection
 
 @push('css')
-    <link rel="stylesheet" href="{{ asset('css/admin/matakuliah/create.css') }}">
+<link rel="stylesheet" href="{{ asset('css/admin/matakuliah/create.css') }}">
 @endpush
