@@ -1,0 +1,107 @@
+/* ubah dari `form { ... }` menjadi: */
+.content-container form {
+  background: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* ubah dari `.btn-primary { ... }` menjadi: */
+.content-container .btn-primary {
+  background-color: #18b300;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.content-container .btn-primary:hover {
+  background-color: #128a00;
+}
+
+/* ubah dari `.btn-secondary { ... }` menjadi: */
+.content-container .btn-secondary {
+  background-color: #7f8c8d;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.content-container .btn-secondary:hover {
+  background-color: #606b75;
+}
+
+/* sisanya tetap */
+.content-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.content-container h1 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 30px;
+  font-weight: 700;
+  font-size: 2rem;
+  color: #2c3e50;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+}
+
+.content-container .form-group {
+  margin-bottom: 20px;
+}
+
+.content-container .form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2c3e50;
+}
+
+.content-container .form-control {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.content-container .form-control:focus {
+  outline: none;
+  border-color: #18b300;
+}
+
+.content-container .form-text {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #7f8c8d;
+}
+
+@media (max-width: 480px) {
+  .content-container {
+    padding: 0 10px;
+  }
+  .content-container form {
+    padding: 20px;
+  }
+  .content-container .btn-primary,
+  .content-container .btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+}

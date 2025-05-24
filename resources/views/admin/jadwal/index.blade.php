@@ -27,7 +27,7 @@
             <th>Kode Mata Kuliah</th>
             <th>Nama Mata Kuliah</th>
             <th>Kelas</th>
-            <th>Dosen (NIDN)</th>
+            <th>NIDN</th>
             <th>Nama Dosen</th>
             <th>Ruang Kelas</th>
             <th>Hari</th>

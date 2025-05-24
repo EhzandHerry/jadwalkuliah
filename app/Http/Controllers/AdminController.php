@@ -63,6 +63,68 @@ class AdminController extends Controller
     return redirect()->route('admin.mata_kuliah.index')->with('success', 'Mata Kuliah dan Kelas berhasil ditambahkan.');
 }
 
+// Tambahkan di class AdminController
+
+public function editMataKuliah($id)
+{
+    $matkul = MataKuliah::findOrFail($id);
+    return view('admin.mata_kuliah.edit', compact('matkul'));
+}
+
+public function updateMataKuliah(Request $request, $id)
+{
+    $request->validate([
+        'kode_matkul'  => 'required|unique:mata_kuliah,kode_matkul,' . $id,
+        'nama_matkul'  => 'required',
+        'sks'          => 'required|integer',
+        'semester'     => 'required',
+        'jumlah_kelas' => 'required|integer|min:1',
+    ]);
+
+    $matkul = MataKuliah::findOrFail($id);
+    // simpan perubahan pada mata kuliah
+    $matkul->update($request->only(['kode_matkul','nama_matkul','sks','semester']));
+
+    // Atur perubahan jumlah kelas
+    $existing = $matkul->kelas()->orderBy('kelas')->get();  // koleksi Kelas
+    $oldCount = $existing->count();
+    $newCount = (int) $request->jumlah_kelas;
+
+    $huruf = range('A','Z');
+
+    if ($newCount > $oldCount) {
+        // Tambah kelas baru A, B, ...
+        for ($i = $oldCount; $i < $newCount; $i++) {
+            Kelas::create([
+                'kode_matkul' => $matkul->kode_matkul,
+                'kelas'       => $huruf[$i],
+            ]);
+        }
+    }
+    elseif ($newCount < $oldCount) {
+        // Hapus kelas terakhir
+        // Ambil id kelas yang ke-(newCount) dan setelahnya
+        $toDelete = $existing->slice($newCount);
+        foreach ($toDelete as $kelas) {
+            $kelas->delete();
+        }
+    }
+
+    return redirect()
+        ->route('admin.mata_kuliah.index')
+        ->with('success', 'Data Mata Kuliah & jumlah kelas berhasil diperbarui.');
+}
+
+
+public function destroyMataKuliah($id)
+{
+    MataKuliah::findOrFail($id)->delete();
+    return redirect()
+        ->route('admin.mata_kuliah.index')
+        ->with('success', 'Mata Kuliah berhasil dihapus.');
+}
+
+
     // Ruang Kelas CRUD
 public function indexRuangKelas()
 {

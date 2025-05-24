@@ -26,13 +26,22 @@ class JadwalController extends Controller
 
 public function assignRuang(Request $request, $kelasId)
 {
+    // 1) ambil dulu data kelas (beserta relasi mataKuliah)
+    $kelas = Kelas::with('mataKuliah', 'dosen')->findOrFail($kelasId);
+
+    // 2) cek apakah dosen sudah diset
+    if (! $kelas->unique_number) {
+        return redirect()->route('admin.jadwal.index')
+            ->with('error', "Dosen untuk mata kuliah “{$kelas->mataKuliah->nama_matkul}” (Kelas {$kelas->kelas}) belum dipilih. Silakan pilih dosen di halaman Matakuliah.");
+    }
+
+    // 3) validasi input ruang/hari/jam
     $request->validate([
         'nama_ruangan' => 'required|string|exists:ruang_kelas,nama_ruangan',
-        'hari' => 'required|string',
-        'jam' => 'required|string', // input jam mulai saja, misal "07:00"
+        'hari'         => 'required|string',
+        'jam'          => 'required|string',
     ]);
 
-    $kelas = Kelas::findOrFail($kelasId);
 
     // Jam sesi tersedia (untuk menghitung jam selesai)
     $jamSesi = [
@@ -131,8 +140,9 @@ public function assignRuang(Request $request, $kelasId)
     $jadwal->jam = $jamLengkap;
     $jadwal->save();
 
-    return redirect()->route('admin.jadwal.index')
-    ->with('error', 'Jadwal bentrok dengan jadwal lain pada hari, ruang, dan jam yang sama.');
+    // … setelah $jadwal->save();
+return redirect()->route('admin.jadwal.index')
+    ->with('success', 'Jadwal berhasil ditambahkan.');
 }
 
 }

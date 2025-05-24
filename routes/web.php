@@ -38,6 +38,15 @@ Route::middleware('auth')->group(function () {
         Route::put('/admin/mata-kuliah/{id}/update-unique', [AdminController::class, 'updateUnique'])->name('admin.mata_kuliah.updateUnique');
         Route::delete('/admin/mata-kuliah/destroy-multiple', [AdminController::class, 'destroyMultipleMataKuliah'])->name('admin.mata_kuliah.destroyMultiple');
         Route::delete('/admin/mata-kuliah/destroy-kelas/{kelasId}', [AdminController::class, 'destroyKelas'])->name('admin.mata_kuliah.destroyKelas');
+// Edit form
+Route::get('/admin/mata-kuliah/{id}/edit', [AdminController::class, 'editMataKuliah'])
+     ->name('admin.mata_kuliah.edit');
+// Proses update
+Route::put('/admin/mata-kuliah/{id}', [AdminController::class, 'updateMataKuliah'])
+     ->name('admin.mata_kuliah.update');
+// Hapus single
+Route::delete('/admin/mata-kuliah/{id}', [AdminController::class, 'destroyMataKuliah'])
+     ->name('admin.mata_kuliah.destroy');
 
         // Route untuk tambah dosen ke kelas
 Route::get('/admin/mata-kuliah/kelas/{kelas}/add-dosen', [AdminController::class, 'addDosen'])->name('admin.mata_kuliah.addDosen');

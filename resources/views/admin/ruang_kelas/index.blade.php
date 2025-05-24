@@ -1,7 +1,7 @@
+{{-- resources/views/admin/ruang_kelas/index.blade.php --}}
 @extends('layouts.layout')
 
 @section('title', 'Ruang Kelas')
-
 @section('header_title', 'Manajemen Ruang Kelas')
 
 @section('content')
@@ -26,8 +26,13 @@
                         <td>{{ $ruang->nama_gedung }}</td>
                         <td>{{ $ruang->kapasitas }}</td>
                         <td>
-                            <a href="{{ route('admin.ruang_kelas.edit', $ruang->id) }}" class="edit-ruang-btn">Edit</a>
-                            <form action="{{ route('admin.ruang_kelas.destroy', $ruang->id) }}" method="POST" style="display:inline;">
+                            <a href="{{ route('admin.ruang_kelas.edit', $ruang->id) }}"
+                               class="edit-ruang-btn">Edit</a>
+
+                            <form action="{{ route('admin.ruang_kelas.destroy', $ruang->id) }}"
+                                  method="POST"
+                                  style="display:inline;"
+                                  onsubmit="return confirm('Yakin ingin menghapus ruang \"{{ $ruang->nama_ruangan }}\"?')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="delete-btn">Hapus</button>

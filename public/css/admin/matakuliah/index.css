@@ -1,3 +1,4 @@
+/* =========== CONTAINER =========== */
 .content-container {
   max-width: 1200px;
   margin: 30px auto;
@@ -19,6 +20,7 @@
   padding-top: 15px;
 }
 
+/* =========== ADD BUTTON =========== */
 .add-matkul-btn {
   background-color: #18b300;
   padding: 10px 20px;
@@ -29,11 +31,11 @@
   display: inline-block;
   transition: background-color 0.3s ease;
 }
-
 .add-matkul-btn:hover {
   background-color: #128a00;
 }
 
+/* =========== GENERAL BUTTONS =========== */
 .btn-danger {
   background-color: #e74c3c;
   padding: 10px 20px;
@@ -44,11 +46,38 @@
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
-
 .btn-danger:hover {
   background-color: #c0392b;
 }
 
+.btn-warning {
+  background-color: #f1c40f;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: 600;
+  border: none;
+  color: white;
+  cursor: pointer;
+  text-decoration: none; /* untuk tag <a> */
+  display: inline-block;
+  transition: background-color 0.3s ease;
+}
+.btn-warning:hover {
+  background-color: #d4ac0d;
+}
+
+/* ukuran kecil untuk tombol aksi */
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 0.85rem;
+}
+
+/* margin kanan kecil */
+.mr-2 {
+  margin-right: 0.5rem;
+}
+
+/* =========== TABLE =========== */
 .matkul-table {
   width: 100%;
   border-collapse: collapse;
@@ -67,7 +96,8 @@
   text-align: left;
 }
 
-.matkul-table th, .matkul-table td {
+.matkul-table th,
+.matkul-table td {
   padding: 12px 16px !important;
   border-bottom: 1px solid #e0e0e0 !important;
   vertical-align: middle !important;
@@ -77,19 +107,23 @@
   background-color: #f0f8ff !important;
 }
 
-.matkul-table th input[type="checkbox"], 
+.matkul-table th input[type="checkbox"],
 .matkul-table td input[type="checkbox"] {
   margin: 0;
   vertical-align: middle;
 }
 
+/* =========== RESPONSIVE =========== */
 @media (max-width: 768px) {
-  .matkul-table th, .matkul-table td {
+  .matkul-table th,
+  .matkul-table td {
     padding: 8px !important;
     font-size: 0.85rem !important;
   }
 
-  .add-matkul-btn, .btn-danger {
+  .add-matkul-btn,
+  .btn-danger,
+  .btn-warning {
     width: 100%;
     margin-bottom: 10px;
     text-align: center;
@@ -101,4 +135,28 @@
     width: 100%;
     overflow-x: auto;
   }
+}
+
+/* =========== ACTION BUTTONS ALIGNMENT =========== */
+/* Bungkus tombol Edit/Delete di kolom Aksi dengan class .action-cell */
+.matkul-table td .action-cell {
+  display: flex;
+  gap: 8px;            /* jarak antar tombol */
+  align-items: center; /* sejajarkan vertikal */
+}
+
+/* Buat tombol kecil di .action-cell memiliki lebar sama */
+.matkul-table td .action-cell .btn-sm {
+  flex: 1;
+  padding: 6px 0;      /* jarak vertikal untuk konsistensi */
+  min-width: 80px;
+  text-align: center;  /* teks rata tengah */
+  font-size: 0.85rem;
+}
+
+/* Override styling agar btn-warning dan btn-danger mewarisi flex/padding */
+.matkul-table td .action-cell .btn-warning,
+.matkul-table td .action-cell .btn-danger {
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
 }
