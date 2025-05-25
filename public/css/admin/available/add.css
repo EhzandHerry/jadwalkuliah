@@ -28,22 +28,22 @@
 }
 
 /* Grup form */
-.form-group {
+.available-form .form-group {
   margin-bottom: 20px;
   display: flex;
   flex-direction: column;
 }
 
 /* Label */
-.form-group label {
+.available-form .form-group label {
   margin-bottom: 6px;
   font-weight: 600;
   color: #34495e;
 }
 
 /* Input dan Select */
-.form-group input[type="time"],
-.form-group select {
+.available-form .form-group input[type="time"],
+.available-form .form-group select {
   padding: 10px 12px;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -52,14 +52,14 @@
   outline: none;
 }
 
-.form-group input[type="time"]:focus,
-.form-group select:focus {
+.available-form .form-group input[type="time"]:focus,
+.available-form .form-group select:focus {
   border-color: #18b300;
   box-shadow: 0 0 5px #18b300aa;
 }
 
-/* Tombol submit */
-button[type="submit"] {
+/* Submit button scoped to only this form */
+.available-form button[type="submit"] {
   display: block;
   width: 100%;
   background-color: #18b300;
@@ -73,17 +73,12 @@ button[type="submit"] {
   transition: background-color 0.3s ease;
 }
 
-button[type="submit"]:hover {
+.available-form button[type="submit"]:hover {
   background-color: #0f7a00;
 }
 
 /* Responsive */
 @media (max-width: 480px) {
-  .available-container {
-    padding: 0 10px;
-  }
-
-  .available-form {
-    padding: 20px 15px;
-  }
+  .available-container { padding: 0 10px; }
+  .available-form { padding: 20px 15px; }
 }

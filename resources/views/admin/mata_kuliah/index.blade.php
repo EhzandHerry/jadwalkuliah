@@ -9,7 +9,7 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Daftar Mata Kuliah</h1>
     <a href="{{ route('admin.mata_kuliah.create') }}" class="add-matkul-btn">
-      Tambah Mata Kuliah
+      Tambah Matakuliah
     </a>
   </div>
 

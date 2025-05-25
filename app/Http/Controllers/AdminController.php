@@ -330,4 +330,11 @@ public function updateDosenKelas(Request $request, $kelasId)
         Available::findOrFail($id)->delete();
         return back()->with('success','Available time berhasil dihapus.');
     }
+
+    public function addAvailableTime($id)
+{
+    $dosen = User::findOrFail($id);
+    return view('admin.available.add', compact('dosen'));
+}
+
 }

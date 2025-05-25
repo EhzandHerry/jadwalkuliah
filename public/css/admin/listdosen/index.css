@@ -68,6 +68,47 @@
   background-color: #f0f8ff;
 }
 
+/* Tombol manage available */
+.btn-info {
+  background-color: #3498db; /* warna biru */
+  color: white;
+  padding: 6px 12px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+  display: inline-block;
+  margin-left: 8px;
+}
+
+.btn-info:hover {
+  opacity: 0.8;
+}
+
+.btn-warning {
+  background-color: #f39c12;
+  color: white !important;
+  padding: 6px 12px;
+  border-radius: 5px;
+  text-decoration: none !important;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.btn-warning:hover {
+  opacity: 0.8;
+}
+
+.btn-sm {
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+}
+
+
 /* Tombol update */
 .btn-update {
   background-color: #f39c12;
