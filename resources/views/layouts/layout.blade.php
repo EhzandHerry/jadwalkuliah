@@ -48,5 +48,6 @@
             content.classList.toggle("expanded");
         });
     </script>
+    @stack('scripts')
 </body>
 </html>

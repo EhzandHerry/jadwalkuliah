@@ -302,21 +302,29 @@ public function updateDosenKelas(Request $request, $kelasId)
     }
 
     public function storeAvailableTimes(Request $request, $id)
-    {
-        $request->validate([
-            'hari'=>'required|string',
-            'start_time'=>'required|date_format:H:i',
-            'end_time'=>'required|date_format:H:i|after:start_time'
-        ]);
+{
+    $request->validate([
+        'hari'       => 'required|string',
+        'start_time' => 'required|date_format:H:i',
+        'end_time'   => 'required|date_format:H:i|after:start_time',
+    ]);
 
-        $dosen = User::findOrFail($id);
-        $dosen->available()->create($request->only(
-            'hari','start_time','end_time'
-        ));
+    $dosen = User::findOrFail($id);
 
-        return redirect()->route('admin.available.manage',$id)
-                         ->with('success','Available time berhasil ditambahkan.');
+    // **cek duplikat hari** sebelum create
+    if ($dosen->available()->where('hari', $request->hari)->exists()) {
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with('error', "Available time untuk hari “{$request->hari}” sudah diinput sebelumnya.");
     }
+
+    $dosen->available()->create($request->only('hari','start_time','end_time'));
+
+    return redirect()
+        ->route('admin.available.manage', $id)
+        ->with('success', 'Available time berhasil ditambahkan.');
+}
 
     public function manageAvailable($id)
     {
@@ -334,7 +342,10 @@ public function updateDosenKelas(Request $request, $kelasId)
     public function addAvailableTime($id)
 {
     $dosen = User::findOrFail($id);
-    return view('admin.available.add', compact('dosen'));
+    // ambil list hari yang sudah ada
+    $existingDays = $dosen->available()->pluck('hari')->toArray();
+
+    return view('admin.available.add', compact('dosen','existingDays'));
 }
 
 }
