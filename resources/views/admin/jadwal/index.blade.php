@@ -1,4 +1,3 @@
-{{-- resources/views/admin/jadwal/index.blade.php --}}
 @extends('layouts.layout')
 
 @section('title', 'Manajemen Jadwal')
@@ -23,9 +22,10 @@
         <th>Kelas</th>
         <th>NIDN</th>
         <th>Nama Dosen</th>
-        <th>Ruang Kelas / Aksi</th>
+        <th>Ruang Kelas</th>
         <th>Hari</th>
         <th>Jam</th>
+        <th>Aksi</th>
       </tr>
     </thead>
     <tbody>
@@ -81,13 +81,13 @@
               </select>
 
               <select name="jam"
-        id="jam-{{ $k->id }}"
-        class="form-control form-control-sm mr-2"
-        required>
-  <option value="">Pilih Jam</option>
-  {{-- akan di-populate via JS --}}
-</select>
-
+                      id="jam-{{ $k->id }}"
+                      class="form-control form-control-sm mr-2"
+                      {{ $hasAv ? '' : 'disabled' }}
+                      required>
+                <option value="">Pilih Jam</option>
+                {{-- akan di-populate via JS --}}
+              </select>
 
               <button type="submit"
                       class="btn btn-primary btn-sm">
@@ -98,6 +98,19 @@
         </td>
         <td>{{ $k->hari ?? '-' }}</td>
         <td>{{ $k->jam ?? '-' }}</td>
+        <td>
+        @if($k->jadwal_id)
+          <a href="{{ route('admin.jadwal.edit', $k->jadwal_id) }}" class="btn btn-warning btn-sm mr-1">Edit</a>
+
+          <form action="{{ route('admin.jadwal.destroy', $k->jadwal_id) }}" method="POST" style="display:inline-block" onsubmit="return confirm('Yakin ingin hapus jadwal ini?');">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+          </form>
+        @else
+          <span class="text-muted">Belum dijadwalkan</span>
+        @endif
+      </td>
       </tr>
       @endforeach
     </tbody>
@@ -134,7 +147,11 @@ document.addEventListener('DOMContentLoaded', function () {
     function populateSessions(hari) {
       jamEl.innerHTML = '<option value="">Pilih Jam</option>';
       const dayRanges = (availableTimes[uniq]||{})[hari]||[];
-      if (!dayRanges.length) return;
+      if (!dayRanges.length) {
+        jamEl.disabled = true;
+        return;
+      }
+      jamEl.disabled = false;
 
       // untuk setiap sesi, cek apakah seluruh rentang sesi masuk dalam salah satu dayRange
       JAM_SESI.forEach(sesi => {

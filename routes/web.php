@@ -79,8 +79,12 @@ Route::put('/admin/matakuliah-dosen/{kelas}/update', [AdminController::class, 'u
      ->name('admin.matakuliah_dosen.update');
 
 
-Route::get('/admin/jadwal', [JadwalController::class, 'index'])->name('admin.jadwal.index');
-Route::post('/admin/jadwal/{id}/assign-ruang', [JadwalController::class, 'assignRuang'])->name('admin.jadwal.assignRuang');
+Route::get('admin/jadwal', [JadwalController::class, 'index'])->name('admin.jadwal.index');
+Route::post('/admin/jadwal/{kelas}/assign', [JadwalController::class, 'assignRuang'])->name('admin.jadwal.assignRuang');
+
+Route::get('admin/jadwal/{jadwal}/edit', [JadwalController::class, 'edit'])->name('admin.jadwal.edit');
+Route::put('admin/jadwal/{jadwal}', [JadwalController::class, 'update'])->name('admin.jadwal.update');
+Route::delete('admin/jadwal/{jadwal}', [JadwalController::class, 'destroy'])->name('admin.jadwal.destroy');
 
 
         // Kelas Routes
