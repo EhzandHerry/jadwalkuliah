@@ -22,8 +22,7 @@ class AdminController extends Controller
 public function indexMatKulDosen()
 {
     $query = Kelas::has('mataKuliah')
-        ->with(['mataKuliah', 'dosen'])
-        ->orderBy('kelas', 'asc'); // Optional, supaya ada urutan
+        ->with(['mataKuliah', 'dosen']);
 
     if ($search = request('search')) {
         $query->whereHas('mataKuliah', function($q) use ($search) {
@@ -31,7 +30,16 @@ public function indexMatKulDosen()
         });
     }
 
-    $kelas = $query->get();
+    // Ambil semua, lalu sort di-memory:
+    $kelas = $query->get()->sort(function($a, $b) {
+        // 1) Urut berdasar nama matakuliah
+        $cmp = strcmp($a->mataKuliah->nama_matkul, $b->mataKuliah->nama_matkul);
+        if ($cmp !== 0) {
+            return $cmp;
+        }
+        // 2) Kalau sama, urut berdasar kelas (A, B, C, dst)
+        return strcmp($a->kelas, $b->kelas);
+    });
 
     $dosenList = User::where('is_admin', false)
         ->orderBy('name', 'asc')
@@ -39,7 +47,6 @@ public function indexMatKulDosen()
 
     return view('admin.matakuliah_dosen.index', compact('kelas', 'dosenList'));
 }
-
 
 /**
  * Assign dosen ke kelas (from matakuliah_dosen/index.blade.php)
