@@ -1,4 +1,4 @@
-/* Container utama */
+/* Container utama untuk edit */
 .update-dosen-container {
   max-width: 600px;
   margin: 30px auto;
@@ -6,10 +6,14 @@
   box-sizing: border-box;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
+}
+
+/* Form wrapper */
+.update-dosen-container form {
   background-color: #fff;
+  padding: 30px 25px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-  padding: 30px 25px;
 }
 
 /* Judul form */
@@ -24,22 +28,22 @@
 }
 
 /* Form group */
-.form-group {
+.update-dosen-container .form-group {
   margin-bottom: 20px;
   display: flex;
   flex-direction: column;
 }
 
 /* Label */
-.form-group label {
+.update-dosen-container .form-group label {
   margin-bottom: 6px;
   font-weight: 600;
   color: #34495e;
 }
 
 /* Input fields */
-.form-group input[type="text"],
-.form-group input[type="email"] {
+.update-dosen-container .form-group input[type="text"],
+.update-dosen-container .form-group input[type="email"] {
   padding: 10px 12px;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -48,35 +52,57 @@
   outline: none;
 }
 
-.form-group input[type="text"]:focus,
-.form-group input[type="email"]:focus {
+.update-dosen-container .form-group input:focus {
   border-color: #18b300;
   box-shadow: 0 0 5px #18b300aa;
 }
 
-/* Tombol update */
-button.btn-update {
+/* Tombol Update */
+.update-dosen-container .btn-update {
   display: block;
   width: 100%;
-  background-color: #f39c12; /* Warna oranye seperti edit dosen */
-  color: white;
+  background-color: #f39c12; /* sama seperti oranye edit */
+  color: #fff;
   padding: 12px 0;
   font-weight: 700;
   font-size: 1.1rem;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
   margin-top: 10px;
+  transition: background-color 0.3s ease;
+}
+.update-dosen-container .btn-update:hover {
+  background-color: #c87f0a;
 }
 
-button.btn-update:hover {
-  background-color: #c87f0a;
+/* Tombol Batal */
+.update-dosen-container .btn-cancel {
+  display: block;
+  width: 100%;
+  background-color: #95a5a6;
+  color: #fff;
+  padding: 12px 0;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+.update-dosen-container .btn-cancel:hover {
+  background-color: #7f8c8d;
 }
 
 /* Responsive */
 @media (max-width: 480px) {
   .update-dosen-container {
+    padding: 0 10px;
+  }
+  .update-dosen-container form {
     padding: 20px 15px;
   }
 }

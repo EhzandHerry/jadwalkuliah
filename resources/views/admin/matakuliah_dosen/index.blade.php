@@ -11,13 +11,25 @@
     <div class="alert alert-success">{{ session('success') }}</div>
   @endif
 
+  <form method="GET" action="{{ route('admin.matakuliah_dosen.index') }}" class="form-inline mb-3">
+    <input
+      type="text"
+      name="search"
+      class="form-control mr-2"
+      placeholder="Cari nama mata kuliah..."
+      value="{{ request('search') }}"
+      style="max-width: 300px;"
+    >
+    <button type="submit" class="btn btn-secondary">Cari</button>
+  </form>
+
   <table class="table table-striped">
     <thead class="thead-dark">
       <tr>
         <th>Kode</th>
         <th>Matakuliah</th>
         <th>Kelas</th>
-        <th>Dosen (NIDN)</th>
+        <th>NIDN</th>
         <th>Nama Dosen</th>
         <th>Aksi</th>
       </tr>

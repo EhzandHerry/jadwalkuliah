@@ -16,6 +16,7 @@
                     <th>Nama Ruangan</th>
                     <th>Gedung</th>
                     <th>Kapasitas</th>
+                    <th>Kapasitas Kelas</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -25,6 +26,7 @@
                         <td>{{ $ruang->nama_ruangan }}</td>
                         <td>{{ $ruang->nama_gedung }}</td>
                         <td>{{ $ruang->kapasitas }}</td>
+                        <td>{{ $ruang->kapasitas_kelas }}</td>
                         <td>
                             <a href="{{ route('admin.ruang_kelas.edit', $ruang->id) }}"
                                class="edit-ruang-btn">Edit</a>

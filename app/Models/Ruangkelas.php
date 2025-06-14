@@ -15,6 +15,7 @@ class RuangKelas extends Model
         'nama_ruangan',
         'nama_gedung',
         'kapasitas',
+        'kapasitas_kelas', 
     ];
 
     // Relasi dengan Kelas

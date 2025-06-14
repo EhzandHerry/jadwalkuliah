@@ -8,6 +8,9 @@
     <div class="available-container">
         <h1>Available Time Dashboard</h1>
 
+        <!-- Tombol Kembali -->
+        <a href="{{ route('admin.dosen.index') }}" class="btn btn-secondary mb-3">Kembali</a>
+
         <!-- Table displaying dosen and their NIDN -->
         <table class="available-table">
             <thead>

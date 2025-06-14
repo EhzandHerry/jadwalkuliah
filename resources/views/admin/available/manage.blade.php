@@ -8,6 +8,9 @@
     <div class="available-container">
         <h1>Manage Available Time for {{ $dosen->name }}</h1>
 
+        <!-- Tombol Kembali -->
+        <a href="{{ route('admin.dosen.index') }}" class="back-btn">Kembali</a>
+
         <!-- Table displaying the available time for the dosen -->
         <table class="available-table">
             <thead>

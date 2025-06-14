@@ -21,17 +21,25 @@ class AdminController extends Controller
  */
 public function indexMatKulDosen()
 {
-    $kelas     = Kelas::has('mataKuliah')
-                   ->with(['mataKuliah','dosen'])
-                   ->get();
+    $query = Kelas::has('mataKuliah')
+        ->with(['mataKuliah', 'dosen'])
+        ->orderBy('kelas', 'asc'); // Optional, supaya ada urutan
 
-    // ← add orderBy('name') here
+    if ($search = request('search')) {
+        $query->whereHas('mataKuliah', function($q) use ($search) {
+            $q->where('nama_matkul', 'like', "%{$search}%");
+        });
+    }
+
+    $kelas = $query->get();
+
     $dosenList = User::where('is_admin', false)
-                     ->orderBy('name', 'asc')
-                     ->get();
+        ->orderBy('name', 'asc')
+        ->get();
 
-    return view('admin.matakuliah_dosen.index', compact('kelas','dosenList'));
+    return view('admin.matakuliah_dosen.index', compact('kelas', 'dosenList'));
 }
+
 
 /**
  * Assign dosen ke kelas (from matakuliah_dosen/index.blade.php)
@@ -68,12 +76,24 @@ public function updateDosenKelas(Request $request, $kelasId)
     // === CRUD MATAKULIAH ===
     //
     public function indexMataKuliah()
-    {
-        $mataKuliahs = MataKuliah::with('kelas.dosen')->get();
-        $dosenList    = User::where('is_admin', false)->get();
+{
+    $query = MataKuliah::with('kelas.dosen')->orderBy('nama_matkul', 'asc');
 
-        return view('admin.mata_kuliah.index', compact('mataKuliahs','dosenList'));
+    if ($search = request('search')) {
+        $query->where('nama_matkul', 'like', "%{$search}%");
     }
+
+    if ($semesterFilter = request('semester_filter')) {
+        $query->where('semester', $semesterFilter);
+    }
+
+    $mataKuliahs = $query->get();
+    $dosenList = User::where('is_admin', false)->get();
+
+    return view('admin.mata_kuliah.index', compact('mataKuliahs', 'dosenList'));
+}
+
+
 
     public function createMataKuliah()
     {
@@ -174,20 +194,25 @@ public function updateDosenKelas(Request $request, $kelasId)
     }
 
     public function storeRuangKelas(Request $request)
-    {
-        $request->validate([
-            'nama_ruangan'=>'required|string|max:255',
-            'nama_gedung' =>'required|string|max:255',
-            'kapasitas'   =>'required|integer|min:1',
-        ]);
+{
+    $request->validate([
+        'nama_ruangan'     => 'required|string|max:255',
+        'nama_gedung'      => 'required|string|max:255',
+        'kapasitas'        => 'required|integer|min:1',
+        'kapasitas_kelas'  => 'required|integer|min:1',
+    ]);
 
-        RuangKelas::create($request->only(
-            'nama_ruangan','nama_gedung','kapasitas'
-        ));
+    RuangKelas::create($request->only(
+        'nama_ruangan',
+        'nama_gedung',
+        'kapasitas',
+        'kapasitas_kelas'
+    ));
 
-        return redirect()->route('admin.ruang_kelas.index')
-                         ->with('success','Ruang Kelas berhasil ditambahkan.');
-    }
+    return redirect()->route('admin.ruang_kelas.index')
+                     ->with('success','Ruang Kelas berhasil ditambahkan.');
+}
+
 
     public function editRuangKelas($id)
     {
@@ -201,11 +226,12 @@ public function updateDosenKelas(Request $request, $kelasId)
             'nama_ruangan'=>'required|string|max:255',
             'nama_gedung' =>'required|string|max:255',
             'kapasitas'   =>'required|integer|min:1',
+            'kapasitas_kelas'   =>'required|integer|min:1',
         ]);
 
         $ruang = RuangKelas::findOrFail($id);
         $ruang->update($request->only(
-            'nama_ruangan','nama_gedung','kapasitas'
+            'nama_ruangan','nama_gedung','kapasitas', 'kapasitas_kelas',
         ));
 
         return redirect()->route('admin.ruang_kelas.index')
@@ -222,11 +248,22 @@ public function updateDosenKelas(Request $request, $kelasId)
     //
     // === CRUD DOSEN ===
     //
-    public function listDosen()
-    {
-        $dosen = User::where('is_admin',false)->get();
-        return view('admin.listdosen.index', compact('dosen'));
-    }
+    public function listDosen(Request $request)
+{
+    $search = $request->input('search');
+
+    $dosen = User::where('is_admin', false)
+        // jika ada kata kunci, tambahkan filter
+        ->when($search, function($query, $search) {
+            return $query->where('name', 'like', "%{$search}%");
+        })
+        ->orderBy('name', 'asc')
+        ->get();
+
+    return view('admin.listdosen.index', compact('dosen','search'));
+}
+
+
 
     public function createDosen()
     {

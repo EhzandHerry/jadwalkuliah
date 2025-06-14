@@ -72,6 +72,23 @@
   font-size: 0.85rem;
 }
 
+.form-inline select.form-control {
+  padding: 8px 12px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  height: 38px;
+  line-height: normal;
+  transition: border-color 0.3s ease;
+  outline: none;
+}
+
+.form-inline select.form-control:focus {
+  border-color: #18b300;
+  box-shadow: 0 0 5px #18b300aa;
+}
+
+
 /* margin kanan kecil */
 .mr-2 {
   margin-right: 0.5rem;
@@ -113,29 +130,67 @@
   vertical-align: middle;
 }
 
-/* =========== RESPONSIVE =========== */
-@media (max-width: 768px) {
-  .matkul-table th,
-  .matkul-table td {
-    padding: 8px !important;
-    font-size: 0.85rem !important;
-  }
-
-  .add-matkul-btn,
-  .btn-danger,
-  .btn-warning {
-    width: 100%;
-    margin-bottom: 10px;
-    text-align: center;
-  }
+/* Container form search */
+.form-inline {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 8px; /* jarak antara input dan tombol */
 }
 
+/* Input search */
+.form-inline input.form-control {
+  flex-grow: 1;
+  max-width: 300px;
+  padding: 8px 12px; /* padding vertical & horizontal */
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  transition: border-color 0.3s ease;
+  outline: none;
+  height: 38px; /* tinggi seragam */
+  line-height: normal;
+}
+
+.form-inline input.form-control:focus {
+  border-color: #18b300;
+  box-shadow: 0 0 5px #18b300aa;
+}
+
+/* Tombol cari */
+.form-inline button.btn-secondary {
+  background-color: #95a5a6;
+  color: #fff;
+  padding: 8px 20px; /* padding vertikal & horizontal */
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  white-space: nowrap;
+  height: 38px; /* tinggi sama dengan input */
+  line-height: normal;
+}
+
+.form-inline button.btn-secondary:hover {
+  background-color: #7f8c8d;
+}
+
+/* Responsif untuk layar kecil */
 @media (max-width: 480px) {
-  .matkul-table {
+  .form-inline {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .form-inline input.form-control,
+  .form-inline button.btn-secondary {
+    max-width: 100%;
     width: 100%;
-    overflow-x: auto;
+    height: auto;
   }
 }
+
 
 /* =========== ACTION BUTTONS ALIGNMENT =========== */
 /* Bungkus tombol Edit/Delete di kolom Aksi dengan class .action-cell */

@@ -85,6 +85,10 @@ Route::post('/admin/jadwal/{kelas}/assign', [JadwalController::class, 'assignRua
 Route::get('admin/jadwal/{jadwal}/edit', [JadwalController::class, 'edit'])->name('admin.jadwal.edit');
 Route::put('admin/jadwal/{jadwal}', [JadwalController::class, 'update'])->name('admin.jadwal.update');
 Route::delete('admin/jadwal/{jadwal}', [JadwalController::class, 'destroy'])->name('admin.jadwal.destroy');
+Route::get('/admin/jadwal/export', [JadwalController::class, 'exportExcel'])->name('admin.jadwal.export');
+Route::get('admin/jadwal/export-matrix', [JadwalController::class,'exportMatrix'])
+     ->name('admin.jadwal.exportMatrix');
+
 
 
         // Kelas Routes

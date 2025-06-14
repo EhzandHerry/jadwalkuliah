@@ -135,6 +135,30 @@
   background-color: #c0392b;
 }
 
+/* Tombol Export Jadwal */
+.jadwal-index-container a.btn.btn-success {
+  background-color: #28a745; /* Hijau terang */
+  color: white;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  display: inline-block;
+  margin-right: 10px; /* Jarak antar tombol */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 6px rgb(40 167 69 / 0.4);
+  border: none;
+  cursor: pointer;
+}
+
+/* Hover effect tombol Export */
+.jadwal-index-container a.btn.btn-success:hover {
+  background-color: #218838; /* Hijau lebih gelap */
+  box-shadow: 0 6px 12px rgb(33 136 56 / 0.6);
+  text-decoration: none;
+  color: white;
+}
 
 /* Responsive untuk layar kecil */
 @media (max-width: 768px) {

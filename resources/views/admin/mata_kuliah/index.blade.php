@@ -13,6 +13,27 @@
     </a>
   </div>
 
+  <!-- Form Search + Filter -->
+<form method="GET" action="{{ route('admin.mata_kuliah.index') }}" class="form-inline mb-3">
+  <input
+    type="text"
+    name="search"
+    class="form-control mr-2"
+    placeholder="Cari nama mata kuliah..."
+    value="{{ request('search') }}"
+    style="max-width: 300px;"
+  >
+
+  <select name="semester_filter" class="form-control mr-2" style="max-width: 150px;">
+    <option value="">Semua</option>
+    <option value="Genap" {{ request('semester_filter') == 'Genap' ? 'selected' : '' }}>Genap</option>
+    <option value="Gasal" {{ request('semester_filter') == 'Gasal' ? 'selected' : '' }}>Gasal</option>
+  </select>
+
+  <button type="submit" class="btn btn-secondary">Cari</button>
+</form>
+
+
   <table class="table table-striped matkul-table">
     <thead class="thead-dark">
       <tr>
@@ -25,7 +46,7 @@
       </tr>
     </thead>
     <tbody>
-      @foreach($mataKuliahs as $matkul)
+      @forelse($mataKuliahs as $matkul)
         <tr>
           <td>{{ $matkul->kode_matkul }}</td>
           <td>{{ $matkul->nama_matkul }}</td>
@@ -34,13 +55,10 @@
           <td>{{ $matkul->jumlah_kelas }}</td>
 
           <td>
-            {{-- Update --}}
-            <a href="{{ route('admin.mata_kuliah.edit', $matkul->id) }}"
-               class="btn btn-warning btn-sm mr-2">
-              Update
+            <a href="{{ route('admin.mata_kuliah.edit', $matkul->id) }}" class="btn btn-warning btn-sm mr-2">
+              Edit
             </a>
 
-            {{-- Delete --}}
             <form action="{{ route('admin.mata_kuliah.destroy', $matkul->id) }}"
                   method="POST"
                   style="display:inline-block;"
@@ -53,7 +71,11 @@
             </form>
           </td>
         </tr>
-      @endforeach
+      @empty
+        <tr>
+          <td colspan="6" class="text-center">Data tidak ditemukan.</td>
+        </tr>
+      @endforelse
     </tbody>
   </table>
 </div>

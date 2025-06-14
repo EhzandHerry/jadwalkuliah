@@ -36,6 +36,25 @@
   background-color: #0f7a00;
 }
 
+/* styling khusus untuk form pencarian */
+.dosen-list-container .input-group .form-control {
+  padding: 8px 12px;
+  font-size: 0.95rem;
+  border: 1px solid #ccc;
+}
+
+.dosen-list-container .input-group .btn-secondary {
+  background-color: #3490dc;
+  border-color: #3490dc;
+  color: #fff;
+  transition: background-color 0.2s ease;
+}
+
+.dosen-list-container .input-group .btn-secondary:hover {
+  background-color: #2779bd;
+}
+
+
 /* Tabel daftar dosen */
 .dosen-table {
   width: 100%;
