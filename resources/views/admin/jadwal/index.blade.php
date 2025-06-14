@@ -41,7 +41,7 @@
         <th>Kode Mata Kuliah</th>
         <th>Nama Mata Kuliah</th>
         <th>Kelas</th>
-        <th>NIDN</th>
+        <th>SKS</th>
         <th>Nama Dosen</th>
         <th>Ruang Kelas</th>
         <th>Hari</th>
@@ -56,7 +56,7 @@
         <td>{{ optional($k->mataKuliah)->kode_matkul ?? '-' }}</td>
         <td>{{ optional($k->mataKuliah)->nama_matkul ?? '-' }}</td>
         <td>{{ $k->kelas }}</td>
-        <td>{{ optional($k->dosen)->unique_number ?? '-' }}</td>
+        <td>{{ optional($k->mataKuliah)->sks ?? '-' }}</td>
         <td>{{ optional($k->dosen)->name ?? '-' }}</td>
         <td>
           {{-- 1) Jika dosen belum dipilih --}}

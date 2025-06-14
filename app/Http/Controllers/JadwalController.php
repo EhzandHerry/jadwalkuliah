@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JadwalKuliah;
 use App\Models\Kelas;
 use App\Models\RuangKelas;
+use App\Models\MataKuliah;
 use Illuminate\Http\Request;
 use App\Exports\JadwalExport;
 use App\Exports\JadwalMatrixExport;
@@ -14,80 +15,84 @@ use Carbon\Carbon;
 class JadwalController extends Controller
 {
     public function index()
-    {
-        // 1) Ambil daftar kelas beserta relasi mataKuliah, dosen, dan (jika ada) jadwal yang sudah ter-join
-        $kelas = Kelas::with(['mataKuliah', 'dosen', 'ruangKelas'])
-            ->leftJoin('jadwal', function ($join) {
-                $join->on('kelas.kode_matkul', '=', 'jadwal.kode_mata_kuliah')
-                     ->on('kelas.kelas',        '=', 'jadwal.kelas');
-            })
-            ->select('kelas.*', 
-                     'jadwal.id        as jadwal_id',
-                     'jadwal.nama_ruangan',
-                     'jadwal.hari',
-                     'jadwal.jam')
-            ->get();
+{
+    // 1) Grab all kelas + mataKuliah + dosen + ruangKelas + (left‐join) jadwal
+    $kelas = Kelas::with(['mataKuliah', 'dosen', 'ruangKelas'])
+        ->leftJoin('jadwal', function ($join) {
+            $join->on('kelas.kode_matkul', '=', 'jadwal.kode_mata_kuliah')
+                 ->on('kelas.kelas',        '=', 'jadwal.kelas');
+        })
+        ->select(
+            'kelas.*',
+            'jadwal.id         as jadwal_id',
+            'jadwal.nama_ruangan',
+            'jadwal.hari',
+            'jadwal.jam'
+        )
+        ->get()
+        // 2) Remove any rows whose mataKuliah has been deleted
+        ->filter(function($k) {
+            return $k->mataKuliah !== null;
+        })
+        ->values();  // reindex collection
 
-        // 2) Ambil semua RuangKelas untuk dropdown di form
-        $ruangKelasList = RuangKelas::all();
+    // 3) All ruangKelas for the dropdown
+    $ruangKelasList = RuangKelas::all();
 
-        // 3) Siapkan availableTimes per dosen per hari (dari tabel availability dosen)
-        $availableTimes = [];
-        foreach ($kelas as $k) {
-            if ($k->dosen && $k->dosen->available) {
-                $uniq = $k->dosen->unique_number;
-                if (! isset($availableTimes[$uniq])) {
-                    $availableTimes[$uniq] = $k->dosen->available
-                        ->groupBy('hari')
-                        ->map(function ($times) {
-                            return $times->map(function ($item) {
-                                return [
-                                    'start' => substr($item->start_time, 0, 5),
-                                    'end'   => substr($item->end_time,   0, 5),
-                                ];
-                            })->values()->all();
-                        })
-                        ->toArray();
-                }
+    // 4) Build availableTimes per dosen per hari
+    $availableTimes = [];
+    foreach ($kelas as $k) {
+        if ($k->dosen && $k->dosen->available) {
+            $uniq = $k->dosen->unique_number;
+            if (!isset($availableTimes[$uniq])) {
+                $availableTimes[$uniq] = $k->dosen->available
+                    ->groupBy('hari')
+                    ->map(function ($times) {
+                        return $times->map(function ($item) {
+                            return [
+                                'start' => substr($item->start_time, 0, 5),
+                                'end'   => substr($item->end_time,   0, 5),
+                            ];
+                        })->values()->all();
+                    })
+                    ->toArray();
             }
         }
-
-        // 4) Ambil semua jadwal yang sudah terdaftar di database
-        //    Untuk setiap entry kita pecah menjadi hari, ruang, start, end, dan dosen
-        $existingJadwals = JadwalKuliah::all()->map(function($j) {
-            list($start, $end) = explode(' - ', $j->jam);
-            return [
-                'hari'   => $j->hari,
-                'ruang'  => $j->nama_ruangan,
-                'dosen'  => $j->unique_number,
-                'start'  => $start,
-                'end'    => $end,
-                'matkul' => $j->kode_mata_kuliah,
-            ];
-        })->toArray();
-
-        // 5) Kirim ke view
-        return view('admin.jadwal.index', compact(
-            'kelas',
-            'ruangKelasList',
-            'availableTimes',
-            'existingJadwals'
-        ));
     }
 
+    // 5) Gather all existing jadwal into a flat array for the JS conflict checks
+    $existingJadwals = JadwalKuliah::all()->map(function($j) {
+        list($start, $end) = explode(' - ', $j->jam);
+        return [
+            'hari'   => $j->hari,
+            'ruang'  => $j->nama_ruangan,
+            'dosen'  => $j->unique_number,
+            'start'  => $start,
+            'end'    => $end,
+            'matkul' => $j->kode_mata_kuliah,
+        ];
+    })->toArray();
 
+    // 6) Pass everything to the view
+    return view('admin.jadwal.index', compact(
+        'kelas',
+        'ruangKelasList',
+        'availableTimes',
+        'existingJadwals'
+    ));
+}
 public function assignRuang(Request $request, $kelasId)
 {
-    // — 1) Ambil entitas Kelas + MataKuliah + Dosen
+    // 1) Load Kelas + MataKuliah + Dosen
     $kelas = Kelas::with(['mataKuliah','dosen'])->findOrFail($kelasId);
 
-    // — 2) Pastikan dosen sudah di-assign
+    // 2) Pastikan dosen sudah di‐assign
     if (! $kelas->unique_number) {
         return redirect()->route('admin.jadwal.index')
-            ->with('error', "Dosen untuk “{$kelas->mataKuliah->nama_matkul}” (Kelas {$kelas->kelas}) belum dipilih.");
+                         ->with('error', "Dosen untuk “{$kelas->mataKuliah->nama_matkul}” (Kelas {$kelas->kelas}) belum dipilih.");
     }
 
-    // — 3) Validasi input
+    // 3) Validasi input
     $data = $request->validate([
         'nama_ruangan' => 'required|string|exists:ruang_kelas,nama_ruangan',
         'hari'         => 'required|string|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu',
@@ -96,80 +101,96 @@ public function assignRuang(Request $request, $kelasId)
         'jam.regex' => 'Format jam harus "HH:mm - HH:mm", misal "07:00 - 07:50".'
     ]);
 
-    // — 4) Daftar sesi (harus sesuai dropdown di view)
+    // 4) Daftar sesi master
     $sessions = [
       "07:00 - 07:50","07:50 - 08:40","08:50 - 09:40","09:40 - 10:30",
       "10:40 - 11:30","12:10 - 13:10","13:20 - 14:10","14:10 - 15:00",
       "15:30 - 16:20","16:20 - 17:10","17:10 - 18:00","18:30 - 19:20",
-      "19:20 - 20:10","20:10 - 21:00"
+      "19:20 - 20:10","20:10 - 21:00",
     ];
 
-    // — 5) Hitung sesi mulai & akhir berdasar SKS
+    // 5) Hitung start/end berdasarkan SKS
     $startIdx = array_search($data['jam'], $sessions);
     if ($startIdx === false) {
         return redirect()->route('admin.jadwal.index')
-            ->with('error', 'Sesi jam yang dipilih tidak valid.');
+                         ->with('error', 'Sesi jam yang dipilih tidak valid.');
     }
     $endIdx = min($startIdx + ($kelas->mataKuliah->sks - 1), count($sessions) - 1);
 
     list($sNew)      = explode(' - ', $sessions[$startIdx]);
     [,       $eNew] = explode(' - ', $sessions[$endIdx]);
-    $jamRange = "{$sNew} - {$eNew}";
+    $jamRange       = "{$sNew} - {$eNew}";
 
-    // — 6) Capacity‐check untuk matkul+dosen yang sama
+    // helper untuk overlap interval
+    $overlaps = function($oldRange) use($sNew, $eNew) {
+        list($sOld, $eOld) = explode(' - ', $oldRange);
+        return !($eOld <= $sNew || $eNew <= $sOld);
+    };
+
+    // 6) Capacity‐check untuk MATKUL+DOSEN yang sama di RUANG yang sama
     $ruang     = RuangKelas::where('nama_ruangan', $data['nama_ruangan'])->first();
-    $already   = JadwalKuliah::where([
-        ['hari',            $data['hari']],
-        ['nama_ruangan',    $data['nama_ruangan']],
-        ['kode_mata_kuliah',$kelas->kode_matkul],
-        ['unique_number',   $kelas->unique_number],
-        ['jam',             $jamRange],
-    ])->count();
-    if ($already >= $ruang->kapasitas_kelas) {
+    $usedCount = JadwalKuliah::where('hari', $data['hari'])
+        ->where('nama_ruangan', $data['nama_ruangan'])
+        ->where('kode_mata_kuliah', $kelas->kode_matkul)
+        ->where('unique_number',    $kelas->unique_number)
+        ->get()
+        ->filter(fn($row) => $overlaps($row->jam))
+        ->count();
+
+    if ($usedCount >= $ruang->kapasitas_kelas) {
         return redirect()->route('admin.jadwal.index')
-            ->with('error', "Kapasitas ruangan {$data['nama_ruangan']} untuk dosen/matkul ini sudah penuh ({$ruang->kapasitas_kelas}).");
+                         ->with('error', "Kapasitas ruangan “{$data['nama_ruangan']}” untuk matakuliah & dosen ini sudah penuh ({$ruang->kapasitas_kelas}).");
     }
 
-    // — 7) **Overlap check**: lihat SEMUA jadwal yang sudah ada
-    //    hari + ruang/atau dosen sama, kecuali entry persis ini
-    $exists = JadwalKuliah::where('hari', $data['hari'])
-        ->where(function($q) use ($kelas, $data) {
-            // ruang sama **atau** dosen sama
-            $q->where('nama_ruangan', $data['nama_ruangan'])
-              ->orWhere('unique_number', $kelas->unique_number);
-        })
-        // kecualikan jika entry itu sendiri (tepat sama matkul/dosen/ruang/jam)
-        ->whereNot(function($q) use ($kelas, $jamRange) {
-            $q->where('kode_mata_kuliah', $kelas->kode_matkul)
-              ->where('unique_number',    $kelas->unique_number)
-              ->where('nama_ruangan',     request('nama_ruangan'))
-              ->where('jam',              $jamRange);
-        })
-        // dan **overlap** waktunya
-        ->get()  // ambil dulu semua, karena kita harus parse jam
-        ->filter(function($row) use ($sNew, $eNew) {
-            list($sOld, $eOld) = explode(' - ', $row->jam);
-            return ! ( $eOld <= $sNew || $eNew <= $sOld );
-        })
-        ->isNotEmpty();
+    // 7) Overlap‐check Umum
+    $allToday     = JadwalKuliah::where('hari', $data['hari'])->get();
+    $semesterBaru = $kelas->mataKuliah->semester;
+    $kelasBaru    = $kelas->kelas;
 
-    if ($exists) {
-        return redirect()->route('admin.jadwal.index')
-            ->with('error', 'Jadwal bentrok: interval waktunya tumpang tindih dengan jadwal lain.');
+    foreach ($allToday as $old) {
+        if (! $overlaps($old->jam)) {
+            continue;
+        }
+
+        // 7a) Dosen bentrok (hanya jika matkul beda)
+        if ($old->unique_number === $kelas->unique_number
+         && $old->kode_mata_kuliah !== $kelas->kode_matkul
+        ) {
+            return redirect()->route('admin.jadwal.index')
+                             ->with('error', 'Jadwal bentrok: dosen sudah memiliki jadwal di slot ini.');
+        }
+
+        // 7b) Ruang bentrok (kecuali jika matkul & dosen sama)
+        if ($old->nama_ruangan === $data['nama_ruangan']
+         && !($old->kode_mata_kuliah === $kelas->kode_matkul
+           && $old->unique_number    === $kelas->unique_number)
+        ) {
+            return redirect()->route('admin.jadwal.index')
+                             ->with('error', 'Jadwal bentrok: ruang sudah dipakai pada slot ini.');
+        }
+
+        // 7c) Mahasiswa bentrok: kelas+semester sama
+        $mkLamaSemester = \App\Models\MataKuliah::where('kode_matkul', $old->kode_mata_kuliah)
+                                ->value('semester');
+        $kelasLama = $old->kelas;
+        if ($mkLamaSemester === $semesterBaru && $kelasLama === $kelasBaru) {
+            return redirect()->route('admin.jadwal.index')
+                             ->with('error', "Jadwal bentrok: mahasiswa Kelas {$kelasBaru} Semester {$semesterBaru} sudah memiliki mata kuliah lain pada slot ini.");
+        }
     }
 
-    // — 8) Simpan
+    // 8) Simpan jadwal
     JadwalKuliah::create([
-        'hari'             => $data['hari'],
-        'kode_mata_kuliah'=> $kelas->kode_matkul,
-        'kelas'           => $kelas->kelas,
-        'nama_ruangan'    => $data['nama_ruangan'],
-        'unique_number'   => $kelas->unique_number,
-        'jam'             => $jamRange,
+        'hari'               => $data['hari'],
+        'kode_mata_kuliah'   => $kelas->kode_matkul,
+        'kelas'              => $kelas->kelas,
+        'nama_ruangan'       => $data['nama_ruangan'],
+        'unique_number'      => $kelas->unique_number,
+        'jam'                => $jamRange,
     ]);
 
     return redirect()->route('admin.jadwal.index')
-        ->with('success', "Jadwal berhasil ditambahkan ({$jamRange}).");
+                     ->with('success', "Jadwal berhasil ditambahkan ({$jamRange}).");
 }
 
     // Form edit jadwal
