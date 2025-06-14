@@ -78,10 +78,10 @@ class JadwalController extends Controller
 
 public function assignRuang(Request $request, $kelasId)
 {
-    // — 1) Ambil Kelas + MataKuliah + Dosen
+    // — 1) Ambil entitas Kelas + MataKuliah + Dosen
     $kelas = Kelas::with(['mataKuliah','dosen'])->findOrFail($kelasId);
 
-    // — 2) Pastikan dosen sudah di‐assign
+    // — 2) Pastikan dosen sudah di-assign
     if (! $kelas->unique_number) {
         return redirect()->route('admin.jadwal.index')
             ->with('error', "Dosen untuk “{$kelas->mataKuliah->nama_matkul}” (Kelas {$kelas->kelas}) belum dipilih.");
@@ -90,86 +90,87 @@ public function assignRuang(Request $request, $kelasId)
     // — 3) Validasi input
     $data = $request->validate([
         'nama_ruangan' => 'required|string|exists:ruang_kelas,nama_ruangan',
-        'hari'         => 'required|string|in:Senin,Selasa,Rabu,Kamis,Jumat, Sabtu',
+        'hari'         => 'required|string|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu',
         'jam'          => ['required','regex:/^\d{2}:\d{2}\s-\s\d{2}:\d{2}$/'],
     ],[
         'jam.regex' => 'Format jam harus "HH:mm - HH:mm", misal "07:00 - 07:50".'
     ]);
 
-    // — 4) Daftar sesi dropdown
+    // — 4) Daftar sesi (harus sesuai dropdown di view)
     $sessions = [
-      "07:00 - 07:50","07:50 - 08:40",
-      "08:50 - 09:40","09:40 - 10:30",
-      "10:40 - 11:30","12:10 - 13:10",
-      "13:20 - 14:10","14:10 - 15:00",
-      "15:30 - 16:20","16:20 - 17:10",
-      "17:10 - 18:00","18:30 - 19:20",
+      "07:00 - 07:50","07:50 - 08:40","08:50 - 09:40","09:40 - 10:30",
+      "10:40 - 11:30","12:10 - 13:10","13:20 - 14:10","14:10 - 15:00",
+      "15:30 - 16:20","16:20 - 17:10","17:10 - 18:00","18:30 - 19:20",
       "19:20 - 20:10","20:10 - 21:00"
     ];
 
-    // — 5) Hitung index mulai/selesai berdasarkan SKS
+    // — 5) Hitung sesi mulai & akhir berdasar SKS
     $startIdx = array_search($data['jam'], $sessions);
-    $endIdx   = min($startIdx + ($kelas->mataKuliah->sks - 1), count($sessions) - 1);
-
-    [$mulaiStr, /*_*/]   = explode(' - ', $sessions[$startIdx]);
-    [/*_*/, $selesaiStr] = explode(' - ', $sessions[$endIdx]);
-    $jamRange = "{$mulaiStr} - {$selesaiStr}";
-    [$sNew, $eNew] = [$mulaiStr, $selesaiStr];
-
-    // — 6) Periksa capacity‐kelas untuk ruang ini
-    $ruang = RuangKelas::where('nama_ruangan', $data['nama_ruangan'])->first();
-    // hitung jadwal yang sama ruang+hari+jam + matkul+dosen sama
-    $usedCount = JadwalKuliah::where('nama_ruangan', $data['nama_ruangan'])
-        ->where('hari', $data['hari'])
-        ->where('jam', $jamRange)
-        ->where('kode_mata_kuliah', $kelas->kode_matkul)
-        ->where('unique_number', $kelas->unique_number)
-        ->count();
-
-    if ($usedCount >= $ruang->kapasitas_kelas) {
+    if ($startIdx === false) {
         return redirect()->route('admin.jadwal.index')
-            ->with('error', "Kapasi tas kelas “{$data['nama_ruangan']}” untuk matakuliah/dosen ini sudah penuh ({$ruang->kapasitas_kelas} kelas).");
+            ->with('error', 'Sesi jam yang dipilih tidak valid.');
+    }
+    $endIdx = min($startIdx + ($kelas->mataKuliah->sks - 1), count($sessions) - 1);
+
+    list($sNew)      = explode(' - ', $sessions[$startIdx]);
+    [,       $eNew] = explode(' - ', $sessions[$endIdx]);
+    $jamRange = "{$sNew} - {$eNew}";
+
+    // — 6) Capacity‐check untuk matkul+dosen yang sama
+    $ruang     = RuangKelas::where('nama_ruangan', $data['nama_ruangan'])->first();
+    $already   = JadwalKuliah::where([
+        ['hari',            $data['hari']],
+        ['nama_ruangan',    $data['nama_ruangan']],
+        ['kode_mata_kuliah',$kelas->kode_matkul],
+        ['unique_number',   $kelas->unique_number],
+        ['jam',             $jamRange],
+    ])->count();
+    if ($already >= $ruang->kapasitas_kelas) {
+        return redirect()->route('admin.jadwal.index')
+            ->with('error', "Kapasitas ruangan {$data['nama_ruangan']} untuk dosen/matkul ini sudah penuh ({$ruang->kapasitas_kelas}).");
     }
 
-    // — 7) Cek bentrok umum (jika matkul/dosen berbeda, tetap blok)
-    $bentrok = JadwalKuliah::where('hari', $data['hari'])
+    // — 7) **Overlap check**: lihat SEMUA jadwal yang sudah ada
+    //    hari + ruang/atau dosen sama, kecuali entry persis ini
+    $exists = JadwalKuliah::where('hari', $data['hari'])
         ->where(function($q) use ($kelas, $data) {
-            $q->where('unique_number', $kelas->unique_number)
-              ->orWhere('nama_ruangan', $data['nama_ruangan']);
+            // ruang sama **atau** dosen sama
+            $q->where('nama_ruangan', $data['nama_ruangan'])
+              ->orWhere('unique_number', $kelas->unique_number);
         })
-        ->where(function($q) use ($kelas) {
-            $q->where('kode_mata_kuliah','!=',$kelas->kode_matkul)
-              ->orWhere('unique_number','!=',$kelas->unique_number);
+        // kecualikan jika entry itu sendiri (tepat sama matkul/dosen/ruang/jam)
+        ->whereNot(function($q) use ($kelas, $jamRange) {
+            $q->where('kode_mata_kuliah', $kelas->kode_matkul)
+              ->where('unique_number',    $kelas->unique_number)
+              ->where('nama_ruangan',     request('nama_ruangan'))
+              ->where('jam',              $jamRange);
         })
-        ->where(function($q) use ($jamRange, $sNew, $eNew) {
-            $q->where('jam', $jamRange)
-              ->orWhereRaw(
-                  "SUBSTR(jam,1,5) < ? AND SUBSTR(jam,8,5) > ?",
-                  [$eNew, $sNew]
-              );
+        // dan **overlap** waktunya
+        ->get()  // ambil dulu semua, karena kita harus parse jam
+        ->filter(function($row) use ($sNew, $eNew) {
+            list($sOld, $eOld) = explode(' - ', $row->jam);
+            return ! ( $eOld <= $sNew || $eNew <= $sOld );
         })
-        ->exists();
+        ->isNotEmpty();
 
-    if ($bentrok) {
+    if ($exists) {
         return redirect()->route('admin.jadwal.index')
-            ->with('error', 'Jadwal bentrok: dosen atau ruang kelas sudah terisi pada slot tersebut.');
+            ->with('error', 'Jadwal bentrok: interval waktunya tumpang tindih dengan jadwal lain.');
     }
 
     // — 8) Simpan
     JadwalKuliah::create([
-        'hari'               => $data['hari'],
-        'kode_mata_kuliah'   => $kelas->kode_matkul,
-        'kelas'              => $kelas->kelas,
-        'nama_ruangan'       => $data['nama_ruangan'],
-        'unique_number'      => $kelas->unique_number,
-        'jam'                => $jamRange,
+        'hari'             => $data['hari'],
+        'kode_mata_kuliah'=> $kelas->kode_matkul,
+        'kelas'           => $kelas->kelas,
+        'nama_ruangan'    => $data['nama_ruangan'],
+        'unique_number'   => $kelas->unique_number,
+        'jam'             => $jamRange,
     ]);
 
     return redirect()->route('admin.jadwal.index')
         ->with('success', "Jadwal berhasil ditambahkan ({$jamRange}).");
 }
-
-
 
     // Form edit jadwal
     public function edit($jadwalId)

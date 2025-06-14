@@ -26,8 +26,12 @@
 
   <select name="semester_filter" class="form-control mr-2" style="max-width: 150px;">
     <option value="">Semua</option>
-    <option value="Genap" {{ request('semester_filter') == 'Genap' ? 'selected' : '' }}>Genap</option>
-    <option value="Gasal" {{ request('semester_filter') == 'Gasal' ? 'selected' : '' }}>Gasal</option>
+    <option value="Genap" {{ request('semester_filter') == 'Genap' ? 'selected' : '' }}>
+      Genap
+    </option>
+    <option value="Gasal" {{ request('semester_filter') == 'Gasal' ? 'selected' : '' }}>
+      Gasal
+    </option>
   </select>
 
   <button type="submit" class="btn btn-secondary">Cari</button>

@@ -43,12 +43,23 @@
     </div>
 
     <div class="form-group">
-      <label for="semester">Semester</label>
-      <select name="semester" id="semester" class="form-control" required>
-        <option value="Genap" {{ $matkul->semester=='Genap' ? 'selected':'' }}>Genap</option>
-        <option value="Gasal" {{ $matkul->semester=='Gasal' ? 'selected':'' }}>Gasal</option>
-      </select>
-    </div>
+  <label for="semester">Semester</label>
+  <select id="semester"
+          name="semester"
+          class="form-control"
+          required>
+    <option value="" disabled {{ old('semester') ? '' : 'selected' }}>
+      Pilih Semester
+    </option>
+    @for($i = 1; $i <= 8; $i++)
+      <option value="{{ $i }}"
+        {{ old('semester') == (string)$i ? 'selected' : '' }}>
+        Semester {{ $i }}
+      </option>
+    @endfor
+  </select>
+</div>
+
 
     <div class="form-group">
   <label for="jumlah_kelas">Jumlah Kelas</label>

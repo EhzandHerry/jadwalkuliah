@@ -77,21 +77,31 @@ public function updateDosenKelas(Request $request, $kelasId)
     //
     public function indexMataKuliah()
 {
-    $query = MataKuliah::with('kelas.dosen')->orderBy('nama_matkul', 'asc');
+    $query = MataKuliah::with('kelas.dosen')
+                       ->orderBy('nama_matkul', 'asc');
 
+    // filter nama mata kuliah
     if ($search = request('search')) {
         $query->where('nama_matkul', 'like', "%{$search}%");
     }
 
+    // filter semester genap/gasal
     if ($semesterFilter = request('semester_filter')) {
-        $query->where('semester', $semesterFilter);
+        if ($semesterFilter === 'Genap') {
+            // semester genap: 2,4,6,8
+            $query->whereIn('semester', [2,4,6,8]);
+        } elseif ($semesterFilter === 'Gasal') {
+            // semester ganjil: 1,3,5,7
+            $query->whereIn('semester', [1,3,5,7]);
+        }
     }
 
     $mataKuliahs = $query->get();
-    $dosenList = User::where('is_admin', false)->get();
+    $dosenList   = User::where('is_admin', false)->get();
 
     return view('admin.mata_kuliah.index', compact('mataKuliahs', 'dosenList'));
 }
+
 
 
 

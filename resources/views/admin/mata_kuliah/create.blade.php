@@ -71,21 +71,23 @@
     </div>
 
     <div class="form-group">
-      <label for="semester">Semester</label>
-      <select id="semester"
-              name="semester"
-              required>
-        <option value="" disabled {{ old('semester') ? '' : 'selected' }}>
-          Pilih Semester
-        </option>
-        <option value="Genap" {{ old('semester')=='Genap' ? 'selected':'' }}>
-          Genap
-        </option>
-        <option value="Gasal" {{ old('semester')=='Gasal' ? 'selected':'' }}>
-          Gasal
-        </option>
-      </select>
-    </div>
+  <label for="semester">Semester</label>
+  <select id="semester"
+          name="semester"
+          class="form-control"
+          required>
+    <option value="" disabled {{ old('semester') ? '' : 'selected' }}>
+      Pilih Semester
+    </option>
+    @for($i = 1; $i <= 8; $i++)
+      <option value="{{ $i }}"
+        {{ old('semester') == (string)$i ? 'selected' : '' }}>
+        Semester {{ $i }}
+      </option>
+    @endfor
+  </select>
+</div>
+
 
     <button type="submit" class="submit-btn">
       Simpan
