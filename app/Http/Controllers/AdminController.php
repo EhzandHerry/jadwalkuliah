@@ -269,16 +269,62 @@ public function updateDosenKelas(Request $request, $kelasId)
 {
     $search = $request->input('search');
 
+    // 1) Ambil semua dosen non-admin beserta relasi available
     $dosen = User::where('is_admin', false)
-        // jika ada kata kunci, tambahkan filter
-        ->when($search, function($query, $search) {
-            return $query->where('name', 'like', "%{$search}%");
-        })
+        ->when($search, fn($q) =>
+            $q->where('name', 'like', "%{$search}%")
+        )
         ->orderBy('name', 'asc')
+        ->with('available')      // eager-load relasi availability
         ->get();
 
-    return view('admin.listdosen.index', compact('dosen','search'));
+    // 2) Susun ringkasan availability per dosen
+    //    kita pakai urutan hari untuk mengetahui rentang berurutan
+    $dayOrder = [
+      'Senin'   => 1, 'Selasa'  => 2,
+      'Rabu'    => 3, 'Kamis'   => 4,
+      'Jumat'   => 5, 'Sabtu'   => 6,
+      'Minggu'  => 7,
+    ];
+
+    $availabilitySummaries = [];
+    foreach ($dosen as $u) {
+        // ambil semua hari yang ada availability, unique dan urutkan
+        $days = $u->available
+                  ->pluck('hari')
+                  ->unique()
+                  ->sortBy(fn($h) => $dayOrder[$h])
+                  ->values()
+                  ->all();
+
+        if (empty($days)) {
+            $availabilitySummaries[$u->id] = '-';
+            continue;
+        }
+
+        // kompres hari berurutan ke rentang
+        $ranges = [];
+        $start = $prev = array_shift($days);
+        foreach ($days as $d) {
+            if ($dayOrder[$d] === $dayOrder[$prev] + 1) {
+                // masih berurutan
+                $prev = $d;
+            } else {
+                // rentang selesai
+                $ranges[] = ($start === $prev) ? $start : "$start – $prev";
+                $start = $prev = $d;
+            }
+        }
+        $ranges[] = ($start === $prev) ? $start : "$start – $prev";
+
+        $availabilitySummaries[$u->id] = implode(', ', $ranges);
+    }
+
+    return view('admin.listdosen.index', compact(
+      'dosen', 'search', 'availabilitySummaries'
+    ));
 }
+
 
 
 
