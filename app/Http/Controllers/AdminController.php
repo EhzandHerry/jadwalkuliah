@@ -32,12 +32,12 @@ public function indexMatKulDosen()
 
     // Ambil semua, lalu sort di-memory:
     $kelas = $query->get()->sort(function($a, $b) {
-        // 1) Urut berdasar nama matakuliah
-        $cmp = strcmp($a->mataKuliah->nama_matkul, $b->mataKuliah->nama_matkul);
+        // 1) Urut berdasar kode_matakuliah (alfabet)
+        $cmp = strcmp($a->mataKuliah->kode_matkul, $b->mataKuliah->kode_matkul);
         if ($cmp !== 0) {
             return $cmp;
         }
-        // 2) Kalau sama, urut berdasar kelas (A, B, C, dst)
+        // 2) Kalau sama kode, urut berdasar kelas (A, B, C, dst)
         return strcmp($a->kelas, $b->kelas);
     });
 
@@ -47,6 +47,7 @@ public function indexMatKulDosen()
 
     return view('admin.matakuliah_dosen.index', compact('kelas', 'dosenList'));
 }
+
 
 /**
  * Assign dosen ke kelas (from matakuliah_dosen/index.blade.php)

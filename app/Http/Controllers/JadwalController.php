@@ -29,6 +29,8 @@ class JadwalController extends Controller
             'jadwal.hari',
             'jadwal.jam'
         )
+        // **Tambah orderBy di sini supaya diurutkan berdasarkan kode_matakuliah**
+        ->orderBy('kelas.kode_matkul', 'asc')
         ->get()
         // 2) Remove any rows whose mataKuliah has been deleted
         ->filter(function($k) {
@@ -44,7 +46,7 @@ class JadwalController extends Controller
     foreach ($kelas as $k) {
         if ($k->dosen && $k->dosen->available) {
             $uniq = $k->dosen->unique_number;
-            if (!isset($availableTimes[$uniq])) {
+            if (! isset($availableTimes[$uniq])) {
                 $availableTimes[$uniq] = $k->dosen->available
                     ->groupBy('hari')
                     ->map(function ($times) {
@@ -81,6 +83,7 @@ class JadwalController extends Controller
         'existingJadwals'
     ));
 }
+
 public function assignRuang(Request $request, $kelasId)
 {
     // 1) Load Kelas + MataKuliah + Dosen
