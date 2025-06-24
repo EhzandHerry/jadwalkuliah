@@ -9,22 +9,25 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
 {
     protected array $rooms;
     protected array $days;
-    protected array $order = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+    protected array $order = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
 
     /** slot per sesi */
     protected array $sessionRanges = [
-        1 => ['07:00-07:50','07:50-08:40'],
-        2 => ['08:50-09:40','09:40-10:30'],
+        1 => ['07:00-07:50', '07:50-08:40'],
+        2 => ['08:50-09:40', '09:40-10:30'],
         3 => ['10:40-11:30'],
         4 => ['12:10-13:10'],
-        5 => ['13:20-14:10','14:10-15:00'],
-        6 => ['15:30-16:20','16:20-17:10','17:10-18:00'],
-        7 => ['18:30-19:20','19:20-20:10','20:10-21:00'],
+        5 => ['13:20-14:10', '14:10-15:00'],
+        6 => ['15:30-16:20', '16:20-17:10', '17:10-18:00'],
+        7 => ['18:30-19:20', '19:20-20:10', '20:10-21:00'],
     ];
 
     /** jeda antar sesi */
@@ -45,10 +48,10 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
                                  ->values()
                                  ->toArray();
 
-        // daftar hari
+        // daftar hari, urut sesuai $this->order
         $this->days = JadwalKuliah::select('hari')
                         ->distinct()
-                        ->orderByRaw("FIELD(hari,'".implode("','",$this->order)."')")
+                        ->orderByRaw("FIELD(hari,'" . implode("','", $this->order) . "')")
                         ->pluck('hari')
                         ->toArray();
     }
@@ -56,18 +59,17 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
     public function collection()
     {
         $rows = [];
+        $totalCols = 2 + count($this->rooms);
 
-        // row kosong untuk judul nanti
-        $rows[] = array_fill(0, 2 + count($this->rooms), '');
+        // baris 1 kosong (untuk judul nanti)
+        $rows[] = array_fill(0, $totalCols, '');
 
         foreach ($this->days as $hari) {
-            // 1) Baris nama hari
-            $rows[] = array_merge(
-                [$hari],
-                array_fill(1, 1 + count($this->rooms), '')
-            );
-            // 2) Header kolom
-            $rows[] = array_merge(['SESI','JAM'], $this->rooms);
+            // 1) Baris nama hari di kolom A, lalu blank sampai akhir
+            $rows[] = array_pad([$hari], $totalCols, '');
+
+            // 2) Header kolom: SESI | JAM | [ruangan...]
+            $rows[] = array_merge(['SESI', 'JAM'], $this->rooms);
 
             // 3) Data sesi + break
             foreach ($this->sessionRanges as $sesi => $slots) {
@@ -76,44 +78,40 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
                     $row = ["Sesi {$sesi}", $jam];
 
                     foreach ($this->rooms as $ruang) {
-                        // ambil semua jadwal di slot ini untuk ruangan tsb
-                        $collection = JadwalKuliah::with('dosen')
+                        $jadwals = JadwalKuliah::with('dosen', 'mataKuliah')
                             ->where('hari', $hari)
                             ->where('nama_ruangan', $ruang)
                             ->whereRaw("SUBSTR(jam,1,5) <= ?", [$end])
                             ->whereRaw("SUBSTR(jam,-5) >= ?", [$start])
                             ->get();
 
-                        if ($collection->isEmpty()) {
+                        if ($jadwals->isEmpty()) {
                             $row[] = '';
                         } else {
-                            // grup per matkul+unique_number (dosen sama)
-                            $grouped = $collection->groupBy(function($j) {
-                                return $j->kode_mata_kuliah.'|'.$j->unique_number;
-                            });
+                            $cells = [];
+                            foreach ($jadwals->groupBy(fn($j) => $j->kode_mata_kuliah.'|'.$j->unique_number) as $items) {
+                                $first   = $items->first();
+                                $kode    = $first->kode_mata_kuliah;
+                                $klas    = $items->pluck('kelas')->unique()->sort()->implode(',');
+                                $namaMk  = $first->mataKuliah->nama_matkul;
+                                $dosen   = optional($first->dosen)->nama
+                                           ?? optional($first->dosen)->name
+                                           ?? '–';
 
-                            $texts = [];
-                            foreach ($grouped as $items) {
-                                $kode  = $items->first()->kode_mata_kuliah;
-                                $klases = $items->pluck('kelas')->unique()->sort()->implode(',');
-                                $dosen = $items->first()->dosen
-                                          ? ($items->first()->dosen->nama ?? $items->first()->dosen->name)
-                                          : '–';
-                                $texts[] = "{$kode}({$klases}) Dosen: {$dosen}";
+                                $cells[] = "{$kode}({$klas})\n{$namaMk}\nDosen: {$dosen}";
                             }
-
-                            $row[] = implode("\n", $texts);
+                            $row[] = implode("\n\n", $cells);
                         }
                     }
 
                     $rows[] = $row;
                 }
 
-                // sisipkan baris break jika perlu
+                // 4) Jika ada jeda, sisipkan baris break
                 if (isset($this->breakSlots[$sesi])) {
                     $rows[] = array_merge(
-                        [''],
-                        [$this->breakSlots[$sesi]],
+                        [''], 
+                        [$this->breakSlots[$sesi]], 
                         array_fill(0, count($this->rooms), '')
                     );
                 }
@@ -126,69 +124,98 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $e) {
-                $sheet   = $e->sheet->getDelegate();
-                $colCnt  = 2 + count($this->rooms);
-                $lastCol = Coordinate::stringFromColumnIndex($colCnt);
+            AfterSheet::class => function(AfterSheet $event) {
+                $sheet    = $event->sheet->getDelegate();
+                $lastCol  = Coordinate::stringFromColumnIndex(2 + count($this->rooms));
+                $totalRow = $sheet->getHighestRow();
 
-                // -- Judul di baris 1 --
+                // — Judul Utama
                 $sheet->setCellValue('A1', 'Jadwal Kuliah Prodi Teknologi Informasi');
                 $sheet->mergeCells("A1:{$lastCol}1");
                 $sheet->getStyle('A1')->getFont()->setBold(true);
-                $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+                $sheet->getStyle('A1')
+                      ->getAlignment()
+                      ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-                // hitung tinggi setiap blok hari
+                // — Wrap text di seluruh area data
+                $sheet->getStyle("A3:{$lastCol}{$totalRow}")
+                      ->getAlignment()
+                      ->setWrapText(true);
+
+                // — Center semua jam (kolom B)
+                $sheet->getStyle("B4:B{$totalRow}")
+                      ->getAlignment()
+                      ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+                      ->setVertical(Alignment::VERTICAL_CENTER);
+
+                // hitung tinggi tiap blok hari
                 $slotCnt   = array_sum(array_map('count', $this->sessionRanges));
                 $breakCnt  = count($this->breakSlots);
                 $blockSize = 1 + 1 + $slotCnt + $breakCnt;
 
-                // styling untuk tiap hari
+                // — Styling masing-masing hari
                 $r = 2;
                 foreach ($this->days as $hari) {
-                    // a) merge A..Last di baris nama hari
+                    // A) merge + center baris nama hari
                     $sheet->mergeCells("A{$r}:{$lastCol}{$r}");
+                    $sheet->getStyle("A{$r}")->getFont()->setBold(true);
                     $sheet->getStyle("A{$r}")
-                          ->getFont()->setBold(true);
-                    $sheet->getStyle("A{$r}")
-                          ->getAlignment()->setHorizontal('center');
-
-                    // b) styling header kolom
-                    $h = $r + 1;
-                    $sheet->getStyle("A{$h}:{$lastCol}{$h}")
-                          ->getFont()->setBold(true);
-                    $sheet->getStyle("A{$h}:{$lastCol}{$h}")
                           ->getAlignment()
-                          ->setHorizontal('center')
-                          ->setVertical('center');
+                          ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-                    // c) merge vertikal kolom "Sesi" hanya pada baris slot
-                    $m = $r + 2;
+                    // B) styling header kolom
+                    $hdr = $r + 1;
+                    $sheet->getStyle("A{$hdr}:{$lastCol}{$hdr}")
+                          ->getFont()->setBold(true);
+                    $sheet->getStyle("A{$hdr}:{$lastCol}{$hdr}")
+                          ->getAlignment()
+                          ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+                          ->setVertical(Alignment::VERTICAL_CENTER);
+
+                    // C) merge vertikal “Sesi”
+                    $pos = $r + 2;
                     foreach ($this->sessionRanges as $s => $slots) {
                         $len = count($slots);
-                        $sheet->mergeCells("A{$m}:A".($m+$len-1));
-                        $sheet->getStyle("A{$m}:A".($m+$len-1))
+                        $sheet->mergeCells("A{$pos}:A".($pos + $len - 1));
+                        $sheet->getStyle("A{$pos}:A".($pos + $len - 1))
                               ->getAlignment()
-                              ->setHorizontal('center')
-                              ->setVertical('center');
-                        $m += $len + 1; // lompat slot + break
+                              ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+                              ->setVertical(Alignment::VERTICAL_CENTER);
+                        $pos += $len + 1;
                     }
 
-                    // d) styling baris break
-                    $b = $r + 2;
+                    // D) styling baris break
+                    $pos = $r + 2;
                     foreach ($this->sessionRanges as $s => $slots) {
-                        $b += count($slots);
-                        $sheet->mergeCells("B{$b}:{$lastCol}{$b}");
-                        $sheet->getStyle("B{$b}")
-                              ->getFont()->setItalic(true);
-                        $sheet->getStyle("B{$b}")
-                              ->getAlignment()->setHorizontal('center');
-                        $b++;
+                        $pos += count($slots);
+                        $sheet->mergeCells("B{$pos}:{$lastCol}{$pos}");
+                        $sheet->getStyle("B{$pos}")->getFont()->setItalic(true);
+                        $sheet->getStyle("B{$pos}")
+                              ->getAlignment()
+                              ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                        $pos++;
                     }
 
-                    // e) pindah ke blok hari berikutnya
+                    // Set same color for each day
+                    $sheet->getStyle("A{$r}:{$lastCol}{$r}")->getFill()->setFillType(Fill::FILL_SOLID);
+                    $sheet->getStyle("A{$r}:{$lastCol}{$r}")->getFill()->getStartColor()->setARGB('D3D3D3');
+
+                    // Apply borders to each cell with data
+                    $this->applyBorders($sheet, $r, $totalRow, $lastCol);
+
                     $r += $blockSize;
                 }
             },
         ];
+    }
+
+    private function applyBorders($sheet, $startRow, $totalRow, $lastCol)
+    {
+        // Apply borders to all cells with data
+        for ($row = $startRow; $row <= $totalRow; $row++) {
+            for ($col = 1; $col <= Coordinate::columnIndexFromString($lastCol); $col++) { // Fix: Ensure valid column range
+                $sheet->getStyleByColumnAndRow($col, $row)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+            }
+        }
     }
 }

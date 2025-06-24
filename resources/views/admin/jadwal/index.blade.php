@@ -15,7 +15,7 @@
     Export Matrix Jadwal ke Excel
   </a>
 
-  {{-- Tampilkan error validasi jam atau bentrok --}}
+  {{-- Validasi error --}}
   @if ($errors->any())
     <div class="alert alert-danger">
       <ul>
@@ -26,7 +26,7 @@
     </div>
   @endif
 
-  {{-- Tampilkan session error / success --}}
+  {{-- Session message --}}
   @if(session('error'))
     <div class="alert alert-danger">{{ session('error') }}</div>
   @endif
@@ -50,7 +50,6 @@
       </tr>
     </thead>
     <tbody>
-      {{-- Loop setiap baris kelas --}}
       @foreach($kelas as $k)
       <tr>
         <td>{{ optional($k->mataKuliah)->kode_matkul ?? '-' }}</td>
@@ -59,20 +58,20 @@
         <td>{{ optional($k->mataKuliah)->sks ?? '-' }}</td>
         <td>{{ optional($k->dosen)->name ?? '-' }}</td>
         <td>
-          {{-- 1) Jika dosen belum dipilih --}}
+          {{-- Jika dosen belum dipilih --}}
           @if(! $k->unique_number)
             <span class="text-danger">
-              Silakan pilih dosen terlebih dahulu di halaman Matakuliah & Dosen!
+              Silakan pilih dosen di halaman Matakuliah & Dosen!
             </span>
 
-          {{-- 2) Jika sudah ada jadwal --}}
+          {{-- Jika sudah ada jadwal --}}
           @elseif($k->nama_ruangan)
             {{ $k->nama_ruangan }}
 
-          {{-- 3) Jika belum dijadwalkan, tampilkan form assign --}}
+          {{-- Form assign --}}
           @else
             @php
-              $uniq   = $k->dosen->unique_number ?? null;
+              $uniq   = $k->dosen->unique_number;
               $hasAv  = isset($availableTimes[$uniq]) && count($availableTimes[$uniq]) > 0;
               $hariAv = $hasAv ? array_keys($availableTimes[$uniq]) : [];
             @endphp
@@ -82,7 +81,7 @@
                   class="d-flex flex-wrap align-items-center">
               @csrf
 
-              {{-- a) Dropdown pilih ruang dengan kapasitas --}}
+              {{-- a) Ruang --}}
               <select name="nama_ruangan"
                       data-id="{{ $k->id }}"
                       class="form-control form-control-sm mr-2"
@@ -91,12 +90,13 @@
                 @foreach($ruangKelasList as $r)
                   <option value="{{ $r->nama_ruangan }}"
                           data-capacity="{{ $r->kapasitas }}">
-                    {{ $r->nama_ruangan }} – {{ $r->nama_gedung }} (kapasitas kelas {{ $r->kapasitas_kelas }})
+                    {{ $r->nama_ruangan }} – {{ $r->nama_gedung }}
+                    (kapasitas {{ $r->kapasitas_kelas }})
                   </option>
                 @endforeach
               </select>
 
-              {{-- b) Dropdown pilih hari --}}
+              {{-- b) Hari --}}
               <select name="hari"
                       id="hari-{{ $k->id }}"
                       class="form-control form-control-sm mr-2"
@@ -111,7 +111,7 @@
                 @endforeach
               </select>
 
-              {{-- c) Dropdown pilih jam --}}
+              {{-- c) Jam --}}
               <select name="jam"
                       id="jam-{{ $k->id }}"
                       class="form-control form-control-sm mr-2"
@@ -120,20 +120,19 @@
                 <option value="">Pilih Jam</option>
               </select>
 
-              {{-- d) Tombol simpan --}}
-              <button type="submit"
-                      class="btn btn-primary btn-sm">
+              {{-- d) Simpan --}}
+              <button type="submit" class="btn btn-primary btn-sm">
                 Simpan
               </button>
             </form>
           @endif
         </td>
 
-        {{-- Hari & Jam setelah disimpan --}}
+        {{-- Ditampilkan setelah disimpan --}}
         <td>{{ $k->hari ?? '-' }}</td>
         <td>{{ $k->jam ?? '-' }}</td>
 
-        {{-- Aksi Edit & Hapus --}}
+        {{-- Edit / Hapus --}}
         <td>
           @if($k->jadwal_id)
             <a href="{{ route('admin.jadwal.edit', $k->jadwal_id) }}"
@@ -164,88 +163,95 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  // 1) semua jadwal yang sudah tersimpan, untuk cek bentrok
   const existingJadwals = @json($existingJadwals);
+  const availableTimes  = @json($availableTimes);
 
-  // Daftar sesi tetap—harus identik dengan dropdown
-  const SESSIONS = [
-    "07:00 - 07:50","07:50 - 08:40",
-    "08:50 - 09:40","09:40 - 10:30",
-    "10:40 - 11:30","12:10 - 13:10",
-    "13:20 - 14:10","14:10 - 15:00",
-    "15:30 - 16:20","16:20 - 17:10",
-    "17:10 - 18:00","18:30 - 19:20",
-    "19:20 - 20:10","20:10 - 21:00"
-  ];
+  // ** slot per sesi dengan spasi di antara " - " **
+  const SESSION_SLOTS = {
+    1: ['07:00 - 07:50','07:50 - 08:40'],
+    2: ['08:50 - 09:40','09:40 - 10:30'],
+    3: ['10:40 - 11:30'],
+    4: ['12:10 - 13:10'],
+    5: ['13:20 - 14:10','14:10 - 15:00'],
+    6: ['15:30 - 16:20','16:20 - 17:10','17:10 - 18:00'],
+    7: ['18:30 - 19:20','19:20 - 20:10','20:10 - 21:00'],
+  };
 
   @foreach($kelas as $k)
   (function(){
-    const matkul  = '{{ optional($k->mataKuliah)->kode_matkul }}';
-    const uniq    = '{{ $k->dosen->unique_number ?? "" }}';
-    const hariEl  = document.getElementById('hari-{{ $k->id }}');
-    const jamEl   = document.getElementById('jam-{{ $k->id }}');
-    const ruangEl = document.querySelector('select[name="nama_ruangan"][data-id="{{ $k->id }}"]');
+    const matkul = '{{ optional($k->mataKuliah)->kode_matkul }}';
+    const uniq   = '{{ $k->dosen->unique_number ?? "" }}';
+    const hariEl = document.getElementById('hari-{{ $k->id }}');
+    const jamEl  = document.getElementById('jam-{{ $k->id }}');
+    const ruangEl= document.querySelector(
+      'select[name="nama_ruangan"][data-id="{{ $k->id }}"]'
+    );
     if (!hariEl || !jamEl || !ruangEl) return;
 
+    // Cek overlap dua interval
     function sessionOverlap(s1,e1,s2,e2){
       return !(e1 <= s2 || e2 <= s1);
     }
 
-    function populateSessions(hari) {
+    function populateSessions(){
+      const hari = hariEl.value;
       jamEl.innerHTML = '<option value="">Pilih Jam</option>';
+      if (!hari || !availableTimes[uniq] || !availableTimes[uniq][hari]) return;
 
-      // kapasitas ruang
-      const capacity = parseInt(ruangEl.selectedOptions[0]?.dataset.capacity || '1',10);
-      // jumlah existing same matkul
-      const existingSame = existingJadwals.filter(j=>
-        j.ruang===ruangEl.value && j.matkul===matkul
-      ).length;
+      // parse jendela available dosen
+      const windows = availableTimes[uniq][hari].map(w=>{
+        const [s,e] = w.split(' - ');
+        return { start: s.trim(), end: e.trim() };
+      });
 
-      SESSIONS.forEach(sesi=>{
-        const [sMulai,sAkhir] = sesi.split(' - ');
+      // cek tiap sesi
+      Object.entries(SESSION_SLOTS).forEach(([no, slots])=>{
+        // cari slot yang masuk window & tidak bentrok
+        const ok = slots.filter(timestr=>{
+          const [s,e] = timestr.split(' - ');
+          const start = s.trim(), end = e.trim();
 
-        // cek bentrok existing jadwal
-        const hasConflict = existingJadwals.some(j => {
-  if (j.hari !== hari) return false;
+          // 1) harus sepenuhnya dalam salah satu window
+          const inWin = windows.some(w=>
+            start >= w.start && end <= w.end
+          );
+          if (!inWin) return false;
 
-  // 1) bentrok dosen dengan matakuliah berbeda → blokir
-  if (j.dosen === uniq
-      && sessionOverlap(sMulai, sAkhir, j.start, j.end)
-      && j.matkul !== matkul   // hanya blokir kalau beda matakuliah
-  ) {
-    return true;
-  }
+          // 2) cek bentrok existing jadwal
+          const conflict = existingJadwals.some(j=>{
+            if (j.hari !== hari) return false;
+            // bentrok dosen (j.dosen===uniq & matkul beda)
+            if (j.dosen===uniq
+                && sessionOverlap(start,end,j.start,j.end)
+                && j.matkul!==matkul) return true;
+            // bentrok ruang (j.ruang===ruangEl.value & (matkul/dosen beda))
+            if (j.ruang===ruangEl.value
+                && sessionOverlap(start,end,j.start,j.end)
+                && (j.matkul!==matkul || j.dosen!==uniq)) return true;
+            return false;
+          });
+          return !conflict;
+        });
 
-  // 2) bentrok ruang dengan matakuliah atau dosen berbeda → blokir
-  if (j.ruang === ruangEl.value
-      && sessionOverlap(sMulai, sAkhir, j.start, j.end)
-      && (
-           j.matkul !== matkul   // beda matakuliah
-        || j.dosen !== uniq     // atau beda dosen
-      )
-  ) {
-    return true;
-  }
-
-  // sisanya tidak dianggap bentrok
-  return false;
-});
-
-        if (hasConflict) return;
-
-        // tampilkan sesi
-        const o = document.createElement('option');
-        o.value = sesi;
-        o.textContent = sesi;
-        jamEl.appendChild(o);
+        if (ok.length) {
+          const g = document.createElement('optgroup');
+          g.label = 'Sesi ' + no;
+          ok.forEach(timestr=>{
+            const o = document.createElement('option');
+            o.value = timestr;       // "07:00 - 07:50"
+            o.textContent = timestr; // "07:00 - 07:50"
+            g.appendChild(o);
+          });
+          jamEl.appendChild(g);
+        }
       });
     }
 
-    // event
-    hariEl.addEventListener('change', ()=> populateSessions(hariEl.value));
-    ruangEl.addEventListener('change', ()=> populateSessions(hariEl.value));
+    hariEl.addEventListener('change', populateSessions);
+    ruangEl.addEventListener('change', populateSessions);
   })();
   @endforeach
+
 });
 </script>
 @endpush

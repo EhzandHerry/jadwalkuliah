@@ -6,6 +6,7 @@ use App\Models\JadwalKuliah;
 use App\Models\Kelas;
 use App\Models\RuangKelas;
 use App\Models\MataKuliah;
+use App\Models\Available;
 use Illuminate\Http\Request;
 use App\Exports\JadwalExport;
 use App\Exports\JadwalMatrixExport;
@@ -20,47 +21,48 @@ class JadwalController extends Controller
     $kelas = Kelas::with(['mataKuliah', 'dosen', 'ruangKelas'])
         ->leftJoin('jadwal', function ($join) {
             $join->on('kelas.kode_matkul', '=', 'jadwal.kode_mata_kuliah')
-                 ->on('kelas.kelas',        '=', 'jadwal.kelas');
+                 ->on('kelas.kelas', '=', 'jadwal.kelas');
         })
         ->select(
             'kelas.*',
-            'jadwal.id         as jadwal_id',
+            'jadwal.id as jadwal_id',
             'jadwal.nama_ruangan',
             'jadwal.hari',
             'jadwal.jam'
         )
-        // **Tambah orderBy di sini supaya diurutkan berdasarkan kode_matakuliah**
         ->orderBy('kelas.kode_matkul', 'asc')
         ->get()
-        // 2) Remove any rows whose mataKuliah has been deleted
-        ->filter(function($k) {
-            return $k->mataKuliah !== null;
-        })
-        ->values();  // reindex collection
+        ->filter(fn($k) => $k->mataKuliah !== null)
+        ->values();
 
-    // 3) All ruangKelas for the dropdown
-    $ruangKelasList = RuangKelas::all();
+    // 3) All ruangKelas for the dropdown, urut abjad
+    $ruangKelasList = RuangKelas::orderBy('nama_ruangan', 'asc')->get();
 
     // 4) Build availableTimes per dosen per hari
-    $availableTimes = [];
-    foreach ($kelas as $k) {
-        if ($k->dosen && $k->dosen->available) {
-            $uniq = $k->dosen->unique_number;
-            if (! isset($availableTimes[$uniq])) {
-                $availableTimes[$uniq] = $k->dosen->available
-                    ->groupBy('hari')
-                    ->map(function ($times) {
-                        return $times->map(function ($item) {
-                            return [
-                                'start' => substr($item->start_time, 0, 5),
-                                'end'   => substr($item->end_time,   0, 5),
-                            ];
-                        })->values()->all();
-                    })
-                    ->toArray();
-            }
+    // … kode sebelum sama …
+
+// 4) Build availableTimes per dosen per hari
+$availableTimes = [];
+foreach ($kelas as $k) {
+    if ($k->dosen && $k->dosen->available) {
+        $uniq = $k->dosen->unique_number;
+        if (!isset($availableTimes[$uniq])) {
+            $availableTimes[$uniq] = $k->dosen->available
+                ->groupBy('hari')
+                // Ubah mapping: gabungkan start–end jadi satu string
+                ->map(fn($times) => $times
+                    ->map(fn($item) => 
+                        substr($item->start_time, 0, 5)
+                        . ' - ' .
+                        substr($item->end_time,   0, 5)
+                    )
+                    ->values()
+                    ->all()
+                )
+                ->toArray();
         }
     }
+}
 
     // 5) Gather all existing jadwal into a flat array for the JS conflict checks
     $existingJadwals = JadwalKuliah::all()->map(function($j) {
@@ -83,6 +85,7 @@ class JadwalController extends Controller
         'existingJadwals'
     ));
 }
+
 
 public function assignRuang(Request $request, $kelasId)
 {

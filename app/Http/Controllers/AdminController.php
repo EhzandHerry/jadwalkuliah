@@ -201,10 +201,13 @@ public function updateDosenKelas(Request $request, $kelasId)
     // === CRUD RUANG KELAS ===
     //
     public function indexRuangKelas()
-    {
-        $ruangKelas = RuangKelas::all();
-        return view('admin.ruang_kelas.index', compact('ruangKelas'));
-    }
+{
+    // ambil semua ruang kelas, urut berdasarkan nama_ruangan (A→Z)
+    $ruangKelas = RuangKelas::orderBy('nama_ruangan', 'asc')->get();
+
+    return view('admin.ruang_kelas.index', compact('ruangKelas'));
+}
+
 
     public function createRuangKelas()
     {
