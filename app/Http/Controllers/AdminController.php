@@ -8,6 +8,7 @@ use App\Models\Kelas;
 use App\Models\RuangKelas;
 use App\Models\User;
 use App\Models\Available;
+use App\Models\Jadwalkuliah;
 
 class AdminController extends Controller
 {
@@ -66,19 +67,56 @@ public function assignDosen(Request $request, $kelasId)
 }
 
 public function updateDosenKelas(Request $request, $kelasId)
-{
-    $request->validate([
-        'unique_number' => 'required|exists:users,unique_number',
-    ]);
+    {
+        $request->validate([
+            'unique_number' => 'required|exists:users,unique_number',
+        ]);
 
-    $kelas = Kelas::findOrFail($kelasId);
-    $kelas->unique_number = $request->unique_number;
-    $kelas->save();
+        $kelas = Kelas::findOrFail($kelasId);
+        $newDosenNumber = $request->unique_number;
 
-    return redirect()
-        ->route('admin.matakuliah_dosen.index')
-        ->with('success', 'Dosen berhasil di–update.');
-}
+        // Jika dosen tidak berubah, tidak perlu validasi apa-apa
+        if ($kelas->unique_number === $newDosenNumber) {
+            return redirect()
+                ->route('admin.matakuliah_dosen.index')
+                ->with('success', 'Dosen berhasil di-update (tidak ada perubahan).');
+        }
+
+        // --- VALIDASI 1: Dosen LAMA sudah terjadwal untuk kelas spesifik ini? ---
+        if ($kelas->unique_number) { // Hanya cek jika ada dosen lama
+            $isOldDosenScheduled = JadwalKuliah::where('kode_mata_kuliah', $kelas->kode_matkul)
+                                               ->where('kelas', $kelas->kelas)
+                                               ->where('unique_number', $kelas->unique_number)
+                                               ->exists();
+            
+            if ($isOldDosenScheduled) {
+                $oldDosenName = optional($kelas->dosen)->name ?? 'dosen sebelumnya';
+                return redirect()->back()
+                    ->with('error', "Gagal update! Dosen {$oldDosenName} sudah memiliki jadwal untuk kelas ini. Hapus jadwal terlebih dahulu untuk mengganti dosen.");
+            }
+        }
+        
+        // --- VALIDASI 2 (BARU): Dosen BARU sudah terjadwal untuk matakuliah ini (di kelas manapun)? ---
+        $isNewDosenTeachingThisMatkul = JadwalKuliah::where('kode_mata_kuliah', $kelas->kode_matkul)
+                                                     ->where('unique_number', $newDosenNumber)
+                                                     ->exists();
+
+        if ($isNewDosenTeachingThisMatkul) {
+            $newDosen = User::where('unique_number', $newDosenNumber)->first();
+            $matkulName = optional($kelas->mataKuliah)->nama_matkul ?? $kelas->kode_matkul;
+            
+            return redirect()->back()
+                ->with('error', "Gagal update! Dosen {$newDosen->name} sudah terdaftar di jadwal untuk mengajar mata kuliah {$matkulName}.");
+        }
+
+        // Jika semua validasi lolos, lanjutkan proses update
+        $kelas->unique_number = $newDosenNumber;
+        $kelas->save();
+
+        return redirect()
+            ->route('admin.matakuliah_dosen.index')
+            ->with('success', 'Dosen berhasil di-update.');
+    }
 
     //
     // === CRUD MATAKULIAH ===
