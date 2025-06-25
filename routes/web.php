@@ -88,6 +88,9 @@ Route::delete('admin/jadwal/{jadwal}', [JadwalController::class, 'destroy'])->na
 Route::get('/admin/jadwal/export', [JadwalController::class, 'exportExcel'])->name('admin.jadwal.export');
 Route::get('admin/jadwal/export-matrix', [JadwalController::class,'exportMatrix'])
      ->name('admin.jadwal.exportMatrix');
+// routes/web.php
+Route::get('admin/jadwal/matrix-preview', [JadwalController::class, 'previewMatrix'])
+     ->name('admin.jadwal.previewMatrix');
 
 
 

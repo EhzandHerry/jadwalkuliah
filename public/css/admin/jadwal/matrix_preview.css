@@ -1,0 +1,147 @@
+/* /public/css/admin/jadwal/matrix_preview.css */
+
+/* Wrapper dan Tabel Utama */
+.matrix-wrapper { 
+    overflow-x: auto; 
+}
+.matrix-table { 
+    border-collapse: collapse; 
+    width: 100%; 
+}
+.matrix-table th, .matrix-table td {
+    border: 1px solid #000;
+    padding: 5px 8px;
+    text-align: center;
+    vertical-align: middle;
+    white-space: pre-wrap; /* Agar \n berfungsi */
+    font-size: 12px;
+}
+
+/* Style Judul Utama */
+.title-row th {
+    background-color: #C00000; /* Merah Tua */
+    color: #FFFFFF;
+    font-weight: bold;
+    font-size: 1.2em;
+    padding: 10px;
+}
+
+/* Style Header Hari, Sesi, Jam */
+.header-day, .header-sesi-jam {
+    background-color: #1F4E78; /* Biru Tua */
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+/* Style Header Ruangan */
+.header-room {
+    background-color: #FFFF00; /* Kuning Menyala */
+    color: #000000;
+    font-weight: bold;
+}
+
+/* Style Baris Pergantian Sesi */
+.break-row .break-time,
+.break-row .break-text {
+    background-color: #E0E0E0; /* Abu-abu muda */
+    font-weight: bold;
+}
+
+/* Style Sel Matakuliah berdasarkan Semester */
+.semester-2 { background-color: #E2F0D9; } /* Hijau Muda */
+.semester-4 { background-color: #FDE9D9; } /* Orange Muda */
+.semester-6 { background-color: #DDEBF7; } /* Biru Muda */
+
+.matkul-cell { 
+    text-align: left; 
+    vertical-align: top; 
+}
+.matkul-item {
+    padding: 4px; 
+    margin-bottom: 4px; 
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+/* --- STYLE BARU UNTUK TOMBOL --- */
+.preview-actions .btn {
+    font-weight: bold;
+    padding: 8px 20px;
+    border-radius: 20px; /* Membuat tombol lebih oval */
+    border: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    margin-left: 10px;
+}
+.preview-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Tombol Kembali */
+.preview-actions .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+.preview-actions .btn-secondary:hover {
+    background-color: #5a6268;
+    color: white;
+}
+
+/* Tombol Download */
+.preview-actions .btn-success {
+    background: linear-gradient(45deg, #28a745, #218838);
+    color: white;
+}
+.preview-actions .btn-success:hover {
+    background: linear-gradient(45deg, #218838, #1e7e34);
+    color: white;
+}
+
+/* Bonus: Ikon untuk tombol jika Anda menggunakan Font Awesome */
+.preview-actions .btn-secondary::before {
+    font-family: "Font Awesome 5 Free"; /* Pastikan Anda sudah load Font Awesome */
+    content: "\f060\00a0"; /* Kode ikon panah kiri */
+    font-weight: 900;
+}
+.preview-actions .btn-success::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f56d\00a0"; /* Kode ikon file-excel */
+    font-weight: 900;
+}
+
+/* /public/css/admin/jadwal/matrix_preview.css */
+
+/* --- STYLE BARU UNTUK MEMPERBAIKI OVERLAP --- */
+.page-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; /* Memberi jarak 1rem antara judul/tombol dan tabel */
+}
+/* ------------------------------------------- */
+
+
+/* Wrapper dan Tabel Utama */
+.matrix-wrapper { 
+    overflow-x: auto; 
+}
+
+/* /public/css/admin/jadwal/matrix_preview.css */
+
+/* --- STYLE BARU UNTUK JUDUL HALAMAN --- */
+.page-main-title {
+    text-align: center;
+    margin-bottom: 30px !important; /* Tambah !important untuk prioritas */
+    font-weight: 700;
+    font-size: 2.25rem;
+    color: #2c3e50;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+    padding-top: 15px;
+}
+/* ------------------------------------- */
+
+/* --- STYLE LAINNYA ... --- */
+.page-content-wrapper {
+    /* ... */
+}
