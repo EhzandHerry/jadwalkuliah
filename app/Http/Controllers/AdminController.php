@@ -343,7 +343,6 @@ public function updateDosenKelas(Request $request, $kelasId)
             'name'=>'required|string|max:255',
             'email'=>'required|email|unique:users,email',
             'password'=>'required|string|min:8',
-            'phone'=>'required|string|max:15',
             'unique_number'=>'required|unique:users,unique_number',
         ]);
 
@@ -351,7 +350,6 @@ public function updateDosenKelas(Request $request, $kelasId)
             'name'=> $request->name,
             'email'=> $request->email,
             'password'=> bcrypt($request->password),
-            'phone'=> $request->phone,
             'unique_number'=> $request->unique_number,
             'is_admin'=> false,
         ]);
@@ -371,7 +369,6 @@ public function updateDosenKelas(Request $request, $kelasId)
         $request->validate([
             'name'=>'required|string|max:255',
             'email'=>"required|email|unique:users,email,{$id}",
-            'phone'=>'required|string|max:15',
             'unique_number'=>"required|unique:users,unique_number,{$id}",
         ]);
 
@@ -399,10 +396,30 @@ public function updateDosenKelas(Request $request, $kelasId)
         return view('admin.available.dashboard', compact('dosen'));
     }
 
-    public function editAvailableTime($id)
+     public function editAvailableTime(Available $available)
     {
-        $dosen = User::findOrFail($id);
-        return view('admin.available.edit', compact('dosen'));
+        // PERBAIKAN: Memuat relasi 'user', bukan 'dosen'.
+        $available->load('user');
+        
+        return view('admin.available.edit', compact('available'));
+    }
+
+    /**
+     * Update data available time di database.
+     */
+    public function updateAvailableTime(Request $request, Available $available)
+    {
+        $request->validate([
+            'start_time' => 'required|date_format:H:i',
+            'end_time'   => 'required|date_format:H:i|after:start_time',
+        ]);
+
+        $available->update($request->only('start_time', 'end_time'));
+
+        // PERBAIKAN: Menggunakan 'user_id' untuk redirect.
+        return redirect()
+            ->route('admin.available.manage', $available->user_id)
+            ->with('success', 'Available time berhasil diperbarui.');
     }
 
     public function storeAvailableTimes(Request $request, $id)

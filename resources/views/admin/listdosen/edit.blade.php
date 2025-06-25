@@ -25,12 +25,6 @@
                 <input type="email" name="email" id="email" value="{{ $dosen->email }}" required class="form-control">
             </div>
             
-            <!-- Phone Field -->
-            <div class="form-group">
-                <label for="phone">Phone</label>
-                <input type="text" name="phone" id="phone" value="{{ $dosen->phone }}" required class="form-control">
-            </div>
-            
             <!-- Unique Number Field -->
             <div class="form-group">
                 <label for="unique_number">NIDN</label>

@@ -1,136 +1,160 @@
 /* Container utama */
 .available-container {
-  max-width: 1000px;
-  margin: 30px auto;
-  padding: 0 20px;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
 }
 
 /* Judul halaman */
 .available-container h1 {
-  margin-bottom: 30px;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #2c3e50;
-  text-align: center;
-  letter-spacing: 0.03em;
-  line-height: 1.2;
+    margin-bottom: 30px;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    text-align: center;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
 }
 
 /* Tabel daftar available time */
 .available-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-  background-color: #fff;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-  border-radius: 8px;
-  overflow: hidden;
-  font-size: 1rem;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 1rem;
 }
 
 /* Header tabel */
 .available-table thead tr {
-  background-color: #34495e;
-  color: #fff;
-  text-align: left;
-  font-weight: 700;
+    background-color: #34495e;
+    color: #fff;
+    text-align: left;
+    font-weight: 700;
 }
 
 /* Sel header dan isi */
 .available-table th, .available-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #e0e0e0;
-  vertical-align: middle;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: middle;
 }
 
 /* Hover baris */
 .available-table tbody tr:hover {
-  background-color: #f0f8ff;
+    background-color: #f0f8ff;
+}
+
+/* --- PERBAIKAN DAN PENAMBAHAN STYLE TOMBOL --- */
+
+/* Style umum untuk link yang dijadikan tombol */
+.btn-link {
+    display: inline-block;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    color: white;
+    font-size: 0.9rem;
+}
+
+/* Tombol Edit */
+.edit-btn {
+    background-color: #f0ad4e; /* Kuning */
+}
+.edit-btn:hover {
+    background-color: #ec971f;
 }
 
 /* Tombol hapus */
 .delete-btn {
-  background-color: #e74c3c;
-  color: white;
-  padding: 6px 14px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.3s ease;
+    background-color: #e74c3c;
+    color: white;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+    font-size: 0.9rem;
 }
 
 .delete-btn:hover {
-  background-color: #c0392b;
+    background-color: #c0392b;
 }
 
 /* Tombol tambah waktu available */
 .add-btn {
-  display: inline-block;
-  margin-top: 20px;
-  padding: 10px 20px;
-  background-color: #18b300;
-  color: white;
-  border-radius: 5px;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+    display: inline-block;
+    margin-bottom: 20px; /* Diubah dari margin-top */
+    padding: 10px 20px;
+    background-color: #18b300;
+    color: white;
+    border-radius: 5px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .add-btn:hover {
-  background-color: #0f7a00;
-}
-
-/* Responsive untuk layar kecil */
-@media (max-width: 768px) {
-  .available-table th, .available-table td {
-    padding: 8px;
-    font-size: 0.9rem;
-  }
-  
-  .delete-btn, .add-btn {
-    font-size: 0.9rem;
-    padding: 6px 12px;
-  }
+    background-color: #0f7a00;
 }
 
 /* Tombol Kembali */
 .back-btn {
-  display: inline-block;
-  margin-bottom: 20px; /* beri jarak bawah */
-  padding: 10px 20px;
-  background-color: #95a5a6; /* abu-abu lembut, mirip tombol sekunder */
-  color: white;
-  border-radius: 5px;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-size: 1rem;
-  border: none;
-  text-align: center;
+    display: inline-block;
+    margin-top: 20px; /* Diubah dari margin-bottom */
+    padding: 10px 20px;
+    background-color: #95a5a6;
+    color: white;
+    border-radius: 5px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 1rem;
+    border: none;
+    text-align: center;
 }
 
 .back-btn:hover {
-  background-color: #7f8c8d; /* sedikit lebih gelap saat hover */
+    background-color: #7f8c8d;
 }
 
-/* Responsive agar tombol juga enak dilihat di layar kecil */
+/* Sel untuk kolom Aksi */
+.action-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Jarak antar tombol */
+}
+
+
+/* Responsive untuk layar kecil */
 @media (max-width: 768px) {
-  .back-btn {
-    font-size: 0.9rem;
-    padding: 8px 16px;
-  }
+    .available-table th, .available-table td {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+    
+    .delete-btn, .add-btn, .edit-btn, .back-btn {
+        font-size: 0.9rem;
+        padding: 6px 12px;
+    }
 }
-
 
 @media (max-width: 480px) {
-  .available-table {
-    width: 100%;
-    overflow-x: auto;
-  }
+    .available-table {
+        width: 100%;
+        overflow-x: auto;
+    }
 }

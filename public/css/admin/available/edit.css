@@ -1,0 +1,118 @@
+/* Container utama */
+.available-container {
+    max-width: 600px;
+    margin: 30px auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+/* Container form */
+.available-form {
+    background-color: #fff;
+    padding: 30px 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+}
+
+/* Judul form */
+.available-form h1 {
+    margin-bottom: 30px;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2c3e50;
+    text-align: center;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+}
+
+/* Grup form */
+.available-form .form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Label */
+.available-form .form-group label {
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #34495e;
+}
+
+/* Input dan Select */
+.available-form .form-group input,
+.available-form .form-group select {
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    outline: none;
+}
+
+/* Disabled input style */
+.available-form .form-group input:disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+/* --- Tombol "Save" di Halaman Add --- */
+.available-form .btn-save {
+    background-color: #18b300; /* Hijau */
+}
+.available-form .btn-save:hover {
+    background-color: #0f7a00;
+}
+
+/* --- Tombol "Update" di Halaman Edit --- */
+.available-form .btn-update {
+    background-color: #007bff; /* Biru */
+}
+.available-form .btn-update:hover {
+    background-color: #0056b3;
+}
+
+/* Style umum untuk tombol Aksi */
+.available-form .btn-action {
+    display: block;
+    width: 100%;
+    color: white;
+    padding: 12px 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+
+/* Tombol batal (btn-secondary) */
+.available-form .btn-secondary {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    background-color: #95a5a6;
+    color: #fff;
+    padding: 12px 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.available-form .btn-secondary:hover {
+    background-color: #7f8c8d;
+}
+
+/* Container tombol submit dan batal agar sejajar */
+.available-form .form-group.d-flex {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}

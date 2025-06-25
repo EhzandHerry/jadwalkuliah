@@ -27,11 +27,6 @@
         </div>
 
         <div class="form-group">
-          <label for="phone">Phone</label>
-          <input type="text" id="phone" name="phone" required class="form-control">
-        </div>
-
-        <div class="form-group">
           <label for="unique_number">NIDN (Unique Number)</label>
           <input type="text" id="unique_number" name="unique_number" required class="form-control">
         </div>

@@ -132,6 +132,12 @@ Route::get('/admin/dosen/{id}/available', [AdminController::class, 'manageAvaila
 Route::get('/admin/dosen/{id}/available/add', [AdminController::class, 'addAvailableTime'])->name('admin.available.add');
 // Route to delete available time
 Route::delete('/admin/available/{id}', [AdminController::class, 'deleteAvailableTime'])->name('admin.available.delete');
+// Route untuk menampilkan form edit
+Route::get('/available/{available}/edit', [AdminController::class, 'editAvailableTime'])->name('admin.available.edit');
+
+// Route untuk memproses update
+Route::put('/available/{available}', [AdminController::class, 'updateAvailableTime'])->name('admin.available.update');
+
 
     });
 
