@@ -4,7 +4,6 @@
     /* Properti ini bisa dikosongkan jika Anda sudah menggunakan .container-fluid di Blade */
 }
 
-/* --- PERUBAHAN DI SINI --- */
 /* Style H1 disamakan dengan contoh */
 .jadwal-index-container h1 {
     text-align: center;
@@ -16,7 +15,6 @@
     line-height: 1.2;
     padding-top: 15px;
 }
-/* --- AKHIR PERUBAHAN --- */
 
 /* Notifikasi */
 .alert {
@@ -178,6 +176,7 @@
     font-weight: 600;
     box-shadow: 0 2px 4px rgba(40,167,69,.2);
     transition: all .2s ease;
+    text-decoration: none; /* PERBAIKAN: Menghapus garis bawah */
 }
 
 .filter-controls .btn-success:hover {
@@ -185,6 +184,7 @@
     border-color: #1e7e34;
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(40,167,69,.3);
+    text-decoration: none; /* PERBAIKAN: Menghapus garis bawah saat hover */
 }
 
 .filter-controls .btn-apply-filter {

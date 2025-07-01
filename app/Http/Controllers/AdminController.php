@@ -20,53 +20,57 @@ class AdminController extends Controller
 /**
  * Tampilkan daftar semua kelas beserta dropdown dosen
  */
-public function indexMatKulDosen()
-{
-    $query = Kelas::has('mataKuliah')
-        ->with(['mataKuliah', 'dosen']);
+public function indexMatKulDosen(Request $request) // Tambahkan Request
+    {
+        $query = Kelas::has('mataKuliah')
+                      ->with(['mataKuliah', 'dosen']);
 
-    if ($search = request('search')) {
-        $query->whereHas('mataKuliah', function($q) use ($search) {
-            $q->where('nama_matkul', 'like', "%{$search}%");
-        });
+        // Filter pencarian nama
+        if ($search = $request->input('search')) {
+            $query->whereHas('mataKuliah', function($q) use ($search) {
+                $q->where('nama_matkul', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter berdasarkan semester (Gasal/Genap)
+        if ($semesterType = $request->input('semester_type')) {
+            $query->whereHas('mataKuliah', function ($q) use ($semesterType) {
+                if ($semesterType === 'gasal') {
+                    $q->whereRaw('semester % 2 != 0');
+                } elseif ($semesterType === 'genap') {
+                    $q->whereRaw('semester % 2 = 0');
+                }
+            });
+        }
+
+        // Lakukan join untuk bisa mengurutkan berdasarkan kode_matkul dari tabel mata_kuliah
+        $kelas = $query->join('mata_kuliah', 'kelas.kode_matkul', '=', 'mata_kuliah.kode_matkul')
+                       ->orderBy('mata_kuliah.kode_matkul', 'asc') // Urutkan berdasarkan kode_matkul
+                       ->orderBy('kelas.kelas', 'asc') // Kemudian urutkan berdasarkan kelas
+                       ->select('kelas.*') // Pilih semua kolom dari tabel kelas
+                       ->get();
+
+        $dosenList = User::where('is_admin', false)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return view('admin.matakuliah_dosen.index', compact('kelas', 'dosenList'));
     }
 
-    // Ambil semua, lalu sort di-memory:
-    $kelas = $query->get()->sort(function($a, $b) {
-        // 1) Urut berdasar kode_matakuliah (alfabet)
-        $cmp = strcmp($a->mataKuliah->kode_matkul, $b->mataKuliah->kode_matkul);
-        if ($cmp !== 0) {
-            return $cmp;
-        }
-        // 2) Kalau sama kode, urut berdasar kelas (A, B, C, dst)
-        return strcmp($a->kelas, $b->kelas);
-    });
+    public function assignDosen(Request $request, $kelasId)
+    {
+        $request->validate([
+            'unique_number' => 'required|exists:users,unique_number'
+        ]);
+        $kelas = Kelas::findOrFail($kelasId);
+        $kelas->unique_number = $request->unique_number;
+        $kelas->save();
 
-    $dosenList = User::where('is_admin', false)
-        ->orderBy('name', 'asc')
-        ->get();
+        return redirect()->route('admin.matakuliah_dosen.index')
+                         ->with('success', 'Dosen berhasil disimpan.');
+    }
 
-    return view('admin.matakuliah_dosen.index', compact('kelas', 'dosenList'));
-}
-
-
-/**
- * Assign dosen ke kelas (from matakuliah_dosen/index.blade.php)
- */
-public function assignDosen(Request $request, $kelasId)
-{
-    $request->validate([
-      'unique_number' => 'required|exists:users,unique_number'
-    ]);
-    $kelas = Kelas::findOrFail($kelasId);
-    $kelas->unique_number = $request->unique_number;
-    $kelas->save();
-
-    return redirect()->route('admin.matakuliah_dosen.index')
-                     ->with('success', 'Dosen berhasil di–assign.');
-}
-
-public function updateDosenKelas(Request $request, $kelasId)
+    public function updateDosenKelas(Request $request, $kelasId)
     {
         $request->validate([
             'unique_number' => 'required|exists:users,unique_number',
@@ -75,15 +79,13 @@ public function updateDosenKelas(Request $request, $kelasId)
         $kelas = Kelas::findOrFail($kelasId);
         $newDosenNumber = $request->unique_number;
 
-        // Jika dosen tidak berubah, tidak perlu validasi apa-apa
         if ($kelas->unique_number === $newDosenNumber) {
             return redirect()
                 ->route('admin.matakuliah_dosen.index')
-                ->with('success', 'Dosen berhasil di-update (tidak ada perubahan).');
+                ->with('success', 'Dosen berhasil diubah (tidak ada perubahan).');
         }
 
-        // --- VALIDASI 1: Dosen LAMA sudah terjadwal untuk kelas spesifik ini? ---
-        if ($kelas->unique_number) { // Hanya cek jika ada dosen lama
+        if ($kelas->unique_number) {
             $isOldDosenScheduled = JadwalKuliah::where('kode_mata_kuliah', $kelas->kode_matkul)
                                                ->where('kelas', $kelas->kelas)
                                                ->where('unique_number', $kelas->unique_number)
@@ -96,7 +98,6 @@ public function updateDosenKelas(Request $request, $kelasId)
             }
         }
         
-        // --- VALIDASI 2 (BARU): Dosen BARU sudah terjadwal untuk matakuliah ini (di kelas manapun)? ---
         $isNewDosenTeachingThisMatkul = JadwalKuliah::where('kode_mata_kuliah', $kelas->kode_matkul)
                                                      ->where('unique_number', $newDosenNumber)
                                                      ->exists();
@@ -106,18 +107,48 @@ public function updateDosenKelas(Request $request, $kelasId)
             $matkulName = optional($kelas->mataKuliah)->nama_matkul ?? $kelas->kode_matkul;
             
             return redirect()->back()
-                ->with('error', "Gagal update! Dosen {$newDosen->name} sudah terdaftar di jadwal untuk mengajar mata kuliah {$matkulName}.");
+                ->with('error', "Gagal ubah! Dosen {$newDosen->name} sudah terdaftar di jadwal untuk mengajar mata kuliah {$matkulName}.");
         }
 
-        // Jika semua validasi lolos, lanjutkan proses update
         $kelas->unique_number = $newDosenNumber;
         $kelas->save();
 
         return redirect()
             ->route('admin.matakuliah_dosen.index')
-            ->with('success', 'Dosen berhasil di-update.');
+            ->with('success', 'Dosen berhasil diubah.');
     }
 
+    /**
+     * Hapus (un-assign) dosen dari sebuah kelas.
+     */
+    public function deleteDosenKelas($kelasId)
+    {
+        $kelas = Kelas::with('dosen', 'mataKuliah')->findOrFail($kelasId);
+
+        // Validasi: Cek apakah dosen ini sudah punya jadwal untuk kelas ini
+        if ($kelas->unique_number) {
+            $isScheduled = JadwalKuliah::where('kode_mata_kuliah', $kelas->kode_matkul)
+                                       ->where('kelas', $kelas->kelas)
+                                       ->where('unique_number', $kelas->unique_number)
+                                       ->exists();
+
+            // Jika sudah terjadwal, batalkan penghapusan dan beri pesan error
+            if ($isScheduled) {
+                $dosenName = optional($kelas->dosen)->name ?? 'Dosen ini';
+                $matkulName = optional($kelas->mataKuliah)->nama_matkul ?? $kelas->kode_matkul;
+                
+                return redirect()->back()
+                    ->with('error', "Gagal menghapus! Dosen {$dosenName} sudah memiliki jadwal untuk mata kuliah {$matkulName} kelas {$kelas->kelas}. Hapus jadwal di halaman Manajemen Jadwal terlebih dahulu.");
+            }
+        }
+
+        // Jika validasi lolos, hapus dosen dengan mengatur unique_number menjadi null
+        $kelas->unique_number = null;
+        $kelas->save();
+
+        return redirect()->route('admin.matakuliah_dosen.index')
+                         ->with('success', 'Dosen berhasil dihapus dari Mata Kuliah.');
+    }
     //
     // === CRUD MATAKULIAH ===
     //
@@ -367,9 +398,6 @@ public function updateDosenKelas(Request $request, $kelasId)
     ));
 }
 
-
-
-
     public function createDosen()
     {
         return view('admin.listdosen.create');
@@ -378,18 +406,28 @@ public function updateDosenKelas(Request $request, $kelasId)
     public function storeDosen(Request $request)
     {
         $request->validate([
-            'name'=>'required|string|max:255',
-            'email'=>'required|email|unique:users,email',
-            'password'=>'required|string|min:8',
-            'unique_number'=>'required|unique:users,unique_number',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+            'unique_number' => 'required|unique:users,unique_number|numeric',
+        ], [
+            'name.required' => 'Nama dosen wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email harus valid.',
+            'email.unique' => 'Email ini sudah terdaftar.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password minimal harus 8 karakter.',
+            'unique_number.required' => 'NIDN wajib diisi.',
+            'unique_number.unique' => 'NIDN ini sudah terdaftar.',
+            'unique_number.numeric' => 'NIDN harus berupa angka.',
         ]);
 
         User::create([
-            'name'=> $request->name,
-            'email'=> $request->email,
-            'password'=> bcrypt($request->password),
-            'unique_number'=> $request->unique_number,
-            'is_admin'=> false,
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
+            'unique_number' => $request->unique_number,
+            'is_admin' => false,
         ]);
 
         return redirect()->route('admin.dosen.index')
@@ -405,13 +443,26 @@ public function updateDosenKelas(Request $request, $kelasId)
     public function updateDosen(Request $request, $id)
     {
         $request->validate([
-            'name'=>'required|string|max:255',
-            'email'=>"required|email|unique:users,email,{$id}",
-            'unique_number'=>"required|unique:users,unique_number,{$id}",
+            'name' => 'required|string|max:255',
+            'email' => "required|email|unique:users,email,{$id}",
+            // PERUBAHAN: Menambahkan 'numeric'
+            'unique_number' => "required|unique:users,unique_number,{$id}|numeric",
+        ], [
+            // PENAMBAHAN: Pesan error kustom dalam Bahasa Indonesia
+            'name.required' => 'Nama dosen wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email harus valid.',
+            'email.unique' => 'Email ini sudah terdaftar.',
+            'unique_number.required' => 'NIDN wajib diisi.',
+            'unique_number.unique' => 'NIDN ini sudah terdaftar.',
+            'unique_number.numeric' => 'NIDN harus berupa angka.',
         ]);
 
-        User::findOrFail($id)->update($request->only(
-            'name','email','phone','unique_number'
+        $dosen = User::findOrFail($id);
+        
+        // Menghapus 'phone' karena sudah dihapus dari tabel
+        $dosen->update($request->only(
+            'name','email','unique_number'
         ));
 
         return redirect()->route('admin.dosen.index')

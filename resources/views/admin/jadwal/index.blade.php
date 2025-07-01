@@ -4,11 +4,9 @@
 @section('header_title', 'Manajemen Jadwal')
 
 @section('content')
-{{-- PERUBAHAN DI SINI: Tambahkan kembali class .jadwal-index-container --}}
 <div class="container-fluid jadwal-index-container">
     <h1 class="mb-4">Daftar Jadwal</h1>
 
-    {{-- Baris Kontrol: Tombol Preview, Filter, dan Search jadi satu baris --}}
     <form action="{{ route('admin.jadwal.index') }}" method="GET" class="filter-controls">
         
         <a href="{{ route('admin.jadwal.previewMatrix') }}" class="btn btn-success">
@@ -89,12 +87,13 @@
                                 $hasAv  = isset($availableTimes[$uniq]) && count($availableTimes[$uniq]) > 0;
                                 $hariAv = $hasAv ? array_keys($availableTimes[$uniq]) : [];
                             @endphp
-                            <form action="{{ route('admin.jadwal.assignRuang', $k->id) }}" method="POST" class="d-flex flex-wrap align-items-center">
+                            {{-- PERUBAHAN DI SINI: Menambahkan onsubmit --}}
+                            <form action="{{ route('admin.jadwal.assignRuang', $k->id) }}" method="POST" class="d-flex flex-wrap align-items-center" onsubmit="return confirm('Apakah Anda yakin ingin menyimpan jadwal ini?')">
                                 @csrf
                                 <select name="nama_ruangan" data-id="{{ $k->id }}" class="form-control form-control-sm mr-2" style="min-width: 200px;" required>
                                     <option value="">Pilih Ruang Kelas</option>
                                     @foreach($ruangKelasList as $r)
-                                        <option value="{{ $r->nama_ruangan }}" data-capacity="{{ $r->kapasitas }}">
+                                        <option value="{{ $r->nama_ruangan }}" data-capacity="{{ $r->kapasitas_kelas }}">
                                             {{ $r->nama_ruangan }} – {{ $r->nama_gedung }} (kapasitas {{ $r->kapasitas_kelas }})
                                         </option>
                                     @endforeach
@@ -145,10 +144,87 @@
 @endpush
 
 @push('scripts')
-    <script>
-        // Script tidak perlu diubah
-        document.addEventListener('DOMContentLoaded', function () {
-            // ... (seluruh kode JS Anda tetap di sini) ...
-        });
-    </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const existingJadwals = @json($existingJadwals);
+    const availableTimes  = @json($availableTimes);
+
+    const SESSION_SLOTS = {
+        1: ['07:00 - 07:50','07:50 - 08:40'], 2: ['08:50 - 09:40','09:40 - 10:30'],
+        3: ['10:40 - 11:30'], 4: ['12:10 - 13:10'],
+        5: ['13:20 - 14:10','14:10 - 15:00'], 6: ['15:30 - 16:20','16:20 - 17:10','17:10 - 18:00'],
+        7: ['18:30 - 19:20','19:20 - 20:10','20:10 - 21:00'],
+    };
+
+    @foreach($kelas as $k)
+    (function(){
+        @if($k->dosen)
+            const matkul = '{{ optional($k->mataKuliah)->kode_matkul }}';
+            const uniq   = '{{ $k->dosen->unique_number }}';
+            const hariEl = document.getElementById('hari-{{ $k->id }}');
+            const jamEl  = document.getElementById('jam-{{ $k->id }}');
+            const ruangEl= document.querySelector(
+                'select[name="nama_ruangan"][data-id="{{ $k->id }}"]'
+            );
+            if (!hariEl || !jamEl || !ruangEl) return;
+
+            function sessionOverlap(s1,e1,s2,e2){
+                return !(e1 <= s2 || e2 <= s1);
+            }
+
+            function populateSessions(){
+                const hari = hariEl.value;
+                const ruang = ruangEl.value;
+                jamEl.innerHTML = '<option value="">Pilih Jam</option>';
+                if (!hari || !ruang || !availableTimes[uniq] || !availableTimes[uniq][hari]) return;
+
+                const windows = availableTimes[uniq][hari].map(w=>{
+                    const [s,e] = w.split(' - ');
+                    return { start: s.trim(), end: e.trim() };
+                });
+
+                Object.entries(SESSION_SLOTS).forEach(([no, slots])=>{
+                    const ok = slots.filter(timestr=>{
+                        const [s,e] = timestr.split(' - ');
+                        const start = s.trim(), end = e.trim();
+
+                        const inWin = windows.some(w=>
+                            start >= w.start && end <= w.end
+                        );
+                        if (!inWin) return false;
+
+                        const conflict = existingJadwals.some(j=>{
+                            if (j.hari !== hari) return false;
+                            if (j.dosen===uniq
+                                && sessionOverlap(start,end,j.start,j.end)
+                                && j.matkul!==matkul) return true;
+                            if (j.ruang===ruang
+                                && sessionOverlap(start,end,j.start,j.end)
+                                && (j.matkul!==matkul || j.dosen!==uniq)) return true;
+                            return false;
+                        });
+                        return !conflict;
+                    });
+
+                    if (ok.length) {
+                        const g = document.createElement('optgroup');
+                        g.label = 'Sesi ' + no;
+                        ok.forEach(timestr=>{
+                            const o = document.createElement('option');
+                            o.value = timestr;
+                            o.textContent = timestr;
+                            g.appendChild(o);
+                        });
+                        jamEl.appendChild(g);
+                    }
+                });
+            }
+            hariEl.addEventListener('change', populateSessions);
+            ruangEl.addEventListener('change', populateSessions);
+        @endif
+    })();
+    @endforeach
+
+});
+</script>
 @endpush

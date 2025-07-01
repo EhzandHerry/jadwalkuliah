@@ -14,7 +14,6 @@ class Kelas extends Model
     protected $fillable = [
         'kode_matkul',
         'kelas',
-        'ruang_kelas_id',
         'unique_number',
     ];
 

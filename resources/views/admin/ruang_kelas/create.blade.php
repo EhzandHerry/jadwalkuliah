@@ -5,10 +5,10 @@
 
 @section('content')
   <div class="ruang-kelas-create-container">
-    <h1>Tambah Ruang Kelas</h1>
-
+    
     <form action="{{ route('admin.ruang_kelas.store') }}" method="POST" class="ruang-kelas-form">
       @csrf
+      <h1>Tambah Ruang Kelas</h1>
 
       <div class="form-group">
         <label for="nama_ruangan">Nama Ruangan</label>
@@ -59,11 +59,14 @@
           class="input-field"
         >
       </div>
-
-      <button type="submit" class="submit-btn">Simpan</button>
+      
+      {{-- Mengganti tombol Simpan dan menambahkan tombol Batal di sini --}}
+      <div class="form-actions">
+        <button type="submit" class="btn submit-btn">Simpan</button>
+        <a href="{{ route('admin.ruang_kelas.index') }}" class="btn cancel-btn">Batal</a>
+      </div>
     </form>
-
-    <a href="{{ route('admin.ruang_kelas.index') }}" class="back-btn">← Kembali ke Daftar Ruang Kelas</a>
+    {{-- Menghapus link "Kembali" yang lama dari sini --}}
   </div>
 @endsection
 

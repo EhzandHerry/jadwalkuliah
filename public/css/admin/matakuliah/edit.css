@@ -1,107 +1,101 @@
-/* ubah dari `form { ... }` menjadi: */
-.content-container form {
-  background: #fff;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-/* ubah dari `.btn-primary { ... }` menjadi: */
-.content-container .btn-primary {
-  background-color: #18b300;
-  color: #fff;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-.content-container .btn-primary:hover {
-  background-color: #128a00;
-}
-
-/* ubah dari `.btn-secondary { ... }` menjadi: */
-.content-container .btn-secondary {
-  background-color: #7f8c8d;
-  color: #fff;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  font-weight: 600;
-  text-decoration: none;
-  display: inline-block;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-.content-container .btn-secondary:hover {
-  background-color: #606b75;
-}
-
-/* sisanya tetap */
-.content-container {
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 0 20px;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
-}
-
-.content-container h1 {
-  text-align: center;
-  margin-top: 0;
-  margin-bottom: 30px;
-  font-weight: 700;
-  font-size: 2rem;
-  color: #2c3e50;
-  letter-spacing: 0.03em;
-  line-height: 1.2;
-}
-
-.content-container .form-group {
-  margin-bottom: 20px;
-}
-
-.content-container .form-group label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #2c3e50;
-}
-
-.content-container .form-control {
-  width: 100%;
-  padding: 10px 12px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-sizing: border-box;
-  transition: border-color 0.3s ease;
-}
-
-.content-container .form-control:focus {
-  outline: none;
-  border-color: #18b300;
-}
-
-.content-container .form-text {
-  display: block;
-  margin-top: 6px;
-  font-size: 0.85rem;
-  color: #7f8c8d;
-}
-
-@media (max-width: 480px) {
-  .content-container {
-    padding: 0 10px;
-  }
-  .content-container form {
+/* Container utama */
+.edit-matkul-container {
+    max-width: 600px;
+    margin: 30px auto;
     padding: 20px;
-  }
-  .content-container .btn-primary,
-  .content-container .btn-secondary {
-    width: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Form Container */
+.edit-matkul-form {
+    background-color: #fff;
+    padding: 30px 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+}
+
+.edit-matkul-container h1 {
     text-align: center;
-  }
+    margin-bottom: 30px;
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #2c3e50;
+}
+
+.edit-matkul-form .form-group {
+    margin-bottom: 20px;
+}
+
+.edit-matkul-form .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #34495e;
+}
+
+.edit-matkul-form .form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+.edit-matkul-form .form-control:focus {
+    outline: none;
+    border-color: #f0ad4e; /* Warna oranye untuk fokus edit */
+    box-shadow: 0 0 5px #f0ad4e88;
+}
+
+/* Tombol Aksi (Update dan Batal) */
+.form-actions {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column; /* Mengatur tombol menjadi vertikal */
+    gap: 10px; /* Memberi jarak antar tombol */
+}
+
+.form-actions .btn {
+    width: 100%;
+    padding: 12px 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: background-color 0.3s;
+    color: white;
+}
+
+.btn-update {
+    background-color: #28a745; /* Warna hijau untuk Update/Simpan */
+}
+.btn-update:hover {
+    background-color: #218838;
+}
+
+.btn-cancel {
+    background-color: #6c757d; /* Abu-abu */
+}
+.btn-cancel:hover {
+    background-color: #5a6268;
+}
+
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    padding: .75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+}
+
+.alert-danger ul {
+    margin-bottom: 0;
+    padding-left: 20px;
 }

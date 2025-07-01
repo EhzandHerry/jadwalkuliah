@@ -14,22 +14,26 @@
         <h3>@yield('header_title', 'Welcome to Admin Dashboard')</h3>
     </header>
     
-    <!-- Sidebar -->
+
    <!-- Sidebar -->
 <div class="sidebar" id="sidebar">
     <ul>
         <li><a href="{{ route('admin.dosen.index') }}">Manajemen Dosen</a></li>
-        <li><a href="{{ route('admin.mata_kuliah.index') }}">Manajemen Matakuliah</a></li>
+        <li><a href="{{ route('admin.mata_kuliah.index') }}">Manajemen Mata Kuliah</a></li>
         <li><a href="{{ route('admin.ruang_kelas.index') }}">Manajemen Ruang Kelas</a></li>
-        <li><a href="{{ route('admin.matakuliah_dosen.index') }}">Matakuliah & Dosen</a></li>
+        <li><a href="{{ route('admin.matakuliah_dosen.index') }}">Mata Kuliah & Dosen</a></li>
         <li><a href="{{ route('admin.jadwal.index') }}">Manajemen Jadwal</a></li>
         <!-- <li><a href="{{ route('admin.available.dashboard') }}">Available Time Dashboard</a></li> -->
     </ul>
     <div class="logout-container">
-        <form action="/logout" method="POST">
+        {{-- ====================================================== --}}
+        {{-- PERUBAHAN DI SINI: Menambahkan konfirmasi onsubmit --}}
+        {{-- ====================================================== --}}
+        <form action="/logout" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin logout?');">
             @csrf
             <button type="submit">Logout</button>
         </form>
+        {{-- ====================================================== --}}
     </div>
 </div>
 

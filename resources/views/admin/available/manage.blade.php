@@ -1,16 +1,17 @@
 @extends('layouts.layout')
 
 @section('title', 'Manage Available Time')
-@section('header_title', 'Manage Available Time')
+@section('header_title', 'Manajemen Waktu Ketersediaan')
 
 @section('content')
 <div class="available-container">
-    <h1>Manage Available Time for {{ $dosen->name }}</h1>
+    <h1>Manajemen Waktu Ketersediaan untuk {{ $dosen->name }}</h1>
 
     {{-- Tombol Kembali dan Tambah --}}
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <a href="{{ route('admin.available.dashboard') }}" class="back-btn" style="margin-bottom: 0;">Kembali</a>
-        <a href="{{ route('admin.available.add', $dosen->id) }}" class="add-btn" style="margin-top: 0;">Add Available Time</a>
+        {{-- PERUBAHAN DI SINI: Mengubah route ke halaman list dosen --}}
+        <a href="{{ route('admin.dosen.index') }}" class="back-btn" style="margin-bottom: 0;">Kembali</a>
+        <a href="{{ route('admin.available.add', $dosen->id) }}" class="add-btn" style="margin-top: 0;">Tambah Waktu Ketersediaan</a>
     </div>
 
     {{-- Notifikasi --}}
@@ -25,9 +26,9 @@
     <table class="available-table">
         <thead>
             <tr>
-                <th>Day</th>
-                <th>Start Time</th>
-                <th>End Time</th>
+                <th>Hari</th>
+                <th>Waktu Mulai</th>
+                <th>Waktu Selesai</th>
                 <th>Aksi</th>
             </tr>
         </thead>
@@ -38,14 +39,12 @@
                     <td>{{ \Carbon\Carbon::parse($item->start_time)->format('H:i') }}</td>
                     <td>{{ \Carbon\Carbon::parse($item->end_time)->format('H:i') }}</td>
                     <td class="action-cell">
-                        {{-- Menerapkan class .btn-link dan .edit-btn --}}
                         <a href="{{ route('admin.available.edit', $item->id) }}" class="btn-link edit-btn">Edit</a>
 
                         <form action="{{ route('admin.available.delete', $item->id) }}" method="POST" onsubmit="return confirm('Yakin ingin hapus jadwal ini?');">
                             @csrf
                             @method('DELETE')
-                            {{-- Menerapkan class .delete-btn --}}
-                            <button type="submit" class="delete-btn">Delete</button>
+                            <button type="submit" class="delete-btn">Hapus</button>
                         </form>
                     </td>
                 </tr>

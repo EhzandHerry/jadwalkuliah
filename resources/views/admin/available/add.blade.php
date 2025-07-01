@@ -1,12 +1,12 @@
 @extends('layouts.layout')
 
 @section('title', 'Add Available Time')
-@section('header_title', 'Add Available Time for ' . $dosen->name)
+@section('header_title', 'Manajemen Waktu Ketersediaan untuk ' . $dosen->name)
 
 @section('content')
 <div class="available-container">
   <div class="available-form">
-    <h1>Add Available Time for {{ $dosen->name }}</h1>
+    <h1>Tambah Waktu Ketersediaan untuk {{ $dosen->name }}</h1>
 
     @if(session('error'))
       <div class="alert alert-danger">{{ session('error') }}</div>
@@ -19,7 +19,7 @@
         <label for="hari">Hari</label>
         <select name="hari" id="hari" required class="form-control">
           <option value="">-- Pilih Hari --</option>
-          @foreach(['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'] as $hari)
+          @foreach(['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'] as $hari)
             <option value="{{ $hari }}"
               {{ old('hari') == $hari ? 'selected':'' }}
               @if(in_array($hari, $existingDays)) disabled @endif
@@ -36,7 +36,6 @@
       <div class="form-group">
         <label for="start_time">Start Time</label>
         <select name="start_time" id="start_time" required class="form-control">
-          <option value="">-- Pilih Jam Mulai --</option>
           <optgroup label="Sesi 1">
             <option value="07:00">07:00</option>
             <option value="07:50">07:50</option>
@@ -71,7 +70,6 @@
       <div class="form-group">
         <label for="end_time">End Time</label>
         <select name="end_time" id="end_time" required class="form-control">
-          <option value="">-- Pilih Jam Selesai --</option>
           <optgroup label="Sesi 1">
             <option value="07:50">07:50</option>
             <option value="08:40">08:40</option>

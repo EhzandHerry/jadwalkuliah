@@ -1,4 +1,3 @@
-{{-- resources/views/admin/ruang_kelas/index.blade.php --}}
 @extends('layouts.layout')
 
 @section('title', 'Ruang Kelas')
@@ -9,6 +8,11 @@
         <h1>Daftar Ruang Kelas</h1>
 
         <a href="{{ route('admin.ruang_kelas.create') }}" class="add-ruang-btn">Tambah Ruang Kelas</a>
+
+        {{-- PENAMBAHAN DI SINI: Notifikasi Sukses --}}
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
 
         <table class="ruang-kelas-table">
             <thead>
@@ -31,10 +35,11 @@
                             <a href="{{ route('admin.ruang_kelas.edit', $ruang->id) }}"
                                class="edit-ruang-btn">Edit</a>
 
+                            {{-- PERBAIKAN DI SINI: Mengubah kutip pada onsubmit agar valid --}}
                             <form action="{{ route('admin.ruang_kelas.destroy', $ruang->id) }}"
                                   method="POST"
                                   style="display:inline;"
-                                  onsubmit="return confirm('Yakin ingin menghapus ruang \"{{ $ruang->nama_ruangan }}\"?')">
+                                  onsubmit='return confirm("Yakin ingin menghapus ruang {{ $ruang->nama_ruangan }}?")'>
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="delete-btn">Hapus</button>

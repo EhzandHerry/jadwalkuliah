@@ -191,29 +191,53 @@ public function assignRuang(Request $request, $kelasId)
 
     // Form edit jadwal
     public function edit($jadwalId)
-{
-    $jadwal = JadwalKuliah::findOrFail($jadwalId);
-    $ruangKelasList = RuangKelas::all();
+    {
+        $jadwal = JadwalKuliah::with('dosen', 'mataKuliah')->findOrFail($jadwalId);
+        
+        // Ambil semua ruang kelas untuk dropdown
+        $ruangKelasList = RuangKelas::orderBy('nama_ruangan')->get();
 
-    // Ambil available times dosen untuk jadwal ini (mirip index)
-    $dosen = $jadwal->dosen;
-    $availableTimes = [];
-    if ($dosen && $dosen->available) {
-        $availableTimes[$dosen->unique_number] = $dosen->available
-            ->groupBy('hari')
-            ->map(function ($times) {
-                return $times->map(function ($item) {
-                    return [
-                        'start' => substr($item->start_time, 0, 5),
-                        'end'   => substr($item->end_time, 0, 5),
-                    ];
-                })->values()->all();
-            })
-            ->toArray();
+        // Buat map kapasitas ruangan untuk digunakan di JavaScript
+        $roomCapacities = $ruangKelasList->pluck('kapasitas_kelas', 'nama_ruangan');
+
+        // Ambil available times dosen untuk jadwal ini
+        $dosen = $jadwal->dosen;
+        $availableTimes = [];
+        if ($dosen && $dosen->available) {
+            $availableTimes[$dosen->unique_number] = $dosen->available
+                ->groupBy('hari')
+                ->mapWithKeys(function ($times, $hari) {
+                    return [$hari => $times->map(function ($item) {
+                        return substr($item->start_time, 0, 5) . ' - ' . substr($item->end_time, 0, 5);
+                    })->values()->all()];
+                })
+                ->toArray();
+        }
+
+        // Ambil semua jadwal lain untuk pengecekan konflik, KECUALI jadwal yang sedang diedit ini
+        // Kita sertakan info penting untuk validasi kompleks
+        $existingJadwals = JadwalKuliah::where('id', '!=', $jadwalId)
+            ->get()
+            ->map(function($j) {
+                list($start, $end) = explode(' - ', $j->jam);
+                return [
+                    'hari'  => $j->hari,
+                    'ruang' => $j->nama_ruangan,
+                    'start' => trim($start),
+                    'end'   => trim($end),
+                    'kode_mata_kuliah' => $j->kode_mata_kuliah,
+                    'unique_number' => $j->unique_number,
+                ];
+            })->toArray();
+
+        return view('admin.jadwal.edit', compact(
+            'jadwal', 
+            'ruangKelasList', 
+            'availableTimes',
+            'existingJadwals',
+            'roomCapacities' // Kirim data kapasitas ke view
+        ));
     }
-
-    return view('admin.jadwal.edit', compact('jadwal', 'ruangKelasList', 'availableTimes'));
-}
 
 
 public function update(Request $request, $jadwalId)

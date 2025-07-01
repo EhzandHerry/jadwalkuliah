@@ -1,12 +1,12 @@
 @extends('layouts.layout')
 
-@section('title', 'Edit Available Time')
-@section('header_title', 'Edit Available Time for ' . $available->user->name)
+@section('title', 'Edit Waktu Ketersediaan')
+@section('header_title', 'Edit Waktu Ketersediaan untuk ' . $available->user->name)
 
 @section('content')
 <div class="available-container">
     <div class="available-form">
-        <h1>Edit Available Time for {{ $available->user->name }}</h1>
+        <h1>Edit Waktu Ketersediaan untuk {{ $available->user->name }}</h1>
 
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -34,7 +34,7 @@
             @endphp
 
             <div class="form-group">
-                <label for="start_time">Start Time</label>
+                <label for="start_time">Waktu Mulai</label>
                 <select name="start_time" id="start_time" required class="form-control">
                     <option value="">-- Pilih Jam Mulai --</option>
                     {{-- Opsi jam di-generate dengan rapi --}}
@@ -70,7 +70,7 @@
             </div>
 
             <div class="form-group">
-                <label for="end_time">End Time</label>
+                <label for="end_time">Waktu Selesai</label>
                 <select name="end_time" id="end_time" required class="form-control">
                     <option value="">-- Pilih Jam Selesai --</option>
                     <optgroup label="Sesi 1">
@@ -108,7 +108,7 @@
             {{-- PERBAIKAN STRUKTUR TOMBOL AGAR SAMA DENGAN FORM ADD --}}
             {{-- ====================================================== --}}
             <div class="form-group">
-                <button type="submit" class="btn-action btn-update">Update Availability</button>
+                <button type="submit" class="btn-action btn-update">Simpan</button>
             </div>
              <a href="{{ route('admin.available.manage', $available->user->id) }}" class="btn-secondary">
                 Batal

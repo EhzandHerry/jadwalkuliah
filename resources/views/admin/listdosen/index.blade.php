@@ -1,12 +1,17 @@
 @extends('layouts.layout')
 
-@section('title', 'Daftar Dosen')
-@section('header_title', 'Daftar Dosen')
+@section('title', 'Manajemen Dosen')
+@section('header_title', 'Manajemen Dosen')
 
 @section('content')
   <div class="dosen-list-container">
     <h1>Daftar Dosen</h1>
     <a href="{{ route('admin.dosen.create') }}" class="btn btn-add mb-3">Tambah Dosen</a>
+
+    {{-- Notifikasi Sukses --}}
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
 
     <!-- Form Search -->
     <form method="GET" action="{{ route('admin.dosen.index') }}" class="mb-3">
@@ -31,7 +36,7 @@
           <th>Nama Dosen</th>
           <th>NIDN</th>
           <th>Email</th>
-          <th>Availability</th> <!-- ubah header -->
+          <th>Ketersediaan</th> <!-- ubah header -->
           <th style="width:240px">Aksi</th>
         </tr>
       </thead>
@@ -52,11 +57,11 @@
                     method="POST" style="display:inline-block;"
                     onsubmit="return confirm('Yakin ingin menghapus dosen ini?')">
                 @csrf @method('DELETE')
-                <button type="submit" class="btn btn-danger btn-sm mr-1">Delete</button>
+                <button type="submit" class="btn btn-danger btn-sm mr-1">Hapus</button>
               </form>
 
               <a href="{{ route('admin.available.manage', $item->id) }}"
-                 class="btn btn-info btn-sm">Manage Available</a>
+                 class="btn btn-info btn-sm">Ketersediaan</a>
             </td>
           </tr>
         @endforeach

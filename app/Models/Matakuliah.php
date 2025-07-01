@@ -16,14 +16,8 @@ class MataKuliah extends Model
         'nama_matkul',
         'sks',
         'semester',
-        'jumlah_kelas',    // ← here
+        'jumlah_kelas',    
     ];
-
-    // Relasi dengan model User (Dosen)
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'unique_number', 'unique_number');
-    }
 
     // In MataKuliah.php model
 public function kelas()

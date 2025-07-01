@@ -1,92 +1,68 @@
 @extends('layouts.layout')
 
-@section('title', 'Edit Matakuliah')
-@section('header_title', 'Edit Matakuliah')
+@section('title', 'Edit Mata Kuliah')
+@section('header_title', 'Edit Mata Kuliah')
 
 @section('content')
-<div class="content-container">
-  <h1>Edit Matakuliah</h1>
+<div class="edit-matkul-container">
+    
+    <form action="{{ route('admin.mata_kuliah.update', $matkul->id) }}" method="POST" class="edit-matkul-form">
+        @csrf
+        @method('PUT')
+        
+        <h1>Edit Mata Kuliah</h1>
 
-  <form action="{{ route('admin.mata_kuliah.update', $matkul->id) }}"
-        method="POST">
-    @csrf
-    @method('PUT')
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-    <div class="form-group">
-      <label for="kode_matkul">Kode Mata Kuliah</label>
-      <input type="text"
-             id="kode_matkul"
-             name="kode_matkul"
-             class="form-control"
-             value="{{ old('kode_matkul', $matkul->kode_matkul) }}"
-             required>
-    </div>
+        <div class="form-group">
+            <label for="kode_matkul">Kode Mata Kuliah</label>
+            <input type="text" id="kode_matkul" name="kode_matkul" value="{{ old('kode_matkul', $matkul->kode_matkul) }}" required class="form-control">
+        </div>
 
-    <div class="form-group">
-      <label for="nama_matkul">Nama Mata Kuliah</label>
-      <input type="text"
-             id="nama_matkul"
-             name="nama_matkul"
-             class="form-control"
-             value="{{ old('nama_matkul', $matkul->nama_matkul) }}"
-             required>
-    </div>
+        <div class="form-group">
+            <label for="nama_matkul">Nama Mata Kuliah</label>
+            <input type="text" id="nama_matkul" name="nama_matkul" value="{{ old('nama_matkul', $matkul->nama_matkul) }}" required class="form-control">
+        </div>
 
-    <div class="form-group">
-      <label for="sks">SKS</label>
-      <input type="number"
-             id="sks"
-             name="sks"
-             class="form-control"
-             value="{{ old('sks', $matkul->sks) }}"
-             required>
-    </div>
+        <div class="form-group">
+            <label for="sks">SKS</label>
+            <input type="number" id="sks" name="sks" value="{{ old('sks', $matkul->sks) }}" min="0" required class="form-control">
+        </div>
 
-    <div class="form-group">
-  <label for="semester">Semester</label>
-  <select id="semester"
-          name="semester"
-          class="form-control"
-          required>
-    <option value="" disabled {{ old('semester') ? '' : 'selected' }}>
-      Pilih Semester
-    </option>
-    @for($i = 1; $i <= 8; $i++)
-      <option value="{{ $i }}"
-        {{ old('semester') == (string)$i ? 'selected' : '' }}>
-        Semester {{ $i }}
-      </option>
-    @endfor
-  </select>
-</div>
+        <div class="form-group">
+            <label for="semester">Semester</label>
+            <select id="semester" name="semester" class="form-control" required>
+                <option value="" disabled>Pilih Semester</option>
+                @for($i = 1; $i <= 8; $i++)
+                    <option value="{{ $i }}" {{ old('semester', $matkul->semester) == $i ? 'selected' : '' }}>
+                        Semester {{ $i }}
+                    </option>
+                @endfor
+            </select>
+        </div>
 
+        <div class="form-group">
+            <label for="jumlah_kelas">Jumlah Kelas</label>
+            <input type="number" id="jumlah_kelas" name="jumlah_kelas" value="{{ old('jumlah_kelas', $matkul->jumlah_kelas) }}" min="1" required class="form-control">
+        </div>
 
-    <div class="form-group">
-  <label for="jumlah_kelas">Jumlah Kelas</label>
-  <input type="number"
-         id="jumlah_kelas"
-         name="jumlah_kelas"
-         class="form-control"
-         value="{{ old('jumlah_kelas',$matkul->jumlah_kelas) }}"
-         min="1"
-         required>
-</div>
-
-
-    <button type="submit" class="btn btn-primary">
-      Update
-    </button>
-    <a href="{{ route('admin.mata_kuliah.index') }}"
-       class="btn btn-secondary">Batal</a>
-  </form>
+        {{-- Menggunakan div pembungkus untuk tombol --}}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-update">Simpan</button>
+            <a href="{{ route('admin.mata_kuliah.index') }}" class="btn btn-cancel">Batal</a>
+        </div>
+    </form>
 </div>
 @endsection
 
 @push('css')
-<link rel="stylesheet" href="{{ asset('css/admin/matakuliah/edit.css') }}">
-@endpush
-
-
-@push('css')
-<link rel="stylesheet" href="{{ asset('css/admin/matakuliah/create.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/matakuliah/edit.css') }}">
 @endpush

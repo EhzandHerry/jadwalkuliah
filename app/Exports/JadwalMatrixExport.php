@@ -31,10 +31,12 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
     protected array $breakSlots = [
         1 => ['time' => '08:40-08:50', 'text' => 'Pergantian Sesi'],
         2 => ['time' => '10:30-10:40', 'text' => 'Pergantian Sesi'],
-        3 => ['time' => '11:30-12:20', 'text' => 'Pergantian Sesi'],
+        // PERUBAHAN DI SINI
+        3 => ['time' => '11:30-12:20', 'text' => 'Istirahat/Dzuhur/Pergantian Sesi Perkuliahan'],
         4 => ['time' => '13:10-13:20', 'text' => 'Pergantian Sesi'],
         5 => ['time' => '15:00-15:30', 'text' => 'Pergantian Sesi'],
-        6 => ['time' => '17:45-18:30', 'text' => 'Pergantian Sesi'],
+        // DAN PERUBAHAN DI SINI
+        6 => ['time' => '17:45-18:30', 'text' => 'Istirahat/Maghrib/Pergantian Sesi Perkuliahan'],
     ];
 
     protected array $semesterColors = [
@@ -42,8 +44,6 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
         4 => 'FDE9D9', // Orange Muda
         6 => 'DDEBF7', // Biru Muda
     ];
-
-    // app/Exports/JadwalMatrixExport.php
 
     public function __construct()
     {
@@ -78,38 +78,18 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
                 continue;
             }
 
-            $maxSesiForDay = 0;
-            foreach (array_reverse($this->sessionRanges, true) as $sesiNum => $slots) {
-                foreach ($slots as $jam) {
-                    [$start, $end] = explode('-', $jam);
-                    $isAnyClassInSlot = $jadwalHari->first(function ($j) use ($start, $end) {
-                        return substr($j->jam, 0, 5) < trim($end) && trim($start) < substr($j->jam, -5);
-                    });
-
-                    if ($isAnyClassInSlot) {
-                        $maxSesiForDay = $sesiNum;
-                        break 2;
-                    }
-                }
-            }
-
-            // --- STRUKTUR HEADER BARU (2 BARIS) ---
             $header_row1 = ['SESI', 'JAM', $hari];
             $rows[] = $header_row1;
 
             $header_row2 = ['', ''];
             $header_row2 = array_merge($header_row2, $this->rooms);
             $rows[] = $header_row2;
-
+            
             foreach ($this->sessionRanges as $sesi => $slots) {
-                $sessionOutput = [];
-                $currentSessionHasClasses = false;
-
                 foreach ($slots as $jam) {
                     [$start, $end] = explode('-', $jam);
                     $line = ["Sesi {$sesi}", $jam];
 
-                    $rowHasData = false;
                     foreach ($this->rooms as $ruang) {
                         $jds = $jadwalHari
                             ->where('nama_ruangan', $ruang)
@@ -121,7 +101,6 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
                         if ($jds->isEmpty()) {
                             $line[] = '';
                         } else {
-                            $rowHasData = true;
                             $cells = [];
                             foreach ($jds->groupBy(fn($j) => $j->kode_mata_kuliah . '|' . $j->unique_number) as $grp) {
                                 $f = $grp->first();
@@ -136,26 +115,16 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
                             $line[] = implode("\n\n", $cells);
                         }
                     }
-
-                    if ($rowHasData) {
-                        $currentSessionHasClasses = true;
-                        $sessionOutput[] = $line;
-                    }
+                    $rows[] = $line;
                 }
                 
-                if ($currentSessionHasClasses) {
-                    foreach ($sessionOutput as $outputLine) {
-                        $rows[] = $outputLine;
-                    }
-                }
-
-                if (isset($this->breakSlots[$sesi]) && $sesi < $maxSesiForDay && $currentSessionHasClasses) {
-                    $breakInfo = $this->breakSlots[$sesi];
-                    $rows[] = [
-                        '', 
-                        $breakInfo['time'],
-                        $breakInfo['text'],
-                    ];
+                if (isset($this->breakSlots[$sesi])) {
+                     $breakInfo = $this->breakSlots[$sesi];
+                     $rows[] = [
+                         '', 
+                         $breakInfo['time'],
+                         $breakInfo['text'],
+                     ];
                 }
             }
         }
@@ -172,7 +141,7 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
                 $totalRow = $sheet->getHighestRow();
 
                 // Judul utama
-                $sheet->setCellValue('A1', 'JADWAL PERKULIAHAN SEMESTER GENAP PRODI TEKNOLOGI INFORMASI UMY 2024/2025');
+                $sheet->setCellValue('A1', 'JADWAL PERKULIAHAN SEMESTER GENAP PRODI TEKNOLOGI INFORMASI UNY 2024/2025');
                 $sheet->mergeCells("A1:{$lastCol}1");
                 $sheet->getStyle('A1')->applyFromArray([
                     'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
@@ -187,81 +156,69 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
                 $sheet->getStyle("B2:B{$totalRow}")->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
 
-                // --- LOGIKA BARU UNTUK HEADER 2 BARIS ---
+                // Styling header 2 baris
                 for ($r = 2; $r <= $totalRow; $r++) {
                     $valA = trim((string)$sheet->getCell("A{$r}")->getValue());
                     $valB = trim((string)$sheet->getCell("B{$r}")->getValue());
-
                     if ($valA === 'SESI' && $valB === 'JAM') {
                         $topRow = $r;
                         $bottomRow = $r + 1;
-
-                        // 1. Atur style untuk NAMA HARI
                         $sheet->mergeCells("C{$topRow}:{$lastCol}{$topRow}");
-                        $sheet->getStyle("C{$topRow}")->applyFromArray([
-                            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-                            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
-                            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1F4E78']]
-                        ]);
-
-                        // 2. Atur style untuk "SESI" (merge vertikal)
+                        $sheet->getStyle("C{$topRow}")->applyFromArray(['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']], 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER], 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1F4E78']]]);
                         $sheet->mergeCells("A{$topRow}:A{$bottomRow}");
-                        $sheet->getStyle("A{$topRow}")->applyFromArray([
-                            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-                            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
-                            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1F4E78']]
-                        ]);
-                        
-                        // 3. Atur style untuk "JAM" (merge vertikal)
+                        $sheet->getStyle("A{$topRow}")->applyFromArray(['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']], 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER], 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1F4E78']]]);
                         $sheet->mergeCells("B{$topRow}:B{$bottomRow}");
-                        $sheet->getStyle("B{$topRow}")->applyFromArray([
-                            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-                            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
-                            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1F4E78']]
-                        ]);
-
-                        // 4. Atur style untuk NAMA RUANGAN
-                        $sheet->getStyle("C{$bottomRow}:{$lastCol}{$bottomRow}")->applyFromArray([
-                            'font' => ['bold' => true],
-                            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
-                            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'FFFF00']]
-                        ]);
-                        
+                        $sheet->getStyle("B{$topRow}")->applyFromArray(['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']], 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER], 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1F4E78']]]);
+                        $sheet->getStyle("C{$bottomRow}:{$lastCol}{$bottomRow}")->applyFromArray(['font' => ['bold' => true], 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER], 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'FFFF00']]]);
                         $r++;
                     }
                 }
 
-                // Merge vertikal kolom SESI (untuk data Sesi 1, Sesi 2, dst)
-                $startMergeRow = 0;
-                for ($r = 3; $r <= $totalRow + 1; $r++) {
-                    $val = trim((string)$sheet->getCell("A{$r}")->getValue());
-                    if (str_starts_with($val, 'Sesi ')) {
-                        if ($startMergeRow === 0) {
-                            $startMergeRow = $r;
+                // --- PERUBAHAN DI SINI: Logika baru untuk merge dan alignment kolom SESI ---
+                $row = 3; // Mulai iterasi setelah header utama
+                while ($row <= $totalRow) {
+                    $cellValue = trim((string)$sheet->getCell("A{$row}")->getValue());
+                    if (str_starts_with($cellValue, 'Sesi ')) {
+                        $startMergeRow = $row;
+                        $endMergeRow = $row;
+                        // Cari baris terakhir yang memiliki nilai Sesi yang sama
+                        while ($endMergeRow + 1 <= $totalRow && trim((string)$sheet->getCell("A" . ($endMergeRow + 1))->getValue()) === $cellValue) {
+                            $endMergeRow++;
                         }
+                        
+                        $range = "A{$startMergeRow}:A{$endMergeRow}";
+                        if ($startMergeRow < $endMergeRow) {
+                            $sheet->mergeCells($range);
+                        }
+                        
+                        // Terapkan alignment ke sel yang sudah di-merge (atau sel tunggal)
+                        $sheet->getStyle($range)->getAlignment()->applyFromArray([
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                            'vertical'   => Alignment::VERTICAL_CENTER,
+                        ]);
+
+                        $row = $endMergeRow + 1; // Lanjutkan ke baris berikutnya
                     } else {
-                        if ($startMergeRow !== 0) {
-                            $endMergeRow = $r - 1;
-                            if ($startMergeRow < $endMergeRow) {
-                                $sheet->mergeCells("A{$startMergeRow}:A{$endMergeRow}");
-                                $sheet->getStyle("A{$startMergeRow}")->getAlignment()
-                                    ->setVertical(Alignment::VERTICAL_CENTER);
-                            }
-                            $startMergeRow = 0;
-                        }
+                        $row++; // Lanjut jika bukan sel "Sesi"
                     }
                 }
-
+                
                 // Color "Pergantian Sesi" rows
                 for ($r = 2; $r <= $totalRow; $r++) {
-                    $val = trim((string)$sheet->getCell("C{$r}")->getValue());
-                    if ($val === 'Pergantian Sesi') {
+                    // Cari berdasarkan waktu di kolom B, bukan teks di kolom C
+                    $jamValue = trim((string)$sheet->getCell("B{$r}")->getValue());
+                    $isBreakSlot = false;
+                    foreach ($this->breakSlots as $break) {
+                        if ($break['time'] === $jamValue) {
+                            $isBreakSlot = true;
+                            break;
+                        }
+                    }
+
+                    if ($isBreakSlot) {
                         $sheet->mergeCells("C{$r}:{$lastCol}{$r}");
-                        $sheet->getStyle("C{$r}")->applyFromArray([
-                            'font'      => ['bold' => true],
-                            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
-                            'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E0E0E0']]
-                        ]);
+                        $styleArray = ['alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER], 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E0E0E0']]];
+                        $sheet->getStyle("A{$r}:{$lastCol}{$r}")->applyFromArray($styleArray);
                     }
                 }
 
@@ -279,10 +236,7 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
                                 $semester = (int) $matches[1];
                                 if (isset($this->semesterColors[$semester])) {
                                     $color = $this->semesterColors[$semester];
-                                    $sheet->getStyle($cellCoordinate)->getFill()->applyFromArray([
-                                        'fillType' => Fill::FILL_SOLID,
-                                        'startColor' => ['rgb' => $color]
-                                    ]);
+                                    $sheet->getStyle($cellCoordinate)->getFill()->applyFromArray(['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $color]]);
                                 }
                                 $cleanedValue = preg_replace('/^SEM(\d+)::/', '', $value);
                                 $cell->setValue($cleanedValue);

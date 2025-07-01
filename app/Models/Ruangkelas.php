@@ -18,9 +18,4 @@ class RuangKelas extends Model
         'kapasitas_kelas', 
     ];
 
-    // Relasi dengan Kelas
-    public function kelas()
-    {
-        return $this->hasMany(Kelas::class, 'ruang_kelas_id');
-    }
 }

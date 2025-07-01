@@ -77,6 +77,8 @@ Route::post('/admin/matakuliah-dosen/{kelas}/assign', [AdminController::class, '
      ->name('admin.matakuliah_dosen.assign');
 Route::put('/admin/matakuliah-dosen/{kelas}/update', [AdminController::class, 'updateDosenKelas'])
      ->name('admin.matakuliah_dosen.update');
+Route::delete('/matakuliah-dosen/{kelasId}', [AdminController::class, 'deleteDosenKelas'])->name('admin.matakuliah_dosen.delete');
+
 
 
 Route::get('admin/jadwal', [JadwalController::class, 'index'])->name('admin.jadwal.index');

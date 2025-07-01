@@ -1,5 +1,22 @@
 /* /public/css/admin/jadwal/matrix_preview.css */
 
+.page-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.page-main-title {
+    text-align: center;
+    margin-bottom: 30px !important;
+    font-weight: 700;
+    font-size: 2.25rem;
+    color: #2c3e50;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+    padding-top: 15px;
+}
+
 /* Wrapper dan Tabel Utama */
 .matrix-wrapper { 
     overflow-x: auto; 
@@ -13,13 +30,13 @@
     padding: 5px 8px;
     text-align: center;
     vertical-align: middle;
-    white-space: pre-wrap; /* Agar \n berfungsi */
+    white-space: pre-wrap;
     font-size: 12px;
 }
 
 /* Style Judul Utama */
 .title-row th {
-    background-color: #C00000; /* Merah Tua */
+    background-color: #C00000;
     color: #FFFFFF;
     font-weight: bold;
     font-size: 1.2em;
@@ -28,14 +45,14 @@
 
 /* Style Header Hari, Sesi, Jam */
 .header-day, .header-sesi-jam {
-    background-color: #1F4E78; /* Biru Tua */
+    background-color: #1F4E78;
     color: #FFFFFF;
     font-weight: bold;
 }
 
 /* Style Header Ruangan */
 .header-room {
-    background-color: #FFFF00; /* Kuning Menyala */
+    background-color: #FFFF00;
     color: #000000;
     font-weight: bold;
 }
@@ -43,14 +60,14 @@
 /* Style Baris Pergantian Sesi */
 .break-row .break-time,
 .break-row .break-text {
-    background-color: #E0E0E0; /* Abu-abu muda */
+    background-color: #E0E0E0;
     font-weight: bold;
 }
 
 /* Style Sel Matakuliah berdasarkan Semester */
-.semester-2 { background-color: #E2F0D9; } /* Hijau Muda */
-.semester-4 { background-color: #FDE9D9; } /* Orange Muda */
-.semester-6 { background-color: #DDEBF7; } /* Biru Muda */
+.semester-2 { background-color: #E2F0D9; }
+.semester-4 { background-color: #FDE9D9; }
+.semester-6 { background-color: #DDEBF7; }
 
 .matkul-cell { 
     text-align: left; 
@@ -63,19 +80,21 @@
     border: 1px solid rgba(0,0,0,0.1);
 }
 
-/* --- STYLE BARU UNTUK TOMBOL --- */
+/* Style Tombol Aksi */
 .preview-actions .btn {
     font-weight: bold;
     padding: 8px 20px;
-    border-radius: 20px; /* Membuat tombol lebih oval */
+    border-radius: 20px;
     border: none;
     transition: all 0.3s ease;
     box-shadow: 0 2px 5px rgba(0,0,0,0.15);
     margin-left: 10px;
+    text-decoration: none; /* Menghilangkan garis bawah */
 }
 .preview-actions .btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    text-decoration: none; /* Menghilangkan garis bawah saat hover */
 }
 
 /* Tombol Kembali */
@@ -98,45 +117,5 @@
     color: white;
 }
 
-/* Bonus: Ikon untuk tombol jika Anda menggunakan Font Awesome */
-.preview-actions .btn-secondary::before {
-    font-family: "Font Awesome 5 Free"; /* Pastikan Anda sudah load Font Awesome */
-    content: "\f060\00a0"; /* Kode ikon panah kiri */
-    font-weight: 900;
-}
-.preview-actions .btn-success::before {
-    font-family: "Font Awesome 5 Free";
-    content: "\f56d\00a0"; /* Kode ikon file-excel */
-    font-weight: 900;
-}
-
-/* /public/css/admin/jadwal/matrix_preview.css */
-
-/* --- STYLE BARU UNTUK MEMPERBAIKI OVERLAP --- */
-.page-content-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem; /* Memberi jarak 1rem antara judul/tombol dan tabel */
-}
-/* ------------------------------------------- */
-
-
-/* Wrapper dan Tabel Utama */
-.matrix-wrapper { 
-    overflow-x: auto; 
-}
-
-
-/* --- STYLE BARU UNTUK JUDUL HALAMAN --- */
-.page-main-title {
-    text-align: center;
-    margin-bottom: 30px !important; /* Tambah !important untuk prioritas */
-    font-weight: 700;
-    font-size: 2.25rem;
-    color: #2c3e50;
-    letter-spacing: 0.03em;
-    line-height: 1.2;
-    padding-top: 15px;
-}
-/* ------------------------------------- */
+/* PERUBAHAN: Bagian ikon untuk tombol telah dihapus */
 

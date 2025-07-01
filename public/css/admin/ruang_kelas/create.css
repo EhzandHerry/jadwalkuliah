@@ -1,92 +1,87 @@
 /* Container utama */
 .ruang-kelas-create-container {
-  max-width: 600px;
-  margin: 30px auto;
-  padding: 30px 25px;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+    max-width: 600px;
+    margin: 30px auto;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Judul halaman */
+/* Form Container */
+.ruang-kelas-form {
+    background-color: #fff;
+    padding: 30px 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+}
+
 .ruang-kelas-create-container h1 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #2c3e50;
-  text-align: center;
-  margin-bottom: 30px;
-  letter-spacing: 0.03em;
-  line-height: 1.2;
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #2c3e50;
 }
 
-/* Form group */
-.form-group {
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
+.ruang-kelas-form .form-group {
+    margin-bottom: 20px;
 }
 
-/* Label */
-.form-group label {
-  margin-bottom: 6px;
-  font-weight: 600;
-  color: #34495e;
+.ruang-kelas-form .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #34495e;
 }
 
-/* Input field */
-.input-field {
-  padding: 10px 12px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
-  outline: none;
+.ruang-kelas-form .input-field {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
 }
 
-.input-field:focus {
-  border-color: #18b300;
-  box-shadow: 0 0 5px #18b300aa;
+.ruang-kelas-form .input-field:focus {
+    outline: none;
+    border-color: #18b300;
+    box-shadow: 0 0 5px #18b300aa;
 }
 
-/* Tombol submit */
+
+/* Tombol Aksi (Simpan dan Batal) */
+.form-actions {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-actions .btn {
+    width: 100%;
+    padding: 12px 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: background-color 0.3s;
+    color: white;
+}
+
 .submit-btn {
-  width: 100%;
-  padding: 12px 0;
-  background-color: #18b300; /* Hijau cerah */
-  color: white;
-  font-weight: 700;
-  font-size: 1.1rem;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin-top: 10px;
+    background-color: #18b300; /* Hijau */
 }
-
 .submit-btn:hover {
-  background-color: #148a00;
+    background-color: #0f7a00;
 }
 
-/* Back button */
-.back-btn {
-  display: inline-block;
-  margin-top: 20px;
-  color: #18b300;
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
+.cancel-btn {
+    background-color: #6c757d; /* Abu-abu */
 }
-
-.back-btn:hover {
-  color: #0f5900;
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-  .ruang-kelas-create-container {
-    padding: 20px 15px;
-  }
+.cancel-btn:hover {
+    background-color: #5a6268;
 }

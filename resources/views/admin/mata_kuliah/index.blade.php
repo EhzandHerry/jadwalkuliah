@@ -1,8 +1,8 @@
 {{-- resources/views/admin/mata_kuliah/index.blade.php --}}
 @extends('layouts.layout')
 
-@section('title', 'Matakuliah')
-@section('header_title', 'Manajemen Matakuliah')
+@section('title', 'Mata Kuliah')
+@section('header_title', 'Manajemen Mata Kuliah')
 
 @section('content')
 <div class="content-container">
@@ -42,7 +42,7 @@
     <thead class="thead-dark">
       <tr>
         <th>Kode</th>
-        <th>Nama</th>
+        <th>Nama Mata Kuliah</th>
         <th>SKS</th>
         <th>Semester</th>
         <th>Jumlah Kelas</th>
@@ -70,7 +70,7 @@
               @csrf
               @method('DELETE')
               <button type="submit" class="btn btn-danger btn-sm">
-                Delete
+                Hapus
               </button>
             </form>
           </td>
