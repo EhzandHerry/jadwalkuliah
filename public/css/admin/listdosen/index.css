@@ -1,12 +1,3 @@
-/* Container utama */
-.dosen-list-container {
-  max-width: 1200px;
-  margin: 30px auto;
-  padding: 0 20px;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
-}
 
 /* Judul halaman */
 .dosen-list-container h1 {

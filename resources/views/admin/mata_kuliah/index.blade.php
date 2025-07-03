@@ -45,6 +45,7 @@
         <th>Nama Mata Kuliah</th>
         <th>SKS</th>
         <th>Semester</th>
+        <th>Peminatan</th>
         <th>Jumlah Kelas</th>
         <th style="width:160px">Aksi</th>
       </tr>
@@ -56,6 +57,7 @@
           <td>{{ $matkul->nama_matkul }}</td>
           <td>{{ $matkul->sks }}</td>
           <td>{{ $matkul->semester }}</td>
+          <td>{{ $matkul->peminatan }}</td>
           <td>{{ $matkul->jumlah_kelas }}</td>
 
           <td>

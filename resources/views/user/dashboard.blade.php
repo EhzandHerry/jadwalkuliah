@@ -15,7 +15,7 @@
         </form>
     </header>
 
-    <h2>Daftar Mata Kuliah Anda:</h2>
+    <h2>Daftar Mata Kuliah aAnda:</h2>
     <table border="1">
         <thead>
             <tr>

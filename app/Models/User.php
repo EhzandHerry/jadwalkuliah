@@ -13,12 +13,19 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'dosen';
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
     protected $fillable = [
-        'name', 'email', 'password', 'unique_number', 'is_admin'
+        'nama', 'email', 'password', 'nidn', 'is_admin'
     ];
 
     /**
@@ -44,9 +51,13 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Relasi ke tabel ketersediaan.
+     * Kita perlu mendefinisikan foreign key ('id_dosen') dan local key ('id')
+     * karena kita tidak mengikuti konvensi Laravel.
+     */
     public function available()
-{
-    return $this->hasMany(Available::class); // A user can have multiple available times
-}
-
+    {
+        return $this->hasMany(Available::class, 'id_dosen', 'id');
+    }
 }

@@ -4,7 +4,7 @@
   margin: 30px auto;
   padding: 0 20px;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Times new roman', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
 }
 
@@ -67,6 +67,7 @@
   padding: 12px 0;
   font-weight: 700;
   font-size: 1.1rem;
+  font-family: 'Times new roman', Tahoma, Geneva, Verdana, sans-serif;
   border: none;
   border-radius: 5px;
   cursor: pointer;

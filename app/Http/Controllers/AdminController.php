@@ -8,10 +8,37 @@ use App\Models\Kelas;
 use App\Models\RuangKelas;
 use App\Models\User;
 use App\Models\Available;
-use App\Models\Jadwalkuliah;
+use App\Models\JadwalKuliah;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+
 
 class AdminController extends Controller
 {
+    public function showHome()
+    {
+        Carbon::setLocale('id');
+
+        // Mengambil hari saat ini secara dinamis
+        // Untuk pengujian, Anda bisa tetap menggunakan $hariIni = 'Senin';
+        $hariIni = Carbon::now()->isoFormat('dddd'); // Mendapatkan nama hari dalam bahasa Indonesia (e.g., "Senin", "Selasa")
+        // Jika ingin spesifik hari tertentu untuk pengujian, uncomment baris di bawah:
+        // $hariIni = 'Senin';
+
+
+        // Mengambil jadwal kuliah
+$jadwalHariIni = JadwalKuliah::with(['mataKuliah', 'dosen', 'ruangKelas']) // Hapus 'kelas'
+    ->whereRaw('LOWER(TRIM(hari)) = ?', [strtolower(trim($hariIni))])
+    ->orderBy('jam', 'asc')
+    ->get();
+        
+
+        // Jangan gunakan dd() di production! Uncomment baris di bawah ini setelah pengujian berhasil.
+        // dd($jadwalHariIni);
+
+        return view('admin.dashboard', compact('jadwalHariIni', 'hariIni'));
+    }
+
     public function dashboard()
     {
         return redirect()->route('admin.mata_kuliah.index');
@@ -20,19 +47,17 @@ class AdminController extends Controller
 /**
  * Tampilkan daftar semua kelas beserta dropdown dosen
  */
-public function indexMatKulDosen(Request $request) // Tambahkan Request
+public function indexMatKulDosen(Request $request)
     {
         $query = Kelas::has('mataKuliah')
-                      ->with(['mataKuliah', 'dosen']);
+                        ->with(['mataKuliah', 'dosen']);
 
-        // Filter pencarian nama
         if ($search = $request->input('search')) {
             $query->whereHas('mataKuliah', function($q) use ($search) {
                 $q->where('nama_matkul', 'like', "%{$search}%");
             });
         }
 
-        // Filter berdasarkan semester (Gasal/Genap)
         if ($semesterType = $request->input('semester_type')) {
             $query->whereHas('mataKuliah', function ($q) use ($semesterType) {
                 if ($semesterType === 'gasal') {
@@ -43,15 +68,14 @@ public function indexMatKulDosen(Request $request) // Tambahkan Request
             });
         }
 
-        // Lakukan join untuk bisa mengurutkan berdasarkan kode_matkul dari tabel mata_kuliah
         $kelas = $query->join('mata_kuliah', 'kelas.kode_matkul', '=', 'mata_kuliah.kode_matkul')
-                       ->orderBy('mata_kuliah.kode_matkul', 'asc') // Urutkan berdasarkan kode_matkul
-                       ->orderBy('kelas.kelas', 'asc') // Kemudian urutkan berdasarkan kelas
-                       ->select('kelas.*') // Pilih semua kolom dari tabel kelas
+                       ->orderBy('mata_kuliah.kode_matkul', 'asc')
+                       ->orderBy('kelas.kelas', 'asc')
+                       ->select('kelas.*')
                        ->get();
 
         $dosenList = User::where('is_admin', false)
-            ->orderBy('name', 'asc')
+            ->orderBy('nama', 'asc') // Menggunakan 'nama'
             ->get();
 
         return view('admin.matakuliah_dosen.index', compact('kelas', 'dosenList'));
@@ -59,63 +83,48 @@ public function indexMatKulDosen(Request $request) // Tambahkan Request
 
     public function assignDosen(Request $request, $kelasId)
     {
-        $request->validate([
-            'unique_number' => 'required|exists:users,unique_number'
-        ]);
+        // Menggunakan 'nidn' dan tabel 'dosen'
+        $request->validate(['nidn' => 'required|exists:dosen,nidn']);
         $kelas = Kelas::findOrFail($kelasId);
-        $kelas->unique_number = $request->unique_number;
+        $kelas->nidn = $request->nidn;
         $kelas->save();
-
-        return redirect()->route('admin.matakuliah_dosen.index')
-                         ->with('success', 'Dosen berhasil disimpan.');
+        return redirect()->route('admin.matakuliah_dosen.index')->with('success', 'Dosen berhasil disimpan.');
     }
 
     public function updateDosenKelas(Request $request, $kelasId)
     {
-        $request->validate([
-            'unique_number' => 'required|exists:users,unique_number',
-        ]);
-
+        // Menggunakan 'nidn' dan tabel 'dosen'
+        $request->validate(['nidn' => 'required|exists:dosen,nidn']);
         $kelas = Kelas::findOrFail($kelasId);
-        $newDosenNumber = $request->unique_number;
+        $newDosenNidn = $request->nidn;
 
-        if ($kelas->unique_number === $newDosenNumber) {
-            return redirect()
-                ->route('admin.matakuliah_dosen.index')
-                ->with('success', 'Dosen berhasil diubah (tidak ada perubahan).');
+        if ($kelas->nidn === $newDosenNidn) {
+            return redirect()->route('admin.matakuliah_dosen.index')->with('success', 'Dosen berhasil diubah (tidak ada perubahan).');
         }
 
-        if ($kelas->unique_number) {
-            $isOldDosenScheduled = JadwalKuliah::where('kode_mata_kuliah', $kelas->kode_matkul)
-                                               ->where('kelas', $kelas->kelas)
-                                               ->where('unique_number', $kelas->unique_number)
-                                               ->exists();
-            
+        if ($kelas->nidn) {
+            $isOldDosenScheduled = JadwalKuliah::where('kode_matkul', $kelas->kode_matkul)
+                ->where('kelas', $kelas->kelas)
+                ->where('nidn', $kelas->nidn) // Menggunakan 'nidn'
+                ->exists();
             if ($isOldDosenScheduled) {
-                $oldDosenName = optional($kelas->dosen)->name ?? 'dosen sebelumnya';
-                return redirect()->back()
-                    ->with('error', "Gagal update! Dosen {$oldDosenName} sudah memiliki jadwal untuk kelas ini. Hapus jadwal terlebih dahulu untuk mengganti dosen.");
+                $oldDosenName = optional($kelas->dosen)->nama ?? 'dosen sebelumnya'; // Menggunakan 'nama'
+                return redirect()->back()->with('error', "Gagal update! Dosen {$oldDosenName} sudah memiliki jadwal untuk kelas ini. Hapus jadwal terlebih dahulu untuk mengganti dosen.");
             }
         }
         
-        $isNewDosenTeachingThisMatkul = JadwalKuliah::where('kode_mata_kuliah', $kelas->kode_matkul)
-                                                     ->where('unique_number', $newDosenNumber)
-                                                     ->exists();
-
+        $isNewDosenTeachingThisMatkul = JadwalKuliah::where('kode_matkul', $kelas->kode_matkul)
+            ->where('nidn', $newDosenNidn) // Menggunakan 'nidn'
+            ->exists();
         if ($isNewDosenTeachingThisMatkul) {
-            $newDosen = User::where('unique_number', $newDosenNumber)->first();
+            $newDosen = User::where('nidn', $newDosenNidn)->first(); // Menggunakan 'nidn'
             $matkulName = optional($kelas->mataKuliah)->nama_matkul ?? $kelas->kode_matkul;
-            
-            return redirect()->back()
-                ->with('error', "Gagal ubah! Dosen {$newDosen->name} sudah terdaftar di jadwal untuk mengajar mata kuliah {$matkulName}.");
+            return redirect()->back()->with('error', "Gagal ubah! Dosen {$newDosen->nama} sudah terdaftar di jadwal untuk mengajar mata kuliah {$matkulName}."); // Menggunakan 'nama'
         }
 
-        $kelas->unique_number = $newDosenNumber;
+        $kelas->nidn = $newDosenNidn; // Menggunakan 'nidn'
         $kelas->save();
-
-        return redirect()
-            ->route('admin.matakuliah_dosen.index')
-            ->with('success', 'Dosen berhasil diubah.');
+        return redirect()->route('admin.matakuliah_dosen.index')->with('success', 'Dosen berhasil diubah.');
     }
 
     /**
@@ -124,31 +133,22 @@ public function indexMatKulDosen(Request $request) // Tambahkan Request
     public function deleteDosenKelas($kelasId)
     {
         $kelas = Kelas::with('dosen', 'mataKuliah')->findOrFail($kelasId);
-
-        // Validasi: Cek apakah dosen ini sudah punya jadwal untuk kelas ini
-        if ($kelas->unique_number) {
-            $isScheduled = JadwalKuliah::where('kode_mata_kuliah', $kelas->kode_matkul)
+        if ($kelas->nidn) { // Menggunakan 'nidn'
+            $isScheduled = JadwalKuliah::where('kode_matkul', $kelas->kode_matkul)
                                        ->where('kelas', $kelas->kelas)
-                                       ->where('unique_number', $kelas->unique_number)
+                                       ->where('nidn', $kelas->nidn) // Menggunakan 'nidn'
                                        ->exists();
-
-            // Jika sudah terjadwal, batalkan penghapusan dan beri pesan error
             if ($isScheduled) {
-                $dosenName = optional($kelas->dosen)->name ?? 'Dosen ini';
+                $dosenName = optional($kelas->dosen)->nama ?? 'Dosen ini'; // Menggunakan 'nama'
                 $matkulName = optional($kelas->mataKuliah)->nama_matkul ?? $kelas->kode_matkul;
-                
-                return redirect()->back()
-                    ->with('error', "Gagal menghapus! Dosen {$dosenName} sudah memiliki jadwal untuk mata kuliah {$matkulName} kelas {$kelas->kelas}. Hapus jadwal di halaman Manajemen Jadwal terlebih dahulu.");
+                return redirect()->back()->with('error', "Gagal menghapus! Dosen {$dosenName} sudah memiliki jadwal untuk mata kuliah {$matkulName} kelas {$kelas->kelas}. Hapus jadwal di halaman Manajemen Jadwal.");
             }
         }
-
-        // Jika validasi lolos, hapus dosen dengan mengatur unique_number menjadi null
-        $kelas->unique_number = null;
+        $kelas->nidn = null; // Menggunakan 'nidn'
         $kelas->save();
-
-        return redirect()->route('admin.matakuliah_dosen.index')
-                         ->with('success', 'Dosen berhasil dihapus dari Mata Kuliah.');
+        return redirect()->route('admin.matakuliah_dosen.index')->with('success', 'Dosen berhasil dihapus dari Mata Kuliah.');
     }
+
     //
     // === CRUD MATAKULIAH ===
     //
@@ -179,40 +179,41 @@ public function indexMatKulDosen(Request $request) // Tambahkan Request
     return view('admin.mata_kuliah.index', compact('mataKuliahs', 'dosenList'));
 }
 
-
-
-
     public function createMataKuliah()
     {
         return view('admin.mata_kuliah.create');
     }
 
-    public function storeMataKuliah(Request $request)
-{
-    $request->validate([
-        'kode_matkul'  => 'required|unique:mata_kuliah,kode_matkul',
-        'nama_matkul'  => 'required',
-        'sks'          => 'required|integer',
-        'semester'     => 'required',
-        'jumlah_kelas' => 'required|integer|min:1',
-    ]);
-
-    $mk = MataKuliah::create($request->only(
-        'kode_matkul','nama_matkul','sks','semester','jumlah_kelas'
-    ));
-
-    $huruf = range('A','Z');
-    for ($i = 0; $i < $mk->jumlah_kelas; $i++) {
-        Kelas::create([
-            'kode_matkul' => $mk->kode_matkul,
-            'kelas'       => $huruf[$i],
+     public function storeMataKuliah(Request $request)
+    {
+        $request->validate([
+            'kode_matkul'  => 'required|unique:mata_kuliah,kode_matkul',
+            'nama_matkul'  => 'required',
+            'sks'          => 'required|integer',
+            'semester'     => 'required|integer',
+            'jumlah_kelas' => 'required|integer|min:1',
+            // Menambahkan validasi untuk peminatan (boleh null)
+            'peminatan'    => 'nullable|string|in:Programming,Data,UX,Network',
         ]);
-    }
 
-    return redirect()
-        ->route('admin.mata_kuliah.index')
-        ->with('success', 'Mata Kuliah & Kelas berhasil ditambahkan.');
-}
+        // Menambahkan 'peminatan' ke dalam data yang akan dibuat
+        $mk = MataKuliah::create($request->only(
+            'kode_matkul','nama_matkul','sks','semester','peminatan','jumlah_kelas'
+        ));
+
+        // Logika pembuatan kelas tidak perlu diubah
+        $huruf = range('A','Z');
+        for ($i = 0; $i < $mk->jumlah_kelas; $i++) {
+            Kelas::create([
+                'kode_matkul' => $mk->kode_matkul,
+                'kelas'       => $huruf[$i],
+            ]);
+        }
+
+        return redirect()
+            ->route('admin.mata_kuliah.index')
+            ->with('success', 'Mata Kuliah & Kelas berhasil ditambahkan.');
+    }
 
     public function editMataKuliah($id)
     {
@@ -221,43 +222,48 @@ public function indexMatKulDosen(Request $request) // Tambahkan Request
     }
 
     public function updateMataKuliah(Request $request, $id)
-{
-    $request->validate([
-        'kode_matkul'  => 'required|unique:mata_kuliah,kode_matkul,'.$id,
-        'nama_matkul'  => 'required',
-        'sks'          => 'required|integer',
-        'semester'     => 'required',
-        'jumlah_kelas' => 'required|integer|min:1',
-    ]);
+    {
+        $request->validate([
+            'kode_matkul'  => 'required|unique:mata_kuliah,kode_matkul,'.$id,
+            'nama_matkul'  => 'required',
+            'sks'          => 'required|integer',
+            'semester'     => 'required|integer',
+            'jumlah_kelas' => 'required|integer|min:1',
+            // PENAMBAHAN: Validasi untuk peminatan (boleh null/kosong)
+            'peminatan'    => 'nullable|string|in:Programming,Data,UX,Network',
+        ]);
 
-    $matkul = MataKuliah::findOrFail($id);
-    $matkul->update($request->only(
-        'kode_matkul','nama_matkul','sks','semester','jumlah_kelas'
-    ));
+        $matkul = MataKuliah::findOrFail($id);
+        
+        // PENAMBAHAN: Memasukkan 'peminatan' ke dalam data yang diupdate
+        $matkul->update($request->only(
+            'kode_matkul','nama_matkul','sks','semester','peminatan','jumlah_kelas'
+        ));
 
-    $existing = $matkul->kelas()->orderBy('kelas')->get();
-    $oldCount = $existing->count();
-    $newCount = $matkul->jumlah_kelas;
-    $huruf    = range('A','Z');
+        // Logika untuk menyesuaikan jumlah kelas (tidak diubah)
+        $existing = $matkul->kelas()->orderBy('kelas')->get();
+        $oldCount = $existing->count();
+        $newCount = $matkul->jumlah_kelas;
+        $huruf    = range('A','Z');
 
-    if ($newCount > $oldCount) {
-        for ($i = $oldCount; $i < $newCount; $i++) {
-            Kelas::create([
-                'kode_matkul' => $matkul->kode_matkul,
-                'kelas'       => $huruf[$i],
-            ]);
+        if ($newCount > $oldCount) {
+            for ($i = $oldCount; $i < $newCount; $i++) {
+                Kelas::create([
+                    'kode_matkul' => $matkul->kode_matkul,
+                    'kelas'       => $huruf[$i],
+                ]);
+            }
+        } elseif ($newCount < $oldCount) {
+            $toDelete = $existing->slice($newCount);
+            foreach ($toDelete as $k) {
+                $k->delete();
+            }
         }
-    } elseif ($newCount < $oldCount) {
-        $toDelete = $existing->slice($newCount);
-        foreach ($toDelete as $k) {
-            $k->delete();
-        }
+
+        return redirect()
+            ->route('admin.mata_kuliah.index')
+            ->with('success', 'Data Mata Kuliah & Jumlah Kelas diperbarui.');
     }
-
-    return redirect()
-        ->route('admin.mata_kuliah.index')
-        ->with('success', 'Data Mata Kuliah & Jumlah Kelas diperbarui.');
-}
 
     public function destroyMataKuliah($id)
     {
@@ -338,65 +344,38 @@ public function indexMatKulDosen(Request $request) // Tambahkan Request
     //
     // === CRUD DOSEN ===
     //
-    public function listDosen(Request $request)
-{
-    $search = $request->input('search');
-
-    // 1) Ambil semua dosen non-admin beserta relasi available
-    $dosen = User::where('is_admin', false)
-        ->when($search, fn($q) =>
-            $q->where('name', 'like', "%{$search}%")
-        )
-        ->orderBy('name', 'asc')
-        ->with('available')      // eager-load relasi availability
-        ->get();
-
-    // 2) Susun ringkasan availability per dosen
-    //    kita pakai urutan hari untuk mengetahui rentang berurutan
-    $dayOrder = [
-      'Senin'   => 1, 'Selasa'  => 2,
-      'Rabu'    => 3, 'Kamis'   => 4,
-      'Jumat'   => 5, 'Sabtu'   => 6,
-      'Minggu'  => 7,
-    ];
-
-    $availabilitySummaries = [];
-    foreach ($dosen as $u) {
-        // ambil semua hari yang ada availability, unique dan urutkan
-        $days = $u->available
-                  ->pluck('hari')
-                  ->unique()
-                  ->sortBy(fn($h) => $dayOrder[$h])
-                  ->values()
-                  ->all();
-
-        if (empty($days)) {
-            $availabilitySummaries[$u->id] = '-';
-            continue;
-        }
-
-        // kompres hari berurutan ke rentang
-        $ranges = [];
-        $start = $prev = array_shift($days);
-        foreach ($days as $d) {
-            if ($dayOrder[$d] === $dayOrder[$prev] + 1) {
-                // masih berurutan
-                $prev = $d;
-            } else {
-                // rentang selesai
-                $ranges[] = ($start === $prev) ? $start : "$start – $prev";
-                $start = $prev = $d;
+     public function listDosen(Request $request)
+    {
+        $search = $request->input('search');
+        $dosen = User::where('is_admin', false)
+            ->when($search, fn($q) => $q->where('nama', 'like', "%{$search}%")) // Menggunakan 'nama'
+            ->orderBy('nama', 'asc') // Menggunakan 'nama'
+            ->with('available')
+            ->get();
+        
+        $dayOrder = ['Senin' => 1, 'Selasa' => 2, 'Rabu' => 3, 'Kamis' => 4, 'Jumat' => 5, 'Sabtu' => 6, 'Minggu' => 7];
+        $availabilitySummaries = [];
+        foreach ($dosen as $u) {
+            $days = $u->available->pluck('hari')->unique()->sortBy(fn($h) => $dayOrder[$h] ?? 8)->values()->all();
+            if (empty($days)) {
+                $availabilitySummaries[$u->id] = '-';
+                continue;
             }
+            $ranges = [];
+            $start = $prev = array_shift($days);
+            foreach ($days as $d) {
+                if (isset($dayOrder[$d], $dayOrder[$prev]) && $dayOrder[$d] === $dayOrder[$prev] + 1) {
+                    $prev = $d;
+                } else {
+                    $ranges[] = ($start === $prev) ? $start : "$start – $prev";
+                    $start = $prev = $d;
+                }
+            }
+            $ranges[] = ($start === $prev) ? $start : "$start – $prev";
+            $availabilitySummaries[$u->id] = implode(', ', $ranges);
         }
-        $ranges[] = ($start === $prev) ? $start : "$start – $prev";
-
-        $availabilitySummaries[$u->id] = implode(', ', $ranges);
+        return view('admin.listdosen.index', compact('dosen', 'search', 'availabilitySummaries'));
     }
-
-    return view('admin.listdosen.index', compact(
-      'dosen', 'search', 'availabilitySummaries'
-    ));
-}
 
     public function createDosen()
     {
@@ -406,32 +385,25 @@ public function indexMatKulDosen(Request $request) // Tambahkan Request
     public function storeDosen(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email|unique:dosen,email',
             'password' => 'required|string|min:8',
-            'unique_number' => 'required|unique:users,unique_number|numeric',
+            'nidn' => 'required|unique:dosen,nidn|numeric',
         ], [
-            'name.required' => 'Nama dosen wajib diisi.',
-            'email.required' => 'Email wajib diisi.',
-            'email.email' => 'Format email harus valid.',
+            'nama.required' => 'Nama dosen wajib diisi.',
             'email.unique' => 'Email ini sudah terdaftar.',
-            'password.required' => 'Password wajib diisi.',
             'password.min' => 'Password minimal harus 8 karakter.',
-            'unique_number.required' => 'NIDN wajib diisi.',
-            'unique_number.unique' => 'NIDN ini sudah terdaftar.',
-            'unique_number.numeric' => 'NIDN harus berupa angka.',
+            'nidn.unique' => 'NIDN ini sudah terdaftar.',
+            'nidn.numeric' => 'NIDN harus berupa angka.',
         ]);
-
         User::create([
-            'name' => $request->name,
+            'nama' => $request->nama,
             'email' => $request->email,
             'password' => bcrypt($request->password),
-            'unique_number' => $request->unique_number,
+            'nidn' => $request->nidn,
             'is_admin' => false,
         ]);
-
-        return redirect()->route('admin.dosen.index')
-                         ->with('success','Dosen berhasil ditambahkan.');
+        return redirect()->route('admin.dosen.index')->with('success','Dosen berhasil ditambahkan.');
     }
 
     public function editDosen($id)
@@ -443,53 +415,38 @@ public function indexMatKulDosen(Request $request) // Tambahkan Request
     public function updateDosen(Request $request, $id)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => "required|email|unique:users,email,{$id}",
-            // PERUBAHAN: Menambahkan 'numeric'
-            'unique_number' => "required|unique:users,unique_number,{$id}|numeric",
+            'nama' => 'required|string|max:255',
+            'email' => "required|email|unique:dosen,email,{$id}",
+            'nidn' => "required|unique:dosen,nidn,{$id}|numeric",
         ], [
-            // PENAMBAHAN: Pesan error kustom dalam Bahasa Indonesia
-            'name.required' => 'Nama dosen wajib diisi.',
-            'email.required' => 'Email wajib diisi.',
-            'email.email' => 'Format email harus valid.',
+            'nama.required' => 'Nama dosen wajib diisi.',
             'email.unique' => 'Email ini sudah terdaftar.',
-            'unique_number.required' => 'NIDN wajib diisi.',
-            'unique_number.unique' => 'NIDN ini sudah terdaftar.',
-            'unique_number.numeric' => 'NIDN harus berupa angka.',
+            'nidn.unique' => 'NIDN ini sudah terdaftar.',
+            'nidn.numeric' => 'NIDN harus berupa angka.',
         ]);
-
         $dosen = User::findOrFail($id);
-        
-        // Menghapus 'phone' karena sudah dihapus dari tabel
-        $dosen->update($request->only(
-            'name','email','unique_number'
-        ));
-
-        return redirect()->route('admin.dosen.index')
-                         ->with('success','Dosen berhasil diperbarui.');
+        $dosen->update($request->only('nama', 'email', 'nidn'));
+        return redirect()->route('admin.dosen.index')->with('success','Dosen berhasil diperbarui.');
     }
 
     public function deleteDosen($id)
     {
         User::findOrFail($id)->delete();
-        return redirect()->route('admin.dosen.index')
-                         ->with('success','Dosen berhasil dihapus.');
+        return redirect()->route('admin.dosen.index')->with('success','Dosen berhasil dihapus.');
     }
 
     //
     // === AVAILABLE TIME ===
     //
-    public function showAvailableTimes()
+     public function showAvailableTimes()
     {
         $dosen = User::where('is_admin', false)->get();
         return view('admin.available.dashboard', compact('dosen'));
-    }
+    }   
 
      public function editAvailableTime(Available $available)
     {
-        // PERBAIKAN: Memuat relasi 'user', bukan 'dosen'.
         $available->load('user');
-        
         return view('admin.available.edit', compact('available'));
     }
 
@@ -499,46 +456,38 @@ public function indexMatKulDosen(Request $request) // Tambahkan Request
     public function updateAvailableTime(Request $request, Available $available)
     {
         $request->validate([
-            'start_time' => 'required|date_format:H:i',
-            'end_time'   => 'required|date_format:H:i|after:start_time',
+            'waktu_mulai' => 'required|date_format:H:i',
+            'waktu_selesai' => 'required|date_format:H:i|after:waktu_mulai',
+        ]);
+        $available->update($request->only('waktu_mulai', 'waktu_selesai'));
+        return redirect()->route('admin.available.manage', $available->id_dosen)->with('success', 'Available time berhasil diperbarui.');
+    }
+
+      public function storeAvailableTimes(Request $request, $id)
+    {
+        // PERUBAHAN: Menambahkan pesan error kustom untuk aturan 'after'
+        $request->validate([
+            'hari' => 'required|string',
+            'waktu_mulai' => 'required|date_format:H:i',
+            'waktu_selesai' => 'required|date_format:H:i|after:waktu_mulai',
+        ], [
+            'waktu_selesai.after' => 'Waktu selesai harus setelah waktu mulai.'
         ]);
 
-        $available->update($request->only('start_time', 'end_time'));
-
-        // PERBAIKAN: Menggunakan 'user_id' untuk redirect.
-        return redirect()
-            ->route('admin.available.manage', $available->user_id)
-            ->with('success', 'Available time berhasil diperbarui.');
+        $dosen = User::findOrFail($id);
+        
+        if ($dosen->available()->where('hari', $request->hari)->exists()) {
+            return redirect()->back()->withInput()->with('error', "Waktu ketersediaan untuk hari “{$request->hari}” sudah diinput sebelumnya.");
+        }
+        
+        $dosen->available()->create($request->only('hari','waktu_mulai','waktu_selesai'));
+        
+        return redirect()->route('admin.available.manage', $id)->with('success', 'Waktu ketersediaan berhasil ditambahkan.');
     }
-
-    public function storeAvailableTimes(Request $request, $id)
-{
-    $request->validate([
-        'hari'       => 'required|string',
-        'start_time' => 'required|date_format:H:i',
-        'end_time'   => 'required|date_format:H:i|after:start_time',
-    ]);
-
-    $dosen = User::findOrFail($id);
-
-    // **cek duplikat hari** sebelum create
-    if ($dosen->available()->where('hari', $request->hari)->exists()) {
-        return redirect()
-            ->back()
-            ->withInput()
-            ->with('error', "Available time untuk hari “{$request->hari}” sudah diinput sebelumnya.");
-    }
-
-    $dosen->available()->create($request->only('hari','start_time','end_time'));
-
-    return redirect()
-        ->route('admin.available.manage', $id)
-        ->with('success', 'Available time berhasil ditambahkan.');
-}
 
     public function manageAvailable($id)
     {
-        $dosen    = User::findOrFail($id);
+        $dosen = User::findOrFail($id);
         $availables = $dosen->available;
         return view('admin.available.manage', compact('dosen','availables'));
     }
@@ -550,12 +499,10 @@ public function indexMatKulDosen(Request $request) // Tambahkan Request
     }
 
     public function addAvailableTime($id)
-{
-    $dosen = User::findOrFail($id);
-    // ambil list hari yang sudah ada
-    $existingDays = $dosen->available()->pluck('hari')->toArray();
-
-    return view('admin.available.add', compact('dosen','existingDays'));
-}
+    {
+        $dosen = User::findOrFail($id);
+        $existingDays = $dosen->available()->pluck('hari')->toArray();
+        return view('admin.available.add', compact('dosen','existingDays'));
+    }
 
 }

@@ -31,11 +31,9 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
     protected array $breakSlots = [
         1 => ['time' => '08:40-08:50', 'text' => 'Pergantian Sesi'],
         2 => ['time' => '10:30-10:40', 'text' => 'Pergantian Sesi'],
-        // PERUBAHAN DI SINI
         3 => ['time' => '11:30-12:20', 'text' => 'Istirahat/Dzuhur/Pergantian Sesi Perkuliahan'],
         4 => ['time' => '13:10-13:20', 'text' => 'Pergantian Sesi'],
         5 => ['time' => '15:00-15:30', 'text' => 'Pergantian Sesi'],
-        // DAN PERUBAHAN DI SINI
         6 => ['time' => '17:45-18:30', 'text' => 'Istirahat/Maghrib/Pergantian Sesi Perkuliahan'],
     ];
 
@@ -102,15 +100,17 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
                             $line[] = '';
                         } else {
                             $cells = [];
-                            foreach ($jds->groupBy(fn($j) => $j->kode_mata_kuliah . '|' . $j->unique_number) as $grp) {
+                            foreach ($jds->groupBy(fn($j) => $j->kode_matkul . '|' . $j->nidn) as $grp) {
                                 $f = $grp->first();
                                 $kl = $grp->pluck('kelas')->unique()->sort()->implode(',');
                                 $mk = $f->mataKuliah->nama_matkul;
-                                $dsn = $f->dosen->name;
+                                $dsn = $f->dosen->nama; // Perbaikan: gunakan 'nama' bukan 'name'
                                 
                                 $semester = $f->mataKuliah->semester;
                                 $prefix = "SEM{$semester}::";
-                                $cells[] = $prefix . "{$f->kode_mata_kuliah}({$kl})\n{$mk}\nDosen: {$dsn}";
+                                
+                                // Format yang disesuaikan: Kode Matkul, Kelas, Nama Matkul, Dosen
+                                $cells[] = $prefix . "{$f->kode_matkul}({$kl})\n{$mk}\nDosen: {$dsn}";
                             }
                             $line[] = implode("\n\n", $cells);
                         }
@@ -174,7 +174,7 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
                     }
                 }
 
-                // --- PERUBAHAN DI SINI: Logika baru untuk merge dan alignment kolom SESI ---
+                // Logika merge dan alignment kolom SESI
                 $row = 3; // Mulai iterasi setelah header utama
                 while ($row <= $totalRow) {
                     $cellValue = trim((string)$sheet->getCell("A{$row}")->getValue());

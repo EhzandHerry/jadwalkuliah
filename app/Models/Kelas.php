@@ -14,7 +14,7 @@ class Kelas extends Model
     protected $fillable = [
         'kode_matkul',
         'kelas',
-        'unique_number',
+        'nidn',
     ];
 
     public function ruangKelas()
@@ -25,7 +25,7 @@ class Kelas extends Model
     // Relasi dengan model User (Dosen)
     public function dosen()
     {
-        return $this->belongsTo(User::class, 'unique_number', 'unique_number');
+        return $this->belongsTo(User::class, 'nidn', 'nidn');
     }
 
     // Define the relationship with MataKuliah
@@ -34,10 +34,16 @@ class Kelas extends Model
         return $this->belongsTo(MataKuliah::class, 'kode_matkul', 'kode_matkul');
     }
 
-    public function jadwal()
+    // public function jadwal()
+    // {
+    //     return $this->hasMany(JadwalKuliah::class, 'kelas', 'kelas');
+           
+    // }
+
+    public function jadwalKuliahs()
 {
-    return $this->hasOne(JadwalKuliah::class, 'kelas', 'kelas')
-        ->where('kode_mata_kuliah', $this->kode_matkul);
+    // Konsisten dengan relasi di JadwalKuliah
+    return $this->hasMany(JadwalKuliah::class, 'kelas', 'kelas');
 }
 
 

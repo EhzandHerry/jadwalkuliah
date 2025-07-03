@@ -26,9 +26,9 @@
             
             <!-- Name Field -->
             <div class="form-group">
-                <label for="name">Nama Dosen</label>
-                <input type="text" name="name" id="name" value="{{ old('name', $dosen->name) }}" required class="form-control @error('name') is-invalid @enderror">
-                @error('name')
+                <label for="nama">Nama Dosen</label>
+                <input type="text" name="nama" id="nam" value="{{ old('nama', $dosen->nama) }}" required class="form-control @error('nama') is-invalid @enderror">
+                @error('nama')
                     <span class="invalid-feedback">{{ $message }}</span>
                 @enderror
             </div>
@@ -44,10 +44,10 @@
             
             <!-- Unique Number Field -->
             <div class="form-group">
-                <label for="unique_number">NIDN</label>
+                <label for="nidn">NIDN</label>
                 {{-- PERUBAHAN: Mengubah type="text" menjadi type="number" --}}
-                <input type="number" name="unique_number" id="unique_number" value="{{ old('unique_number', $dosen->unique_number) }}" required class="form-control @error('unique_number') is-invalid @enderror" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                @error('unique_number')
+                <input type="number" name="nidn" id="nidn" value="{{ old('nidn', $dosen->nidn) }}" required class="form-control @error('nidn') is-invalid @enderror" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                @error('nidn')
                     <span class="invalid-feedback">{{ $message }}</span>
                 @enderror
             </div>

@@ -16,6 +16,7 @@ class MataKuliah extends Model
         'nama_matkul',
         'sks',
         'semester',
+        'peminatan',
         'jumlah_kelas',    
     ];
 

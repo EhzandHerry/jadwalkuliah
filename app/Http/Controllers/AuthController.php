@@ -31,7 +31,7 @@ class AuthController extends Controller
 
             if (Auth::user()->is_admin) {
                 // PERUBAHAN DI SINI: Redirect ke halaman daftar dosen
-                return redirect()->intended(route('admin.dosen.index'));
+                return redirect()->intended(route('admin.dashboard'));
             } else {
                 return redirect()->intended('/user/dashboard');
             }

@@ -1,12 +1,14 @@
 @extends('layouts.layout')
 
 @section('title', 'Edit Waktu Ketersediaan')
-@section('header_title', 'Edit Waktu Ketersediaan untuk ' . $available->user->name)
+{{-- PERBAIKAN: Menggunakan optional() untuk mencegah error jika user tidak ditemukan --}}
+@section('header_title', 'Edit Waktu Ketersediaan untuk ' . optional($available->user)->nama)
 
 @section('content')
 <div class="available-container">
     <div class="available-form">
-        <h1>Edit Waktu Ketersediaan untuk {{ $available->user->name }}</h1>
+        {{-- PERBAIKAN: Menggunakan optional() di sini juga --}}
+        <h1>Edit Waktu Ketersediaan untuk {{ optional($available->user)->nama ?? 'Dosen tidak ditemukan' }}</h1>
 
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -29,98 +31,134 @@
 
             @php
                 // Format waktu dari database untuk perbandingan di dropdown
-                $startTime = \Carbon\Carbon::parse($available->start_time)->format('H:i');
-                $endTime = \Carbon\Carbon::parse($available->end_time)->format('H:i');
+                $startTime = \Carbon\Carbon::parse($available->waktu_mulai)->format('H:i');
+                $endTime = \Carbon\Carbon::parse($available->waktu_selesai)->format('H:i');
             @endphp
 
             <div class="form-group">
-                <label for="start_time">Waktu Mulai</label>
-                <select name="start_time" id="start_time" required class="form-control">
+                <label for="waktu_mulai">Waktu Mulai</label>
+                <select name="waktu_mulai" id="waktu_mulai" required class="form-control">
                     <option value="">-- Pilih Jam Mulai --</option>
-                    {{-- Opsi jam di-generate dengan rapi --}}
                     <optgroup label="Sesi 1">
-                        <option value="07:00" {{ old('start_time', $startTime) == '07:00' ? 'selected' : '' }}>07:00</option>
-                        <option value="07:50" {{ old('start_time', $startTime) == '07:50' ? 'selected' : '' }}>07:50</option>
+                        <option value="07:00" {{ old('waktu_mulai', $startTime) == '07:00' ? 'selected' : '' }}>07:00</option>
+                        <option value="07:50" {{ old('waktu_mulai', $startTime) == '07:50' ? 'selected' : '' }}>07:50</option>
                     </optgroup>
                     <optgroup label="Sesi 2">
-                        <option value="08:50" {{ old('start_time', $startTime) == '08:50' ? 'selected' : '' }}>08:50</option>
-                        <option value="09:40" {{ old('start_time', $startTime) == '09:40' ? 'selected' : '' }}>09:40</option>
+                        <option value="08:50" {{ old('waktu_mulai', $startTime) == '08:50' ? 'selected' : '' }}>08:50</option>
+                        <option value="09:40" {{ old('waktu_mulai', $startTime) == '09:40' ? 'selected' : '' }}>09:40</option>
                     </optgroup>
                     <optgroup label="Sesi 3">
-                        <option value="10:40" {{ old('start_time', $startTime) == '10:40' ? 'selected' : '' }}>10:40</option>
+                        <option value="10:40" {{ old('waktu_mulai', $startTime) == '10:40' ? 'selected' : '' }}>10:40</option>
                     </optgroup>
                     <optgroup label="Sesi 4">
-                        <option value="12:10" {{ old('start_time', $startTime) == '12:10' ? 'selected' : '' }}>12:10</option>
+                        <option value="12:10" {{ old('waktu_mulai', $startTime) == '12:10' ? 'selected' : '' }}>12:10</option>
                     </optgroup>
                     <optgroup label="Sesi 5">
-                        <option value="13:20" {{ old('start_time', $startTime) == '13:20' ? 'selected' : '' }}>13:20</option>
-                        <option value="14:10" {{ old('start_time', $startTime) == '14:10' ? 'selected' : '' }}>14:10</option>
+                        <option value="13:20" {{ old('waktu_mulai', $startTime) == '13:20' ? 'selected' : '' }}>13:20</option>
+                        <option value="14:10" {{ old('waktu_mulai', $startTime) == '14:10' ? 'selected' : '' }}>14:10</option>
                     </optgroup>
                     <optgroup label="Sesi 6">
-                        <option value="15:30" {{ old('start_time', $startTime) == '15:30' ? 'selected' : '' }}>15:30</option>
-                        <option value="16:20" {{ old('start_time', $startTime) == '16:20' ? 'selected' : '' }}>16:20</option>
-                        <option value="17:10" {{ old('start_time', $startTime) == '17:10' ? 'selected' : '' }}>17:10</option>
+                        <option value="15:30" {{ old('waktu_mulai', $startTime) == '15:30' ? 'selected' : '' }}>15:30</option>
+                        <option value="16:20" {{ old('waktu_mulai', $startTime) == '16:20' ? 'selected' : '' }}>16:20</option>
+                        <option value="17:10" {{ old('waktu_mulai', $startTime) == '17:10' ? 'selected' : '' }}>17:10</option>
                     </optgroup>
                     <optgroup label="Sesi 7">
-                        <option value="18:30" {{ old('start_time', $startTime) == '18:30' ? 'selected' : '' }}>18:30</option>
-                        <option value="19:20" {{ old('start_time', $startTime) == '19:20' ? 'selected' : '' }}>19:20</option>
-                        <option value="20:10" {{ old('start_time', $startTime) == '20:10' ? 'selected' : '' }}>20:10</option>
+                        <option value="18:30" {{ old('waktu_mulai', $startTime) == '18:30' ? 'selected' : '' }}>18:30</option>
+                        <option value="19:20" {{ old('waktu_mulai', $startTime) == '19:20' ? 'selected' : '' }}>19:20</option>
+                        <option value="20:10" {{ old('waktu_mulai', $startTime) == '20:10' ? 'selected' : '' }}>20:10</option>
                     </optgroup>
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="end_time">Waktu Selesai</label>
-                <select name="end_time" id="end_time" required class="form-control">
-                    <option value="">-- Pilih Jam Selesai --</option>
-                    <optgroup label="Sesi 1">
-                        <option value="07:50" {{ old('end_time', $endTime) == '07:50' ? 'selected' : '' }}>07:50</option>
-                        <option value="08:40" {{ old('end_time', $endTime) == '08:40' ? 'selected' : '' }}>08:40</option>
-                    </optgroup>
-                    <optgroup label="Sesi 2">
-                        <option value="09:40" {{ old('end_time', $endTime) == '09:40' ? 'selected' : '' }}>09:40</option>
-                        <option value="10:30" {{ old('end_time', $endTime) == '10:30' ? 'selected' : '' }}>10:30</option>
-                    </optgroup>
-                    <optgroup label="Sesi 3">
-                        <option value="11:30" {{ old('end_time', $endTime) == '11:30' ? 'selected' : '' }}>11:30</option>
-                    </optgroup>
-                    <optgroup label="Sesi 4">
-                        <option value="13:10" {{ old('end_time', $endTime) == '13:10' ? 'selected' : '' }}>13:10</option>
-                    </optgroup>
-                    <optgroup label="Sesi 5">
-                        <option value="14:10" {{ old('end_time', $endTime) == '14:10' ? 'selected' : '' }}>14:10</option>
-                        <option value="15:00" {{ old('end_time', $endTime) == '15:00' ? 'selected' : '' }}>15:00</option>
-                    </optgroup>
-                    <optgroup label="Sesi 6">
-                        <option value="16:20" {{ old('end_time', $endTime) == '16:20' ? 'selected' : '' }}>16:20</option>
-                        <option value="17:10" {{ old('end_time', $endTime) == '17:10' ? 'selected' : '' }}>17:10</option>
-                        <option value="18:00" {{ old('end_time', $endTime) == '18:00' ? 'selected' : '' }}>18:00</option>
-                    </optgroup>
-                    <optgroup label="Sesi 7">
-                        <option value="19:20" {{ old('end_time', $endTime) == '19:20' ? 'selected' : '' }}>19:20</option>
-                        <option value="20:10" {{ old('end_time', $endTime) == '20:10' ? 'selected' : '' }}>20:10</option>
-                        <option value="21:00" {{ old('end_time', $endTime) == '21:00' ? 'selected' : '' }}>21:00</option>
-                    </optgroup>
+                <label for="waktu_selesai">Waktu Selesai</label>
+                <select name="waktu_selesai" id="waktu_selesai" required class="form-control">
+                    {{-- Opsi akan di-generate oleh JavaScript --}}
                 </select>
             </div>
 
-            {{-- ====================================================== --}}
-            {{-- PERBAIKAN STRUKTUR TOMBOL AGAR SAMA DENGAN FORM ADD --}}
-            {{-- ====================================================== --}}
             <div class="form-group">
                 <button type="submit" class="btn-action btn-update">Simpan</button>
             </div>
-             <a href="{{ route('admin.available.manage', $available->user->id) }}" class="btn-secondary">
+             <a href="{{ route('admin.available.manage', $available->id_dosen) }}" class="btn-secondary">
                 Batal
             </a>
-            {{-- ====================================================== --}}
-            
         </form>
     </div>
 </div>
 @endsection
 
 @push('css')
-    {{-- Pastikan ini mengarah ke file CSS yang sama dengan form Add --}}
     <link rel="stylesheet" href="{{ asset('css/admin/available/edit.css') }}">
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startTimeSelect = document.getElementById('waktu_mulai');
+    const endTimeSelect = document.getElementById('waktu_selesai');
+    
+    // Simpan nilai awal dari database
+    const initialEndTime = '{{ old('waktu_selesai', $endTime) }}';
+
+    const endTimeData = [
+        { label: 'Sesi 1', times: ['07:50', '08:40'] },
+        { label: 'Sesi 2', times: ['09:40', '10:30'] },
+        { label: 'Sesi 3', times: ['11:30'] },
+        { label: 'Sesi 4', times: ['13:10'] },
+        { label: 'Sesi 5', times: ['14:10', '15:00'] },
+        { label: 'Sesi 6', times: ['16:20', '17:10', '18:00'] },
+        { label: 'Sesi 7', times: ['19:20', '20:10', '21:00'] }
+    ];
+
+    function updateEndTimeOptions() {
+        const selectedStartTime = startTimeSelect.value;
+        
+        endTimeSelect.innerHTML = ''; // Kosongkan dropdown
+
+        if (!selectedStartTime) {
+            endTimeSelect.disabled = true;
+            const placeholder = document.createElement('option');
+            placeholder.value = "";
+            placeholder.textContent = "-- Pilih Jam Mulai Terlebih Dahulu --";
+            endTimeSelect.appendChild(placeholder);
+            return;
+        }
+
+        endTimeSelect.disabled = false;
+        
+        const defaultOption = document.createElement('option');
+        defaultOption.value = "";
+        defaultOption.textContent = "-- Pilih Jam Selesai --";
+        endTimeSelect.appendChild(defaultOption);
+
+        endTimeData.forEach(groupData => {
+            const validTimes = groupData.times.filter(time => time > selectedStartTime);
+            if (validTimes.length > 0) {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = groupData.label;
+                
+                validTimes.forEach(time => {
+                    const option = document.createElement('option');
+                    option.value = time;
+                    option.textContent = time;
+                    optgroup.appendChild(option);
+                });
+                
+                endTimeSelect.appendChild(optgroup);
+            }
+        });
+        
+        // Set kembali nilai yang dipilih sebelumnya jika masih valid
+        if (endTimeSelect.querySelector(`option[value="${initialEndTime}"]`)) {
+            endTimeSelect.value = initialEndTime;
+        }
+    }
+
+    startTimeSelect.addEventListener('change', updateEndTimeOptions);
+
+    // Panggil fungsi saat halaman dimuat untuk mengisi dropdown berdasarkan nilai awal
+    updateEndTimeOptions();
+});
+</script>
 @endpush

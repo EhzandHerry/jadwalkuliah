@@ -13,35 +13,41 @@ class JadwalKuliah extends Model
 
     protected $fillable = [
         'hari',
-        'kode_mata_kuliah',
+        'kode_matkul',  // Ini sudah dikonfirmasi ada di tabel
         'kelas',
         'nama_ruangan',
-        'unique_number',
+        'nidn',
         'jam',
     ];
 
-    // Relasi ke MataKuliah berdasarkan kode_mata_kuliah
+    // Relasi ke MataKuliah
     public function mataKuliah()
     {
-        return $this->belongsTo(MataKuliah::class, 'kode_mata_kuliah', 'kode_matkul');
+        return $this->belongsTo(MataKuliah::class, 'kode_matkul', 'kode_matkul');
     }
 
-    // Relasi ke RuangKelas berdasarkan nama_ruangan
+    // Relasi ke RuangKelas
     public function ruangKelas()
     {
         return $this->belongsTo(RuangKelas::class, 'nama_ruangan', 'nama_ruangan');
     }
 
-    // Relasi ke User (Dosen) berdasarkan unique_number
+    // Relasi ke User (Dosen)
     public function dosen()
     {
-        return $this->belongsTo(User::class, 'unique_number', 'unique_number');
+        return $this->belongsTo(User::class, 'nidn', 'nidn');
     }
 
-    // Relasi ke Kelas berdasarkan kolom kelas (huruf) dan kode_matkul (gabungan kunci)
+    // Relasi ke Kelas (INI FOKUS UTAMA KITA)
+    //  public function kelas()
+    // {
+    //     // Hanya menggunakan foreign key 'kelas' dan local key 'kelas'
+    //     return $this->belongsTo(Kelas::class, 'kelas', 'kelas');
+    // }
+
     public function kelas()
-    {
-        return $this->belongsTo(Kelas::class, 'kelas', 'kelas')
-                    ->where('kode_matkul', $this->kode_mata_kuliah);
-    }
+{
+    // Menggunakan kolom 'kelas' di jadwal untuk match dengan kolom 'kelas' di tabel kelas
+    return $this->belongsTo(Kelas::class, 'kelas', 'kelas');
+}
 }

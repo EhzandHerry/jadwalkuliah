@@ -1,180 +1,111 @@
-/* Basic styles for the body */
+/* General Body & Container Styling */
 
 
-/* Header styles */
-.header {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    background-color: #34495e; /* Dark color for the header */
-    color: white;
-    padding: 10px 20px; /* Add padding to the header */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Add shadow for better look */
+.container-fluid {
+    padding-top: 30px;
+    padding-bottom: 30px;
+    background-color: #ffffff; /* White background for the content area */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
 }
 
-/* Adjust padding to push the title to the center */
-.header h3 {
-    flex-grow: 1;
-    text-align: left; /* Ensure the title is centered */
-    margin-left: 40px; /* Create space between the title and the toggle button */
+/* Heading Styles */
+h2.mb-4 {
+    color: #007bff; /* Primary blue for headings */
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 25px !important;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 15px;
 }
 
-/* Sidebar styles */
-.sidebar {
-    width: 250px;
-    height: 100vh;
-    background-color: #2c3e50; /* Dark color for sidebar */
-    color: white;
-    padding: 20px;
-    position: fixed;
-    top: 78px; /* Give space for the header */
-    left: 0;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1); /* Add some shadow for effect */
-    transition: width 0.3s ease, opacity 0.3s ease; /* Smooth transition for width and opacity */
-}
-
-.sidebar.collapsed {
-    width: 0; /* Collapse the sidebar */
-    opacity: 0; /* Completely hide the sidebar */
-    padding: 0;
-}
-
-/* Sidebar menu items */
-ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-}
-
-li {
+/* Alert Messages */
+.alert {
+    border-radius: 5px;
+    font-size: 0.95rem;
+    padding: 15px 20px;
     margin-bottom: 20px;
 }
 
-li a {
-    font-size: 18px;
-    text-decoration: none;
-    padding: 12px 20px;
-    color: white;
-    display: block;
-    border-radius: 5px;
-    background-color: #34495e; /* Slightly lighter color */
-    transition: background-color 0.3s ease;
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border-color: #bee5eb;
 }
 
-/* Hover effect for sidebar items */
-li a:hover {
-    background-color: #16a085; /* Color change on hover */
+/* Table Styles */
+.table-responsive {
+    margin-top: 20px;
 }
 
-/* Styling for the logout button */
-form button {
-    padding: 12px 20px;
-    font-size: 16px;
-    color: white;
-    background-color: #e74c3c; /* Red color for logout */
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 30px;
-}
-
-/* Hover effect for the logout button */
-form button:hover {
-    background-color: #c0392b; /* Darker red on hover */
-}
-
-/* Content section */
-.content {
-    margin: 25px;
-    margin-left: 250px;
-    padding: 50px;
-    background-color: #ffffff;
-    height: 100vh;
-    transition: margin-left 0.3s ease; /* Smooth transition for content shift */
-}
-
-.content.expanded {
-    margin-left: 0; /* Adjust the content to take full width when sidebar is collapsed */
-}
-
-/* Card container styling */
-.card-container {
-    display: flex;
-    gap: 20px;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    padding: 20px;
-}
-
-.card {
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
     background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    width: 30%;
+    border-radius: 8px; /* Rounded corners for the table */
+    overflow: hidden; /* Ensures rounded corners apply to content */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Subtle shadow for table */
 }
 
-.card h4 {
-    margin-bottom: 10px;
-    font-size: 20px;
-    color: #333;
+.table thead.thead-dark th {
+    background-color: #343a40; /* Dark background for table header */
+    color: #ffffff; /* White text for table header */
+    border-color: #454d55;
+    padding: 12px 15px;
+    text-align: left;
+    font-size: 0.9rem;
+    vertical-align: middle;
 }
 
-.card p {
-    font-size: 16px;
-    color: #777;
+.table tbody tr {
+    transition: background-color 0.2s ease-in-out;
 }
 
-/* Toggle button styling */
-.toggle-btn {
-    font-size: 30px;
-    background-color: transparent;
-    color: #333;
-    border: none;
-    cursor: pointer;
-    z-index: 1000; /* Ensure the button is always on top */
+.table tbody tr:nth-child(even) {
+    background-color: #f2f2f2; /* Light stripe for even rows */
 }
 
-/* Styling for the toggle button when hovered */
-.toggle-btn:hover {
-    color: #4CAF50; /* Change color on hover */
+.table tbody tr:hover {
+    background-color: #e9ecef; /* Lighter background on hover */
 }
 
-/* Responsive design for smaller screens */
-@media screen and (max-width: 768px) {
-    .sidebar {
-        width: 200px;
-    }
-    .content {
-        margin-left: 200px;
-    }
+.table tbody td {
+    padding: 12px 15px;
+    border-color: #dee2e6;
+    vertical-align: middle;
+    font-size: 0.875rem;
 }
 
-@media screen and (max-width: 600px) {
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-    }
-    .content {
-        margin-left: 0;
-    }
-    li a {
-        padding: 12px;
-    }
+/* Specific Column Widths (Optional, adjust as needed) */
+.table th:nth-child(1),
+.table td:nth-child(1) {
+    width: 5%; /* No. */
+    text-align: center;
+}
 
-    .card-container {
-        flex-direction: column;
-        gap: 10px;
-    }
+.table th:nth-child(2),
+.table td:nth-child(2) {
+    width: 25%; /* Mata Kuliah */
+}
 
-    .card {
-        width: 100%;
-    }
+.table th:nth-child(3),
+.table td:nth-child(3) {
+    width: 10%; /* Kelas */
+}
+
+.table th:nth-child(4),
+.table td:nth-child(4) {
+    width: 20%; /* Dosen Pengampu */
+}
+
+.table th:nth-child(5),
+.table td:nth-child(5) {
+    width: 15%; /* Ruang Kelas */
+}
+
+.table th:nth-child(6),
+.table td:nth-child(6) {
+    width: 15%; /* Jam */
 }

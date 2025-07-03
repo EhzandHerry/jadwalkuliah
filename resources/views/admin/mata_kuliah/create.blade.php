@@ -20,10 +20,9 @@
 
     {{-- Back link --}}
     <a href="{{ route('admin.mata_kuliah.index') }}" class="back-btn">
-      Kembali
+        &larr; Kembali ke Daftar
     </a>
 
-    {{-- Use your add-matkul-form class on the form itself --}}
     <form action="{{ route('admin.mata_kuliah.store') }}"
           method="POST"
           class="add-matkul-form">
@@ -88,7 +87,20 @@
             </select>
         </div>
 
-        {{-- PERUBAHAN DI SINI: Kontainer untuk tombol --}}
+        {{-- PENAMBAHAN FORM PEMINATAN --}}
+        <div class="form-group">
+            <label for="peminatan">Peminatan (Opsional)</label>
+            <select id="peminatan" name="peminatan" class="form-control">
+                {{-- Opsi ini akan mengirimkan nilai NULL ke database --}}
+                <option value="">-- Mata Kuliah Wajib --</option>
+                <option value="Programming" {{ old('peminatan') == 'Programming' ? 'selected' : '' }}>Programming</option>
+                <option value="Data" {{ old('peminatan') == 'Data' ? 'selected' : '' }}>Data</option>
+                <option value="UX" {{ old('peminatan') == 'UX' ? 'selected' : '' }}>UX</option>
+                <option value="Network" {{ old('peminatan') == 'Network' ? 'selected' : '' }}>Network</option>
+            </select>
+            <small>Biarkan pada pilihan "-- Mata Kuliah Wajib --" jika bukan mata kuliah peminatan.</small>
+        </div>
+
         <div class="form-actions">
             <button type="submit" class="btn submit-btn">Simpan</button>
             <a href="{{ route('admin.mata_kuliah.index') }}" class="btn cancel-btn">Batal</a>

@@ -36,15 +36,15 @@
           <th>Nama Dosen</th>
           <th>NIDN</th>
           <th>Email</th>
-          <th>Ketersediaan</th> <!-- ubah header -->
+          <th>Ketersediaan</th> 
           <th style="width:240px">Aksi</th>
         </tr>
       </thead>
       <tbody>
         @foreach ($dosen as $item)
           <tr>
-            <td>{{ $item->name }}</td>
-            <td>{{ $item->unique_number }}</td>
+            <td>{{ $item->nama }}</td>
+            <td>{{ $item->nidn }}</td>
             <td>{{ $item->email }}</td>
             <td>
               {{ $availabilitySummaries[$item->id] ?? '-' }}

@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="container">
-    <h1>Edit Jadwal Mata Kuliah {{ $jadwal->kode_mata_kuliah }} Kelas {{ $jadwal->kelas }}</h1>
+    <h1>Edit Jadwal Mata Kuliah {{ $jadwal->kode_matkul }} Kelas {{ $jadwal->kelas }}</h1>
 
     @if(session('error'))
     <div class="alert alert-danger">{{ session('error') }}</div>
@@ -20,8 +20,10 @@
             <select name="nama_ruangan" id="nama_ruangan" class="form-control" required>
                 <option value="">Pilih Ruang Kelas</option>
                 @foreach($ruangKelasList as $r)
-                    <option value="{{ $r->nama_ruangan }}" {{ $jadwal->nama_ruangan == $r->nama_ruangan ? 'selected' : '' }}>
-                        {{ $r->nama_ruangan }} – {{ $r->nama_gedung }}
+                    <option value="{{ $r->nama_ruangan }}" 
+                            data-capacity="{{ $r->kapasitas_kelas }}"
+                            {{ $jadwal->nama_ruangan == $r->nama_ruangan ? 'selected' : '' }}>
+                        {{ $r->nama_ruangan }} ({{ $r->kapasitas_kelas }})
                     </option>
                 @endforeach
             </select>
@@ -31,19 +33,9 @@
             <label for="hari">Hari</label>
             <select name="hari" id="hari" class="form-control" required>
                 <option value="">Pilih Hari</option>
-                @php
-                    $uniq = $jadwal->unique_number;
-                    $availableHari = isset($availableTimes[$uniq]) ? array_keys($availableTimes[$uniq]) : [];
-                @endphp
-
                 @foreach(['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'] as $hari)
-                    <option value="{{ $hari }}"
-                        {{ $jadwal->hari == $hari ? 'selected' : '' }}
-                        {{ in_array($hari, $availableHari) ? '' : 'disabled' }}>
+                    <option value="{{ $hari }}" {{ $jadwal->hari == $hari ? 'selected' : '' }}>
                         {{ $hari }}
-                        @if(!in_array($hari, $availableHari))
-                            (tidak tersedia)
-                        @endif
                     </option>
                 @endforeach
             </select>
@@ -69,100 +61,165 @@
 <link rel="stylesheet" href="{{ asset('css/admin/jadwal/edit.css') }}">
 @endpush
 
-
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // --- Variabel dari Controller ---
-    const availableTimes = @json($availableTimes);
     const existingJadwals = @json($existingJadwals);
+    const availableTimes = @json($availableTimes);
     const roomCapacities = @json($roomCapacities);
     
     // Info jadwal yang sedang diedit
-    const currentDosenUniq = '{{ $jadwal->unique_number }}';
-    const currentMatkul = '{{ $jadwal->kode_mata_kuliah }}';
+    const currentDosenNidn = '{{ $jadwal->nidn }}';
+    const currentMatkul = '{{ $jadwal->kode_matkul }}';
     const currentJam = '{{ $jadwal->jam }}';
+    const currentSks = {{ optional($jadwal->mataKuliah)->sks ?? 1 }};
 
-    // --- Elemen-elemen Form ---
-    const hariEl = document.getElementById('hari');
-    const ruangEl = document.getElementById('nama_ruangan');
-    const jamEl = document.getElementById('jam');
-
-    // --- Daftar Semua Sesi Jam ---
-    const SESSION_SLOTS = [
+    const ALL_SLOTS = [
         "07:00 - 07:50", "07:50 - 08:40", "08:50 - 09:40", "09:40 - 10:30",
         "10:40 - 11:30", "12:10 - 13:10", "13:20 - 14:10", "14:10 - 15:00",
         "15:30 - 16:20", "16:20 - 17:10", "17:10 - 18:00", "18:30 - 19:20",
         "19:20 - 20:10", "20:10 - 21:00"
     ];
-    
-    function isOverlap(start1, end1, start2, end2) {
-        return !(end1 <= start2 || end2 <= start1);
+
+    function timeToMinutes(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours * 60 + minutes;
     }
 
-    function populateJamOptions() {
-        const selectedHari = hariEl.value;
-        const selectedRuang = ruangEl.value;
-        
-        jamEl.innerHTML = '<option value="">Pilih Jam</option>';
-        if (!selectedHari || !selectedRuang) {
-            jamEl.innerHTML = '<option value="">Pilih Ruang dan Hari</option>';
-            return;
+    function timeOverlaps(start1, end1, start2, end2) {
+        const s1 = timeToMinutes(start1);
+        const e1 = timeToMinutes(end1);
+        const s2 = timeToMinutes(start2);
+        const e2 = timeToMinutes(end2);
+        return (s1 < e2) && (e1 > s2);
+    }
+
+    function isDosenAvailable(dosenNidn, hari, startTime, endTime) {
+        const dosenTimes = availableTimes[dosenNidn];
+        if (!dosenTimes || !dosenTimes[hari]) {
+            return false;
         }
 
-        const dosenDayRanges = (availableTimes[currentDosenUniq] && availableTimes[currentDosenUniq][selectedHari]) || [];
-        if (dosenDayRanges.length === 0) return;
-
-        SESSION_SLOTS.forEach(sesi => {
-            const [startSesi, endSesi] = sesi.split(' - ').map(s => s.trim());
-
-            // 1. Cek Ketersediaan Waktu Dosen
-            const isDosenAvailable = dosenDayRanges.some(range => {
-                const [startRange, endRange] = range.split(' - ').map(s => s.trim());
-                return startSesi >= startRange && endSesi <= endRange;
-            });
-            if (!isDosenAvailable) return;
-
-            // 2. Cek Konflik Jadwal Lain
-            const conflictingSchedules = existingJadwals.filter(j => 
-                j.hari === selectedHari && 
-                j.ruang === selectedRuang && 
-                isOverlap(startSesi, endSesi, j.start, j.end)
-            );
-
-            const roomCapacity = roomCapacities[selectedRuang] || 1;
-            let isSlotAvailable = true;
-
-            if (conflictingSchedules.length >= roomCapacity) {
-                // Jika ruangan sudah penuh, cek apakah bisa untuk kelas paralel
-                const allSameCourseAndLecturer = conflictingSchedules.every(j => 
-                    j.kode_mata_kuliah === currentMatkul &&
-                    j.unique_number === currentDosenUniq
-                );
-
-                if (!allSameCourseAndLecturer) {
-                    isSlotAvailable = false; // Slot penuh dan diisi oleh matkul/dosen lain
-                }
-            }
-            
-            if (isSlotAvailable) {
-                const option = document.createElement('option');
-                option.value = sesi;
-                option.textContent = sesi;
-                if (sesi === currentJam) {
-                    option.selected = true;
-                }
-                jamEl.appendChild(option);
+        return dosenTimes[hari].some(availableSlot => {
+            if (typeof availableSlot === 'string') {
+                const [availStart, availEnd] = availableSlot.split(' - ').map(t => t.trim());
+                return timeToMinutes(startTime) >= timeToMinutes(availStart) && 
+                       timeToMinutes(endTime) <= timeToMinutes(availEnd);
+            } else {
+                const [availStart, availEnd] = availableSlot.time.split(' - ').map(t => t.trim());
+                return timeToMinutes(startTime) >= timeToMinutes(availStart) && 
+                       timeToMinutes(endTime) <= timeToMinutes(availEnd);
             }
         });
     }
 
-    // --- Event Listeners ---
-    hariEl.addEventListener('change', populateJamOptions);
-    ruangEl.addEventListener('change', populateJamOptions);
+    function hasDosenConflict(dosenNidn, hari, startTime, endTime, currentMatkul) {
+        return existingJadwals.some(jadwal => {
+            return jadwal.dosen === dosenNidn && 
+                   jadwal.hari === hari && 
+                   jadwal.matkul !== currentMatkul &&
+                   timeOverlaps(startTime, endTime, jadwal.start, jadwal.end);
+        });
+    }
 
-    // --- Inisialisasi Saat Halaman Dimuat ---
-    populateJamOptions();
+    function checkRoomSlotAvailability(ruang, hari, startTime, endTime, dosenNidn, currentMatkul) {
+        const roomCapacity = roomCapacities[ruang] || 1;
+        
+        const conflictingSchedules = existingJadwals.filter(jadwal => 
+            jadwal.ruang === ruang && 
+            jadwal.hari === hari && 
+            timeOverlaps(startTime, endTime, jadwal.start, jadwal.end)
+        );
+
+        // Jika jumlah jadwal sudah mencapai atau melebihi kapasitas ruangan
+        if (conflictingSchedules.length >= roomCapacity) {
+            console.log(`❌ Room at/over capacity (${conflictingSchedules.length}/${roomCapacity})`);
+            return false;
+        }
+
+        console.log(`✅ Room has available slots (${conflictingSchedules.length}/${roomCapacity})`);
+        return true;
+    }
+
+    const hariEl = document.getElementById('hari');
+    const ruangEl = document.getElementById('nama_ruangan');
+    const jamEl = document.getElementById('jam');
+
+    function populateTimeSlots() {
+        const hari = hariEl.value;
+        const ruang = ruangEl.value;
+        
+        jamEl.innerHTML = '<option value="">Pilih Jam</option>';
+
+        if (!hari || !ruang) {
+            jamEl.innerHTML = '<option value="">Pilih Ruang dan Hari</option>';
+            return;
+        }
+
+        console.log(`\n🎯 === Populating time slots for ${currentMatkul} by ${currentDosenNidn} in ${ruang} on ${hari} ===`);
+        console.log(`📝 Room capacity: ${roomCapacities[ruang] || 1} classes`);
+
+        let hasAvailableSlots = false;
+
+        for (let i = 0; i <= ALL_SLOTS.length - currentSks; i++) {
+            const startTime = ALL_SLOTS[i].split(' - ')[0].trim();
+            const endTime = ALL_SLOTS[i + currentSks - 1].split(' - ')[1].trim();
+            const timeSlot = `${startTime} - ${endTime}`;
+
+            console.log(`\n⏰ Checking slot: ${timeSlot}`);
+
+            // 1. Cek ketersediaan dosen
+            if (!isDosenAvailable(currentDosenNidn, hari, startTime, endTime)) {
+                console.log(`❌ Lecturer not available: ${timeSlot}`);
+                continue;
+            }
+
+            // 2. Cek konflik jadwal dosen dengan mata kuliah lain
+            if (hasDosenConflict(currentDosenNidn, hari, startTime, endTime, currentMatkul)) {
+                console.log(`❌ Lecturer has other class: ${timeSlot}`);
+                continue;
+            }
+
+            // 3. PENGECEKAN KETAT: Cek slot ruang kelas
+            if (!checkRoomSlotAvailability(ruang, hari, startTime, endTime, currentDosenNidn, currentMatkul)) {
+                console.log(`❌ Room slot not available: ${timeSlot}`);
+                continue;
+            }
+
+            // 4. Jika semua pengecekan lolos
+            console.log(`✅ Time slot available: ${timeSlot}`);
+            hasAvailableSlots = true;
+            
+            const option = document.createElement('option');
+            option.value = ALL_SLOTS[i];
+            option.textContent = timeSlot;
+
+            // Set selected jika ini adalah jam yang sedang diedit
+            if (timeSlot === currentJam) {
+                option.selected = true;
+            }
+            
+            jamEl.appendChild(option);
+        }
+
+        // Jika tidak ada slot yang tersedia
+        if (!hasAvailableSlots) {
+            const roomCapacity = roomCapacities[ruang] || 1;
+            jamEl.innerHTML = `<option value="">Tidak ada waktu tersedia (Ruang penuh)</option>`;
+            console.log(`❌ No available time slots - room capacity exceeded`);
+        }
+    }
+
+    hariEl.addEventListener('change', populateTimeSlots);
+    ruangEl.addEventListener('change', populateTimeSlots);
+
+    // Inisialisasi saat halaman dimuat
+    populateTimeSlots();
+
+    // Debug info
+    console.log('🏢 Room Capacities:', roomCapacities);
+    console.log('📅 Existing Jadwals:', existingJadwals);
+    console.log('⏰ Available Times:', availableTimes);
 });
 </script>
 @endpush

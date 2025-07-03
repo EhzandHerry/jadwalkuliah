@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Perintah untuk mengubah nama tabel dari 'users' menjadi 'dosen'
-        Schema::rename('users', 'dosen');
+        // Perintah untuk mengubah nama tabel dari 'available' menjadi 'ketersediaan'
+        Schema::rename('availables', 'ketersediaan');
     }
 
     /**
@@ -21,6 +21,6 @@ return new class extends Migration
     public function down(): void
     {
         // Perintah untuk mengembalikan nama tabel jika di-rollback
-        Schema::rename('dosen', 'users');
+        Schema::rename('ketersediaan', 'availables');
     }
 };

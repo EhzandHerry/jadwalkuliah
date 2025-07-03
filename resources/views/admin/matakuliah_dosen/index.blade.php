@@ -45,7 +45,7 @@
         <thead class="thead-dark">
             <tr>
                 <th>Kode</th>
-                <th>Matakuliah</th>
+                <th>MataKuliah</th>
                 <th>Kelas</th>
                 <th>NIDN</th>
                 <th>Nama Dosen</th>
@@ -58,8 +58,8 @@
         <td>{{ optional($k->mataKuliah)->kode_matkul  ?? '–' }}</td>
         <td>{{ optional($k->mataKuliah)->nama_matkul  ?? '–' }}</td>
         <td>{{ $k->kelas }}</td>
-        <td>{{ optional($k->dosen)->unique_number    ?? '–' }}</td>
-        <td>{{ optional($k->dosen)->name             ?? '–' }}</td>
+        <td>{{ optional($k->dosen)->nidn    ?? '–' }}</td>
+        <td>{{ optional($k->dosen)->nama             ?? '–' }}</td>
         <td class="d-flex align-items-center">
             @if($k->dosen)
                 {{-- Form untuk Update Dosen --}}
@@ -69,11 +69,11 @@
                         onsubmit="return confirm('Yakin ingin memperbarui dosen untuk {{ optional($k->mataKuliah)->kode_matkul }} {{ $k->kelas }}?')">
                     @csrf
                     @method('PUT')
-                    <select name="unique_number" required>
+                    <select name="nidn" required>
                         @foreach($dosenList as $d)
-                            <option value="{{ $d->unique_number }}"
-                                {{ $d->unique_number == $k->unique_number ? 'selected':'' }}>
-                                {{ $d->name }}
+                            <option value="{{ $d->nidn }}"
+                                {{ $d->nidn == $k->nidn ? 'selected':'' }}>
+                                {{ $d->nama }}
                             </option>
                         @endforeach
                     </select>
@@ -93,10 +93,10 @@
                         method="POST"
                         onsubmit="return confirm('Yakin ingin assign dosen untuk {{ optional($k->mataKuliah)->kode_matkul }} {{ $k->kelas }}?')">
                     @csrf
-                    <select name="unique_number" required>
+                    <select name="nidn" required>
                         <option value="">Pilih Dosen…</option>
                         @foreach($dosenList as $d)
-                            <option value="{{ $d->unique_number }}">{{ $d->name }}</option>
+                            <option value="{{ $d->nidn }}">{{ $d->nama }}</option>
                         @endforeach
                     </select>
                     <button type="submit" class="btn btn-success btn-sm">Simpan</button>

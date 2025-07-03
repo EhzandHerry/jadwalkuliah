@@ -26,9 +26,7 @@ Route::middleware('auth')->group(function () {
 
     // Route Admin
     Route::middleware('admin')->group(function () {
-        Route::get('/admin/dashboard', function () {
-    return redirect()->route('admin.mata_kuliah.index');
-})->name('admin.dashboard');
+         Route::get('/admin/dashboard', [AdminController::class, 'showHome'])->name('admin.dashboard');
 
 
         // Mata Kuliah Routes

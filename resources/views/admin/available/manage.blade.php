@@ -36,8 +36,8 @@
             @forelse ($availables as $item)
                 <tr>
                     <td>{{ $item->hari }}</td>
-                    <td>{{ \Carbon\Carbon::parse($item->start_time)->format('H:i') }}</td>
-                    <td>{{ \Carbon\Carbon::parse($item->end_time)->format('H:i') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($item->waktu_mulai)->format('H:i') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($item->waktu_selesai)->format('H:i') }}</td>
                     <td class="action-cell">
                         <a href="{{ route('admin.available.edit', $item->id) }}" class="btn-link edit-btn">Edit</a>
 

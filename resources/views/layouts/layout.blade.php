@@ -3,28 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <title>@yield('title')</title>
-    <link rel="stylesheet" href="{{ asset('css/admin/dashboard.css') }}">
-    @stack('css') <!-- This line will include the additional page-specific styles -->
-</head>
+    <link rel="stylesheet" href="{{ asset('css/admin/layout.css') }}">
+    @stack('css') </head>
 
 <body>
-    <!-- Header -->
     <header class="header">
-        <button class="toggle-btn" id="toggle-btn">☰</button> <!-- Sidebar Toggle Button -->
-        <h3>@yield('header_title', 'Welcome to Admin Dashboard')</h3>
+        <button class="toggle-btn" id="toggle-btn">☰</button> <h3>@yield('header_title', 'Welcome to Admin Dashboard')</h3>
     </header>
     
 
-   <!-- Sidebar -->
-<div class="sidebar" id="sidebar">
+    <div class="sidebar" id="sidebar">
     <ul>
+        {{-- --- PERUBAHAN DI SINI --- --}}
+        <li><a href="{{ route('admin.dashboard') }}">Home</a></li>
+        {{-- --- AKHIR PERUBAHAN --- --}}
         <li><a href="{{ route('admin.dosen.index') }}">Manajemen Dosen</a></li>
         <li><a href="{{ route('admin.mata_kuliah.index') }}">Manajemen Mata Kuliah</a></li>
         <li><a href="{{ route('admin.ruang_kelas.index') }}">Manajemen Ruang Kelas</a></li>
         <li><a href="{{ route('admin.matakuliah_dosen.index') }}">Mata Kuliah & Dosen</a></li>
         <li><a href="{{ route('admin.jadwal.index') }}">Manajemen Jadwal</a></li>
-        <!-- <li><a href="{{ route('admin.available.dashboard') }}">Available Time Dashboard</a></li> -->
-    </ul>
+        </ul>
     <div class="logout-container">
         {{-- ====================================================== --}}
         {{-- PERUBAHAN DI SINI: Menambahkan konfirmasi onsubmit --}}
@@ -38,7 +36,6 @@
 </div>
 
 
-    <!-- Content section -->
     <div class="content" id="content">
         @yield('content')
     </div>

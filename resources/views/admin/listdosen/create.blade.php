@@ -24,11 +24,11 @@
         @csrf
 
         <div class="form-group">
-          <label for="name">Nama Dosen</label>
-          {{-- 'old('name')' akan mengisi kembali input jika validasi gagal --}}
-          <input type="text" id="name" name="name" value="{{ old('name') }}" required class="form-control @error('name') is-invalid @enderror">
-          {{-- Menampilkan pesan error spesifik untuk field 'name' --}}
-          @error('name')
+          <label for="nama">Nama Dosen</label>
+          {{-- 'old('nama')' akan mengisi kembali input jika validasi gagal --}}
+          <input type="text" id="a" name="nama" value="{{ old('nama') }}" required class="form-control @error('nama') is-invalid @enderror">
+          {{-- Menampilkan pesan error spesifik untuk field 'nama' --}}
+          @error('nama')
             <span class="invalid-feedback">{{ $message }}</span>
           @enderror
         </div>
@@ -50,9 +50,9 @@
         </div>
 
         <div class="form-group">
-          <label for="unique_number">NIDN</label>
-          <input type="number" id="unique_number" name="unique_number" value="{{ old('unique_number') }}" required class="form-control @error('unique_number') is-invalid @enderror" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-          @error('unique_number')
+          <label for="nidn">NIDN</label>
+          <input type="number" id="nidn" name="nidn" value="{{ old('nidn') }}" required class="form-control @error('nidn') is-invalid @enderror" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+          @error('nidn')
             <span class="invalid-feedback">{{ $message }}</span>
           @enderror
         </div>

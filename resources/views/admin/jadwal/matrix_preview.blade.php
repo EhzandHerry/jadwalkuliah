@@ -16,7 +16,7 @@
             <h1 class="page-main-title">Preview Matrix Jadwal</h1>
             <div class="preview-actions">
                 <a href="{{ route('admin.jadwal.index') }}" class="btn btn-secondary">Kembali</a>
-                <a href="{{ route('admin.jadwal.exportMatrix') }}" class="btn btn-success">Download Excel</a>
+                <a href="{{ route('admin.jadwal.exportMatrix') }}" class="btn btn-success">Download Jadwal</a>
             </div>
         </div>
 
