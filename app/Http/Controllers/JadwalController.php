@@ -509,80 +509,82 @@ private function getAvailableRoomsForTimeSlot($hari, $startTime, $endTime, $exis
     }
 
     public function previewMatrix()
-    {
-        $allRoomsCollection = RuangKelas::orderBy('nama_ruangan')->get();
-        $f6_rooms = $allRoomsCollection->filter(fn($r) => str_starts_with($r->nama_ruangan, 'F6'));
-        $f4_rooms = $allRoomsCollection->filter(fn($r) => str_starts_with($r->nama_ruangan, 'F4'));
-        $other_rooms = $allRoomsCollection->reject(fn($r) => str_starts_with($r->nama_ruangan, 'F6') || str_starts_with($r->nama_ruangan, 'F4'));
-        $rooms = $f6_rooms->merge($f4_rooms)->merge($other_rooms)->pluck('nama_ruangan')->toArray();
-        
-        $days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-        $sessionRanges = [
-            1 => ['07:00-07:50', '07:50-08:40'], 2 => ['08:50-09:40', '09:40-10:30'],
-            3 => ['10:40-11:30'], 4 => ['12:10-13:10'], 5 => ['13:20-14:10', '14:10-15:00'],
-            6 => ['15:30-16:20', '16:20-17:10', '17:10-18:00'], 7 => ['18:30-19:20', '19:20-20:10', '20:10-21:00'],
-        ];
-        $breakSlots = [
-            1 => ['time' => '08:40-08:50', 'text' => 'Pergantian Sesi'], 2 => ['time' => '10:30-10:40', 'text' => 'Pergantian Sesi'],
-            3 => ['time' => '11:30-12:20', 'text' => 'Pergantian Sesi'], 4 => ['time' => '13:10-13:20', 'text' => 'Pergantian Sesi'],
-            5 => ['time' => '15:00-15:30', 'text' => 'Pergantian Sesi'], 6 => ['time' => '17:45-18:30', 'text' => 'Pergantian Sesi'],
-        ];
-        $semesterColors = [2 => 'E2F0D9', 4 => 'FDE9D9', 6 => 'DDEBF7'];
+{
+    $allRoomsCollection = RuangKelas::orderBy('nama_ruangan')->get();
+    $f6_rooms = $allRoomsCollection->filter(fn($r) => str_starts_with($r->nama_ruangan, 'F6'));
+    $f4_rooms = $allRoomsCollection->filter(fn($r) => str_starts_with($r->nama_ruangan, 'F4'));
+    $other_rooms = $allRoomsCollection->reject(fn($r) => str_starts_with($r->nama_ruangan, 'F6') || str_starts_with($r->nama_ruangan, 'F4'));
+    $rooms = $f6_rooms->merge($f4_rooms)->merge($other_rooms)->pluck('nama_ruangan')->toArray();
+    
+    $days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    $sessionRanges = [
+        1 => ['07:00-07:50', '07:50-08:40'], 2 => ['08:50-09:40', '09:40-10:30'],
+        3 => ['10:40-11:30'], 4 => ['12:10-13:10'], 5 => ['13:20-14:10', '14:10-15:00'],
+        6 => ['15:30-16:20', '16:20-17:10', '17:10-18:00'], 7 => ['18:30-19:20', '19:20-20:10', '20:10-21:00'],
+    ];
+    $breakSlots = [
+        1 => ['time' => '08:40-08:50', 'text' => 'Pergantian Sesi'], 2 => ['time' => '10:30-10:40', 'text' => 'Pergantian Sesi'],
+        3 => ['time' => '11:30-12:20', 'text' => 'Pergantian Sesi'], 4 => ['time' => '13:10-13:20', 'text' => 'Pergantian Sesi'],
+        5 => ['time' => '15:00-15:30', 'text' => 'Pergantian Sesi'], 6 => ['time' => '17:45-18:30', 'text' => 'Pergantian Sesi'],
+    ];
+    $semesterColors = [2 => 'E2F0D9', 4 => 'FDE9D9', 6 => 'DDEBF7'];
+    $peminatanColor = 'E6E6FA'; // Warna ungu untuk mata kuliah peminatan
 
-        $allJadwal = JadwalKuliah::with(['mataKuliah', 'dosen'])->get();
-        $dailyData = [];
-        $dailyMaxSessions = [];
+    $allJadwal = JadwalKuliah::with(['mataKuliah', 'dosen'])->get();
+    $dailyData = [];
+    $dailyMaxSessions = [];
 
-        foreach ($days as $hari) {
-            $jadwalHari = $allJadwal->where('hari', $hari);
-            if ($jadwalHari->isEmpty()) continue;
+    foreach ($days as $hari) {
+        $jadwalHari = $allJadwal->where('hari', $hari);
+        if ($jadwalHari->isEmpty()) continue;
 
-            $maxSesiForDay = 0;
-            foreach (array_reverse($sessionRanges, true) as $sesiNum => $slots) {
-                foreach ($slots as $jam) {
-                    [$start, $end] = explode('-', $jam);
-                    $isAnyClassInSlot = $jadwalHari->first(function ($j) use ($start, $end) {
-                        [$os, $oe] = explode(' - ', $j->jam);
-                        return !(trim($oe) <= trim($start) || trim($end) <= trim($os));
-                    });
-                    if ($isAnyClassInSlot) {
-                        $maxSesiForDay = $sesiNum;
-                        break 2;
-                    }
+        $maxSesiForDay = 0;
+        foreach (array_reverse($sessionRanges, true) as $sesiNum => $slots) {
+            foreach ($slots as $jam) {
+                [$start, $end] = explode('-', $jam);
+                $isAnyClassInSlot = $jadwalHari->first(function ($j) use ($start, $end) {
+                    [$os, $oe] = explode(' - ', $j->jam);
+                    return !(trim($oe) <= trim($start) || trim($end) <= trim($os));
+                });
+                if ($isAnyClassInSlot) {
+                    $maxSesiForDay = $sesiNum;
+                    break 2;
                 }
             }
-            $dailyMaxSessions[$hari] = $maxSesiForDay;
+        }
+        $dailyMaxSessions[$hari] = $maxSesiForDay;
 
-            $matrix = [];
-            foreach ($sessionRanges as $sesi => $slots) {
-                if ($sesi > $maxSesiForDay) continue;
-                foreach ($slots as $jam) {
-                    foreach ($rooms as $ruang) {
-                        $jadwals = $jadwalHari
-                            ->where('nama_ruangan', $ruang)
-                            ->filter(function ($j) use ($jam) {
-                                [$s, $e] = explode('-', $jam);
-                                [$os, $oe] = explode(' - ', $j->jam);
-                                return !(trim($oe) <= trim($s) || trim($e) <= trim($os));
-                            });
-                        if (!$jadwals->isEmpty()) {
-                            $groups = $jadwals->groupBy(fn($j) => $j->kode_matkul . '|' . $j->nidn);
-                            foreach ($groups as $items) {
-                                $first = $items->first();
-                                $kelasList = $items->pluck('kelas')->unique()->sort()->implode(',');
-                                $text = "{$first->kode_matkul}({$kelasList})\n{$first->mataKuliah->nama_matkul}\nDosen: {$first->dosen->nama}";
-                                $matrix[$sesi][$jam][$ruang][] = [
-                                    'text' => $text,
-                                    'semester' => $first->mataKuliah->semester
-                                ];
-                            }
+        $matrix = [];
+        foreach ($sessionRanges as $sesi => $slots) {
+            if ($sesi > $maxSesiForDay) continue;
+            foreach ($slots as $jam) {
+                foreach ($rooms as $ruang) {
+                    $jadwals = $jadwalHari
+                        ->where('nama_ruangan', $ruang)
+                        ->filter(function ($j) use ($jam) {
+                            [$s, $e] = explode('-', $jam);
+                            [$os, $oe] = explode(' - ', $j->jam);
+                            return !(trim($oe) <= trim($s) || trim($e) <= trim($os));
+                        });
+                    if (!$jadwals->isEmpty()) {
+                        $groups = $jadwals->groupBy(fn($j) => $j->kode_matkul . '|' . $j->nidn);
+                        foreach ($groups as $items) {
+                            $first = $items->first();
+                            $kelasList = $items->pluck('kelas')->unique()->sort()->implode(',');
+                            $text = "{$first->kode_matkul}({$kelasList})\n{$first->mataKuliah->nama_matkul}\nDosen: {$first->dosen->nama}";
+                            $matrix[$sesi][$jam][$ruang][] = [
+                                'text' => $text,
+                                'semester' => $first->mataKuliah->semester,
+                                'is_peminatan' => $first->mataKuliah->is_peminatan ?? false // Tambahkan informasi peminatan
+                            ];
                         }
                     }
                 }
             }
-            $dailyData[$hari] = $matrix;
         }
-
-        return view('admin.jadwal.matrix_preview', compact('rooms', 'days', 'dailyData', 'dailyMaxSessions', 'sessionRanges', 'breakSlots', 'semesterColors'));
+        $dailyData[$hari] = $matrix;
     }
+
+    return view('admin.jadwal.matrix_preview', compact('rooms', 'days', 'dailyData', 'dailyMaxSessions', 'sessionRanges', 'breakSlots', 'semesterColors', 'peminatanColor'));
+}
 }

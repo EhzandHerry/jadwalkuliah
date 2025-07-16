@@ -46,39 +46,51 @@
                             </tr>
 
                             {{-- Loop untuk data sesi dan matakuliah --}}
-                            @foreach($sessionRanges as $sesi => $slots)
-                                @if(isset($dailyData[$hari][$sesi]))
-                                    @foreach($slots as $slotIdx => $jam)
-                                        <tr>
-                                            @if($slotIdx === 0)
-                                                <td rowspan="{{ count($slots) }}">Sesi {{ $sesi }}</td>
-                                            @endif
-                                            <td>{{ $jam }}</td>
-                                            @foreach($rooms as $ruang)
-                                                @php
-                                                    $jadwals = $dailyData[$hari][$sesi][$jam][$ruang] ?? [];
-                                                @endphp
-                                                <td class="matkul-cell">
-                                                    @foreach($jadwals as $jadwal)
-                                                        <div class="matkul-item semester-{{ $jadwal['semester'] ?? '' }}">
-                                                            {!! nl2br(e($jadwal['text'])) !!}
-                                                        </div>
-                                                    @endforeach
-                                                </td>
-                                            @endforeach
-                                        </tr>
-                                    @endforeach
+@foreach($sessionRanges as $sesi => $slots)
+    @if(isset($dailyData[$hari][$sesi]))
+        @foreach($slots as $slotIdx => $jam)
+            <tr>
+                @if($slotIdx === 0)
+                    <td rowspan="{{ count($slots) }}">Sesi {{ $sesi }}</td>
+                @endif
+                <td>{{ $jam }}</td>
+                @foreach($rooms as $ruang)
+                    @php
+                        $jadwals = $dailyData[$hari][$sesi][$jam][$ruang] ?? [];
+                    @endphp
+                    <td class="matkul-cell">
+                        @foreach($jadwals as $jadwal)
+                            @php
+                                // Tentukan warna berdasarkan apakah mata kuliah peminatan atau tidak
+                                if ($jadwal['is_peminatan']) {
+                                    $bgColor = $peminatanColor; // Ungu untuk peminatan
+                                    $cssClass = 'matkul-peminatan';
+                                } else {
+                                    // Gunakan warna berdasarkan semester
+                                    $semester = $jadwal['semester'] ?? 0;
+                                    $bgColor = $semesterColors[$semester] ?? 'FFFFFF'; // Default putih jika semester tidak ada
+                                    $cssClass = 'matkul-semester-' . $semester;
+                                }
+                            @endphp
+                            <div class="matkul-item {{ $cssClass }}" style="background-color: #{{ $bgColor }};">
+                                {!! nl2br(e($jadwal['text'])) !!}
+                            </div>
+                        @endforeach
+                    </td>
+                @endforeach
+            </tr>
+        @endforeach
 
-                                    {{-- Baris Pergantian Sesi --}}
-                                    @if(isset($breakSlots[$sesi]) && $sesi < $dailyMaxSessions[$hari])
-                                        <tr class="break-row">
-                                            <td></td>
-                                            <td class="break-time">{{ $breakSlots[$sesi]['time'] }}</td>
-                                            <td colspan="{{ count($rooms) }}" class="break-text">{{ $breakSlots[$sesi]['text'] }}</td>
-                                        </tr>
-                                    @endif
-                                @endif
-                            @endforeach
+        {{-- Baris Pergantian Sesi --}}
+        @if(isset($breakSlots[$sesi]) && $sesi < $dailyMaxSessions[$hari])
+            <tr class="break-row">
+                <td></td>
+                <td class="break-time">{{ $breakSlots[$sesi]['time'] }}</td>
+                <td colspan="{{ count($rooms) }}" class="break-text">{{ $breakSlots[$sesi]['text'] }}</td>
+            </tr>
+        @endif
+    @endif
+@endforeach
                         @endif
                     @empty
                         <tr>

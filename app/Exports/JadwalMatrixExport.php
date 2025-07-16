@@ -43,6 +43,9 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
         6 => 'DDEBF7', // Biru Muda
     ];
 
+    // Warna ungu untuk mata kuliah peminatan
+    protected string $peminatanColor = 'E1D5E7'; // Ungu Muda
+
     public function __construct()
     {
         // Ambil semua ruangan, diurutkan berdasarkan nama sebagai dasar
@@ -104,10 +107,18 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
                                 $f = $grp->first();
                                 $kl = $grp->pluck('kelas')->unique()->sort()->implode(',');
                                 $mk = $f->mataKuliah->nama_matkul;
-                                $dsn = $f->dosen->nama; // Perbaikan: gunakan 'nama' bukan 'name'
+                                $dsn = $f->dosen->nama;
                                 
                                 $semester = $f->mataKuliah->semester;
-                                $prefix = "SEM{$semester}::";
+                                
+                                // Cek apakah mata kuliah memiliki peminatan
+                                $hasPeminatan = !empty($f->mataKuliah->peminatan);
+                                
+                                if ($hasPeminatan) {
+                                    $prefix = "PEMINATAN::";
+                                } else {
+                                    $prefix = "SEM{$semester}::";
+                                }
                                 
                                 // Format yang disesuaikan: Kode Matkul, Kelas, Nama Matkul, Dosen
                                 $cells[] = $prefix . "{$f->kode_matkul}({$kl})\n{$mk}\nDosen: {$dsn}";
@@ -222,7 +233,7 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
                     }
                 }
 
-                // Warnai sel mata kuliah berdasarkan semester
+                // Warnai sel mata kuliah berdasarkan peminatan atau semester
                 $maxColIndex = Coordinate::columnIndexFromString($lastCol);
                 for ($col = 3; $col <= $maxColIndex; $col++) {
                     for ($row = 4; $row <= $totalRow; $row++) {
@@ -230,16 +241,34 @@ class JadwalMatrixExport implements FromCollection, ShouldAutoSize, WithEvents
                         $cell = $sheet->getCell($cellCoordinate);
                         $value = $cell->getValue();
 
-                        if (is_string($value) && str_starts_with($value, 'SEM')) {
-                            preg_match('/^SEM(\d+)::/', $value, $matches);
-                            if (isset($matches[1])) {
-                                $semester = (int) $matches[1];
-                                if (isset($this->semesterColors[$semester])) {
-                                    $color = $this->semesterColors[$semester];
-                                    $sheet->getStyle($cellCoordinate)->getFill()->applyFromArray(['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $color]]);
-                                }
-                                $cleanedValue = preg_replace('/^SEM(\d+)::/', '', $value);
+                        if (is_string($value)) {
+                            // Cek apakah mata kuliah peminatan
+                            if (str_starts_with($value, 'PEMINATAN::')) {
+                                // Warnai dengan warna ungu untuk mata kuliah peminatan
+                                $sheet->getStyle($cellCoordinate)->getFill()->applyFromArray([
+                                    'fillType' => Fill::FILL_SOLID, 
+                                    'startColor' => ['rgb' => $this->peminatanColor]
+                                ]);
+                                // Hapus prefix PEMINATAN::
+                                $cleanedValue = preg_replace('/^PEMINATAN::/', '', $value);
                                 $cell->setValue($cleanedValue);
+                            }
+                            // Cek berdasarkan semester jika bukan peminatan
+                            elseif (str_starts_with($value, 'SEM')) {
+                                preg_match('/^SEM(\d+)::/', $value, $matches);
+                                if (isset($matches[1])) {
+                                    $semester = (int) $matches[1];
+                                    if (isset($this->semesterColors[$semester])) {
+                                        $color = $this->semesterColors[$semester];
+                                        $sheet->getStyle($cellCoordinate)->getFill()->applyFromArray([
+                                            'fillType' => Fill::FILL_SOLID, 
+                                            'startColor' => ['rgb' => $color]
+                                        ]);
+                                    }
+                                    // Hapus prefix SEM{x}::
+                                    $cleanedValue = preg_replace('/^SEM(\d+)::/', '', $value);
+                                    $cell->setValue($cleanedValue);
+                                }
                             }
                         }
                     }
