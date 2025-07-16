@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="available-container">
-    <h1>Manajemen Waktu Ketersediaan untuk {{ $dosen->name }}</h1>
+    <h1>Manajemen Waktu Ketersediaan untuk {{ $dosen->nama }}</h1>
 
     {{-- Tombol Kembali dan Tambah --}}
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">

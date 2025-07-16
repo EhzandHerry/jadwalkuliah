@@ -54,13 +54,13 @@
             <label for="peminatan">Peminatan (Opsional)</label>
             <select id="peminatan" name="peminatan" class="form-control">
                 {{-- Opsi ini akan menyimpan NULL jika dipilih --}}
-                <option value="" {{ old('peminatan', $matkul->peminatan) == '' ? 'selected' : '' }}>-- Mata Kuliah Wajib --</option>
+                <option value="" {{ old('peminatan', $matkul->peminatan) == '' ? 'selected' : '' }}>Mata Kuliah Wajib</option>
                 <option value="Programming" {{ old('peminatan', $matkul->peminatan) == 'Programming' ? 'selected' : '' }}>Programming</option>
                 <option value="Data" {{ old('peminatan', $matkul->peminatan) == 'Data' ? 'selected' : '' }}>Data</option>
                 <option value="UX" {{ old('peminatan', $matkul->peminatan) == 'UX' ? 'selected' : '' }}>UX</option>
                 <option value="Network" {{ old('peminatan', $matkul->peminatan) == 'Network' ? 'selected' : '' }}>Network</option>
             </select>
-            <small>Biarkan pada pilihan "-- Mata Kuliah Wajib --" jika bukan mata kuliah peminatan.</small>
+            <small>Biarkan pada pilihan "Mata Kuliah Wajib" jika bukan mata kuliah peminatan.</small>
         </div>
 
         <div class="form-group">

@@ -109,7 +109,7 @@ public function indexMatKulDosen(Request $request)
                 ->exists();
             if ($isOldDosenScheduled) {
                 $oldDosenName = optional($kelas->dosen)->nama ?? 'dosen sebelumnya'; // Menggunakan 'nama'
-                return redirect()->back()->with('error', "Gagal update! Dosen {$oldDosenName} sudah memiliki jadwal untuk kelas ini. Hapus jadwal terlebih dahulu untuk mengganti dosen.");
+                return redirect()->back()->with('error', "Gagal mengubah! Dosen {$oldDosenName} sudah memiliki jadwal untuk kelas ini. Hapus jadwal terlebih dahulu untuk mengganti dosen.");
             }
         }
         
@@ -212,7 +212,7 @@ public function indexMatKulDosen(Request $request)
 
         return redirect()
             ->route('admin.mata_kuliah.index')
-            ->with('success', 'Mata Kuliah & Kelas berhasil ditambahkan.');
+            ->with('success', 'Mata Kuliah berhasil ditambahkan.');
     }
 
     public function editMataKuliah($id)
@@ -262,7 +262,7 @@ public function indexMatKulDosen(Request $request)
 
         return redirect()
             ->route('admin.mata_kuliah.index')
-            ->with('success', 'Data Mata Kuliah & Jumlah Kelas diperbarui.');
+            ->with('success', 'Data Mata Kuliah berhasil diperbarui.');
     }
 
     public function destroyMataKuliah($id)
@@ -292,18 +292,26 @@ public function indexMatKulDosen(Request $request)
     public function storeRuangKelas(Request $request)
 {
     $request->validate([
-        'nama_ruangan'     => 'required|string|max:255',
+        'nama_ruangan'     => 'required|string|max:255|unique:ruang_kelas,nama_ruangan',
         'nama_gedung'      => 'required|string|max:255',
-        'kapasitas'        => 'required|integer|min:1',
         'kapasitas_kelas'  => 'required|integer|min:1',
+    ], [
+        'nama_ruangan.required' => 'Nama ruangan wajib diisi.',
+        'nama_ruangan.unique' => 'Nama ruangan ini sudah terdaftar.',
+        'nama_gedung.required' => 'Nama gedung wajib diisi.',
+        'kapasitas_kelas.required' => 'Kapasitas kelas wajib diisi.',
+        'kapasitas_kelas.min' => 'Kapasitas kelas minimal harus 1.',
     ]);
 
-    RuangKelas::create($request->only(
-        'nama_ruangan',
-        'nama_gedung',
-        'kapasitas',
-        'kapasitas_kelas'
-    ));
+    // Hitung kapasitas otomatis berdasarkan kapasitas_kelas
+    $kapasitas = $request->kapasitas_kelas * 50;
+
+    RuangKelas::create([
+        'nama_ruangan' => $request->nama_ruangan,
+        'nama_gedung' => $request->nama_gedung,
+        'kapasitas' => $kapasitas,
+        'kapasitas_kelas' => $request->kapasitas_kelas
+    ]);
 
     return redirect()->route('admin.ruang_kelas.index')
                      ->with('success','Ruang Kelas berhasil ditambahkan.');
@@ -317,22 +325,35 @@ public function indexMatKulDosen(Request $request)
     }
 
     public function updateRuangKelas(Request $request, $id)
-    {
-        $request->validate([
-            'nama_ruangan'=>'required|string|max:255',
-            'nama_gedung' =>'required|string|max:255',
-            'kapasitas'   =>'required|integer|min:1',
-            'kapasitas_kelas'   =>'required|integer|min:1',
-        ]);
+{
+    $request->validate([
+        'nama_ruangan' => 'required|string|max:255|unique:ruang_kelas,nama_ruangan,' . $id,
+        'nama_gedung'  => 'required|string|max:255',
+        'kapasitas_kelas' => 'required|integer|min:1',
+    ], [
+        // Pesan error kustom
+        'nama_ruangan.unique' => 'Nama ruangan ini sudah terdaftar.',
+        'nama_ruangan.required' => 'Nama ruangan wajib diisi.',
+        'nama_gedung.required' => 'Nama gedung wajib diisi.',
+        'kapasitas_kelas.required' => 'Kapasitas kelas wajib diisi.',
+        'kapasitas_kelas.min' => 'Kapasitas kelas minimal 1.',
+    ]);
 
-        $ruang = RuangKelas::findOrFail($id);
-        $ruang->update($request->only(
-            'nama_ruangan','nama_gedung','kapasitas', 'kapasitas_kelas',
-        ));
+    $ruang = RuangKelas::findOrFail($id);
+    
+    // Hitung kapasitas otomatis
+    $kapasitas = $request->kapasitas_kelas * 50;
+    
+    $ruang->update([
+        'nama_ruangan' => $request->nama_ruangan,
+        'nama_gedung' => $request->nama_gedung,
+        'kapasitas' => $kapasitas,
+        'kapasitas_kelas' => $request->kapasitas_kelas,
+    ]);
 
-        return redirect()->route('admin.ruang_kelas.index')
-                         ->with('success','Ruang Kelas berhasil diperbarui.');
-    }
+    return redirect()->route('admin.ruang_kelas.index')
+                     ->with('success', 'Ruang Kelas berhasil diperbarui.');
+}
 
     public function destroyRuangKelas($id)
     {
@@ -383,28 +404,31 @@ public function indexMatKulDosen(Request $request)
     }
 
     public function storeDosen(Request $request)
-    {
-        $request->validate([
-            'nama' => 'required|string|max:255',
-            'email' => 'required|email|unique:dosen,email',
-            'password' => 'required|string|min:8',
-            'nidn' => 'required|unique:dosen,nidn|numeric',
-        ], [
-            'nama.required' => 'Nama dosen wajib diisi.',
-            'email.unique' => 'Email ini sudah terdaftar.',
-            'password.min' => 'Password minimal harus 8 karakter.',
-            'nidn.unique' => 'NIDN ini sudah terdaftar.',
-            'nidn.numeric' => 'NIDN harus berupa angka.',
-        ]);
-        User::create([
-            'nama' => $request->nama,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-            'nidn' => $request->nidn,
-            'is_admin' => false,
-        ]);
-        return redirect()->route('admin.dosen.index')->with('success','Dosen berhasil ditambahkan.');
-    }
+{
+    $request->validate([
+        'nama' => 'required|string|max:255',
+        'email' => 'required|email|unique:dosen,email',
+        'password' => 'required|string|min:8',
+        'nidn' => 'required|unique:dosen,nidn|numeric|digits:10',
+    ], [
+        'nama.required' => 'Nama dosen wajib diisi.',
+        'email.unique' => 'Email ini sudah terdaftar.',
+        'password.min' => 'Password minimal harus 8 karakter.',
+        'nidn.unique' => 'NIDN ini sudah terdaftar.',
+        'nidn.numeric' => 'NIDN harus berupa angka.',
+        'nidn.digits' => 'NIDN harus terdiri dari tepat 10 angka.',
+    ]);
+    
+    User::create([
+        'nama' => $request->nama,
+        'email' => $request->email,
+        'password' => bcrypt($request->password),
+        'nidn' => $request->nidn,
+        'is_admin' => false,
+    ]);
+    
+    return redirect()->route('admin.dosen.index')->with('success','Dosen berhasil ditambahkan.');
+}
 
     public function editDosen($id)
     {
@@ -413,21 +437,45 @@ public function indexMatKulDosen(Request $request)
     }
 
     public function updateDosen(Request $request, $id)
-    {
-        $request->validate([
-            'nama' => 'required|string|max:255',
-            'email' => "required|email|unique:dosen,email,{$id}",
-            'nidn' => "required|unique:dosen,nidn,{$id}|numeric",
-        ], [
-            'nama.required' => 'Nama dosen wajib diisi.',
-            'email.unique' => 'Email ini sudah terdaftar.',
-            'nidn.unique' => 'NIDN ini sudah terdaftar.',
-            'nidn.numeric' => 'NIDN harus berupa angka.',
-        ]);
-        $dosen = User::findOrFail($id);
-        $dosen->update($request->only('nama', 'email', 'nidn'));
-        return redirect()->route('admin.dosen.index')->with('success','Dosen berhasil diperbarui.');
+{
+    $request->validate([
+        'nama' => 'required|string|max:255',
+        'email' => "required|email|unique:dosen,email,{$id}",
+        'nidn' => "required|numeric|min_digits:10|unique:dosen,nidn,{$id}",
+    ], [
+        'nama.required' => 'Nama dosen wajib diisi.',
+        'email.unique' => 'Email ini sudah terdaftar.',
+        'nidn.unique' => 'NIDN ini sudah terdaftar.',
+        'nidn.numeric' => 'NIDN harus berupa angka.',
+        'nidn.min_digits' => 'NIDN harus terdiri dari minimal 10 digit.',
+    ]);
+
+    $dosen = User::findOrFail($id);
+    $oldNidn = $dosen->nidn;
+    
+   // Jika NIDN akan diubah dan ada referensi di kelas
+    if ($dosen->nidn != $request->nidn) {
+        $nidnExistsInKelas = DB::table('kelas')->where('nidn', $oldNidn)->exists();
+
+        if ($nidnExistsInKelas) {
+            // Opsi 1: Blokir perubahan (seperti solusi di atas)
+            return redirect()->back()
+                ->withInput()
+                ->with('error_nidn_kelas', 'NIDN dosen ini tidak dapat diubah karena telah terdaftar pada kelas di suatu mata kuliah!');
+            
+            // Opsi 2: Update juga referensi di tabel kelas (gunakan transaction)
+            // DB::transaction(function () use ($dosen, $request, $oldNidn) {
+            //     $dosen->update($request->only('nama', 'email', 'nidn'));
+            //     DB::table('kelas')->where('nidn', $oldNidn)->update(['nidn' => $request->nidn]);
+            // });
+        }
     }
+
+    // Jika tidak ada masalah, lakukan update
+    $dosen->update($request->only('nama', 'email', 'nidn'));
+    
+    return redirect()->route('admin.dosen.index')->with('success','Dosen berhasil diperbarui.');
+}
 
     public function deleteDosen($id)
     {
@@ -460,7 +508,7 @@ public function indexMatKulDosen(Request $request)
             'waktu_selesai' => 'required|date_format:H:i|after:waktu_mulai',
         ]);
         $available->update($request->only('waktu_mulai', 'waktu_selesai'));
-        return redirect()->route('admin.available.manage', $available->id_dosen)->with('success', 'Available time berhasil diperbarui.');
+        return redirect()->route('admin.available.manage', $available->id_dosen)->with('success', 'Waktu ketersediaan berhasil diperbarui.');
     }
 
       public function storeAvailableTimes(Request $request, $id)
@@ -495,7 +543,7 @@ public function indexMatKulDosen(Request $request)
     public function deleteAvailableTime($id)
     {
         Available::findOrFail($id)->delete();
-        return back()->with('success','Available time berhasil dihapus.');
+        return back()->with('success','Waktu Ketersediaan berhasil dihapus.');
     }
 
     public function addAvailableTime($id)

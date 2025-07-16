@@ -8,7 +8,17 @@
     <h1>Tambah Mata Kuliah</h1>
 
     {{-- Validation Errors --}}
-    @if ($errors->any())
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
+    {{-- Validation Errors --}}
+    @if ($errors->any() && !session('error'))
         <div class="alert alert-danger">
             <ul class="mb-0">
                 @foreach ($errors->all() as $error)
@@ -17,11 +27,6 @@
             </ul>
         </div>
     @endif
-
-    {{-- Back link --}}
-    <a href="{{ route('admin.mata_kuliah.index') }}" class="back-btn">
-        &larr; Kembali ke Daftar
-    </a>
 
     <form action="{{ route('admin.mata_kuliah.store') }}"
           method="POST"
@@ -65,7 +70,7 @@
                    min="1"
                    required>
             <small>
-                Masukkan berapa banyak kelas (A, B, C…) yang akan dibuat.
+                Masukkan berapa banyak kelas yang akan dibuat (Contoh: 1(A), 2(A,B), 3(A,B,C)).
             </small>
         </div>
 
@@ -92,13 +97,13 @@
             <label for="peminatan">Peminatan (Opsional)</label>
             <select id="peminatan" name="peminatan" class="form-control">
                 {{-- Opsi ini akan mengirimkan nilai NULL ke database --}}
-                <option value="">-- Mata Kuliah Wajib --</option>
+                <option value="">Mata Kuliah Wajib</option>
                 <option value="Programming" {{ old('peminatan') == 'Programming' ? 'selected' : '' }}>Programming</option>
                 <option value="Data" {{ old('peminatan') == 'Data' ? 'selected' : '' }}>Data</option>
                 <option value="UX" {{ old('peminatan') == 'UX' ? 'selected' : '' }}>UX</option>
                 <option value="Network" {{ old('peminatan') == 'Network' ? 'selected' : '' }}>Network</option>
             </select>
-            <small>Biarkan pada pilihan "-- Mata Kuliah Wajib --" jika bukan mata kuliah peminatan.</small>
+            <small>Biarkan pada pilihan "Mata Kuliah Wajib" jika bukan mata kuliah peminatan.</small>
         </div>
 
         <div class="form-actions">

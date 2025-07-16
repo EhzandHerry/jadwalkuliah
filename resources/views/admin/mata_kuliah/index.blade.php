@@ -8,6 +8,7 @@
 <div class="content-container">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Daftar Mata Kuliah</h1>
+    
     <a href="{{ route('admin.mata_kuliah.create') }}" class="add-matkul-btn">
       Tambah Matakuliah
     </a>
@@ -24,6 +25,8 @@
     style="max-width: 300px;"
   >
 
+  
+
   <select name="semester_filter" class="form-control mr-2" style="max-width: 150px;">
     <option value="">Semua</option>
     <option value="Genap" {{ request('semester_filter') == 'Genap' ? 'selected' : '' }}>
@@ -37,6 +40,19 @@
   <button type="submit" class="btn btn-secondary">Cari</button>
 </form>
 
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i> {{ session('success') }}
+        </button>
+    </div>
+@endif
+
+@if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+        </button>
+    </div>
+@endif
 
   <table class="table table-striped matkul-table">
     <thead class="thead-dark">

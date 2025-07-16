@@ -7,6 +7,20 @@
     <div class="update-dosen-container">
         <h1>Edit Dosen</h1>
         
+        {{-- Menampilkan pesan error khusus untuk NIDN yang sudah terdaftar di kelas --}}
+        @if (session('error_nidn_kelas'))
+            <div class="alert alert-warning">
+                <strong>Perhatian!</strong> {{ session('error_nidn_kelas') }}
+                <br><br>
+                <strong>Alternatif:</strong>
+                <ul>
+                    <li>Hapus dosen dari semua kelas yang terdaftar terlebih dahulu</li>
+                    <li>Atau gunakan fitur edit pada halaman manajemen kelas</li>
+                    <li>Atau buat dosen baru dengan NIDN yang berbeda</li>
+                </ul>
+            </div>
+        @endif
+        
         {{-- Menampilkan pesan error validasi umum --}}
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -19,6 +33,13 @@
             </div>
         @endif
         
+        <!-- Info Box jika dosen terdaftar di kelas -->
+        @php
+            $dosenTerdaftarDiKelas = DB::table('kelas')->where('nidn', $dosen->nidn)->exists();
+        @endphp
+        
+        
+        
         <!-- Dosen Update Form -->
         <form action="{{ route('admin.dosen.update', $dosen->id) }}" method="POST">
             @csrf
@@ -27,7 +48,7 @@
             <!-- Name Field -->
             <div class="form-group">
                 <label for="nama">Nama Dosen</label>
-                <input type="text" name="nama" id="nam" value="{{ old('nama', $dosen->nama) }}" required class="form-control @error('nama') is-invalid @enderror">
+                <input type="text" name="nama" id="nama" value="{{ old('nama', $dosen->nama) }}" required class="form-control @error('nama') is-invalid @enderror">
                 @error('nama')
                     <span class="invalid-feedback">{{ $message }}</span>
                 @enderror
@@ -42,14 +63,23 @@
                 @enderror
             </div>
             
-            <!-- Unique Number Field -->
+            <!-- NIDN Field -->
             <div class="form-group">
-                <label for="nidn">NIDN</label>
-                {{-- PERUBAHAN: Mengubah type="text" menjadi type="number" --}}
-                <input type="number" name="nidn" id="nidn" value="{{ old('nidn', $dosen->nidn) }}" required class="form-control @error('nidn') is-invalid @enderror" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                <label for="nidn">NIDN (Minimal 10 digit)</label>
+                <input type="number" name="nidn" id="nidn" value="{{ old('nidn', $dosen->nidn) }}" required 
+                       class="form-control @error('nidn') is-invalid @enderror @if(session('error_nidn_kelas')) is-invalid @endif" 
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '')" minlength="10"
+                       @if($dosenTerdaftarDiKelas) data-original-nidn="{{ $dosen->nidn }}" @endif>
                 @error('nidn')
                     <span class="invalid-feedback">{{ $message }}</span>
                 @enderror
+                @if(session('error_nidn_kelas'))
+                    <span class="invalid-feedback">{{ session('error_nidn_kelas') }}</span>
+                @endif
+                <small class="form-text text-muted">
+                    NIDN harus terdiri dari minimal 10 digit angka
+                    
+                </small>
             </div>
             
             <!-- Submit & Cancel Buttons -->
@@ -63,7 +93,6 @@
 
 @push('css')
 <link rel="stylesheet" href="{{ asset('css/admin/listdosen/edit.css') }}">
-{{-- Tambahkan style untuk pesan error --}}
 <style>
     .is-invalid {
         border-color: #e3342f !important;
@@ -83,9 +112,35 @@
         border: 1px solid transparent;
         border-radius: .25rem;
     }
-    .alert-danger ul {
+    .alert-warning {
+        color: #856404;
+        background-color: #fff3cd;
+        border-color: #ffeaa7;
+        padding: .75rem 1.25rem;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        border-radius: .25rem;
+    }
+    .alert-info {
+        color: #0c5460;
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+        padding: .75rem 1.25rem;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        border-radius: .25rem;
+    }
+    .alert-danger ul, .alert-warning ul, .alert-info ul {
         margin-bottom: 0;
         padding-left: 20px;
+    }
+    .form-text {
+        color: #6c757d;
+        font-size: 0.875em;
+        margin-top: 0.25rem;
+    }
+    .text-warning {
+        color: #ffc107 !important;
     }
     /* Sembunyikan panah stepper pada input number */
     input[type=number]::-webkit-inner-spin-button, 

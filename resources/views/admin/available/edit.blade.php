@@ -2,13 +2,13 @@
 
 @section('title', 'Edit Waktu Ketersediaan')
 {{-- PERBAIKAN: Menggunakan optional() untuk mencegah error jika user tidak ditemukan --}}
-@section('header_title', 'Edit Waktu Ketersediaan untuk ' . optional($available->user)->nama)
+@section('header_title', 'Edit Waktu Ketersediaan Dosen ' . optional($available->user)->nama)
 
 @section('content')
 <div class="available-container">
     <div class="available-form">
         {{-- PERBAIKAN: Menggunakan optional() di sini juga --}}
-        <h1>Edit Waktu Ketersediaan untuk {{ optional($available->user)->nama ?? 'Dosen tidak ditemukan' }}</h1>
+        <h1>Edit Waktu Ketersediaan Dosen</h1>
 
         @if ($errors->any())
             <div class="alert alert-danger">

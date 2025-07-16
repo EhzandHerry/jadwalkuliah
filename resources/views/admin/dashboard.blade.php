@@ -1,13 +1,13 @@
 {{-- resources/views/admin/dashboard.blade.php --}}
 @extends('layouts.layout')
 
-@section('title', 'Dashboard Admin')
+@section('title', 'Dashboard')
 
 @section('header_title', 'Jadwal Kuliah Hari Ini: ' . $hariIni)
 
 @section('content')
     <div class="container-fluid">
-        <h2 class="mb-4">Jadwal Kuliah Hari Ini: {{ $hariIni }}</h2>
+        <h1>Jadwal Kuliah Hari Ini: {{ $hariIni }}</h1>
 
         @if (session('info'))
             <div class="alert alert-info" role="alert">
@@ -25,21 +25,18 @@
                     <thead class="thead-dark">
                         <tr>
                             <th>No.</th>
+                            <th>Jam</th>
+                            <th>Kode Mata Kuliah</th>
                             <th>Mata Kuliah</th>
                             <th>Kelas</th>
                             <th>Dosen Pengampu</th>
                             <th>Ruang Kelas</th>
-                            <th>Jam</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($jadwalHariIni as $index => $jadwal)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $jadwal->mataKuliah->nama_matkul ?? 'N/A' }}</td>
-                                <td>{{ $jadwal->kelas ?? 'N/A' }}</td> {{-- UBAH BAGIAN INI --}}
-                                <td>{{ $jadwal->dosen->nama ?? 'N/A' }}</td>
-                                <td>{{ $jadwal->ruangKelas->nama_ruangan ?? 'N/A' }}</td>
                                 <td>
                                     <?php
                                         $jamParts = explode(' - ', $jadwal->jam);
@@ -52,6 +49,11 @@
                                         }
                                     ?>
                                 </td>
+                                <td>{{ $jadwal->mataKuliah->kode_matkul ?? 'N/A' }}</td>
+                                <td>{{ $jadwal->mataKuliah->nama_matkul ?? 'N/A' }}</td>
+                                <td>{{ $jadwal->kelas ?? 'N/A' }}</td> {{-- UBAH BAGIAN INI --}}
+                                <td>{{ $jadwal->dosen->nama ?? 'N/A' }}</td>
+                                <td>{{ $jadwal->ruangKelas->nama_ruangan ?? 'N/A' }}</td>
                             </tr>
                         @endforeach
                     </tbody>

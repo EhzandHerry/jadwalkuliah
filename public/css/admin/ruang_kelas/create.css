@@ -79,3 +79,33 @@
 .cancel-btn:hover {
     background-color: #5a6268;
 }
+
+.alert-error {
+      background-color: #fee;
+      border: 1px solid #fcc;
+      color: #c33;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+
+    .alert-error ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .alert-error li {
+      margin-bottom: 5px;
+    }
+
+    .error-message {
+      display: block;
+      color: #c33;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    .input-field.error {
+      border-color: #c33;
+      background-color: #fee;
+    }

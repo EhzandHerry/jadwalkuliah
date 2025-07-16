@@ -1,12 +1,12 @@
 @extends('layouts.layout')
 
 @section('title', 'Add Available Time')
-@section('header_title', 'Manajemen Waktu Ketersediaan untuk ' . $dosen->name)
+@section('header_title', 'Manajemen Waktu Ketersediaan untuk ' . $dosen->nama)
 
 @section('content')
 <div class="available-container">
     <div class="available-form">
-        <h1>Tambah Waktu Ketersediaan untuk {{ $dosen->name }}</h1>
+        <h1>Tambah Waktu Ketersediaan untuk {{ $dosen->nama }}</h1>
 
         @if(session('error'))
             <div class="alert alert-danger">{{ session('error') }}</div>

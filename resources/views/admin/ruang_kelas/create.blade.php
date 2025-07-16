@@ -10,6 +10,17 @@
       @csrf
       <h1>Tambah Ruang Kelas</h1>
 
+      {{-- Menampilkan pesan error umum jika ada --}}
+      @if ($errors->any())
+        <div class="alert alert-error">
+          <ul>
+            @foreach ($errors->all() as $error)
+              <li>{{ $error }}</li>
+            @endforeach
+          </ul>
+        </div>
+      @endif
+
       <div class="form-group">
         <label for="nama_ruangan">Nama Ruangan</label>
         <input
@@ -18,8 +29,11 @@
           name="nama_ruangan"
           value="{{ old('nama_ruangan') }}"
           required
-          class="input-field"
+          class="input-field {{ $errors->has('nama_ruangan') ? 'error' : '' }}"
         >
+        @error('nama_ruangan')
+          <span class="error-message">{{ $message }}</span>
+        @enderror
       </div>
 
       <div class="form-group">
@@ -30,25 +44,15 @@
           name="nama_gedung"
           value="{{ old('nama_gedung') }}"
           required
-          class="input-field"
+          class="input-field {{ $errors->has('nama_gedung') ? 'error' : '' }}"
         >
+        @error('nama_gedung')
+          <span class="error-message">{{ $message }}</span>
+        @enderror
       </div>
 
       <div class="form-group">
-        <label for="kapasitas">Kapasitas (jumlah duduk)</label>
-        <input
-          type="number"
-          id="kapasitas"
-          name="kapasitas"
-          value="{{ old('kapasitas') }}"
-          min="1"
-          required
-          class="input-field"
-        >
-      </div>
-
-      <div class="form-group">
-        <label for="kapasitas_kelas">Kapasitas Kelas (jumlah kelas simultan)</label>
+        <label for="kapasitas_kelas">Kapasitas Kelas (jumlah kelas maximum)</label>
         <input
           type="number"
           id="kapasitas_kelas"
@@ -56,17 +60,19 @@
           value="{{ old('kapasitas_kelas', 1) }}"
           min="1"
           required
-          class="input-field"
+          class="input-field {{ $errors->has('kapasitas_kelas') ? 'error' : '' }}"
         >
+        <small class="form-help">Kapasitas kursi akan dihitung otomatis: Kapasitas Kelas × 50</small>
+        @error('kapasitas_kelas')
+          <span class="error-message">{{ $message }}</span>
+        @enderror
       </div>
       
-      {{-- Mengganti tombol Simpan dan menambahkan tombol Batal di sini --}}
       <div class="form-actions">
         <button type="submit" class="btn submit-btn">Simpan</button>
         <a href="{{ route('admin.ruang_kelas.index') }}" class="btn cancel-btn">Batal</a>
       </div>
     </form>
-    {{-- Menghapus link "Kembali" yang lama dari sini --}}
   </div>
 @endsection
 

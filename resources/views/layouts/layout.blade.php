@@ -15,7 +15,7 @@
     <div class="sidebar" id="sidebar">
     <ul>
         {{-- --- PERUBAHAN DI SINI --- --}}
-        <li><a href="{{ route('admin.dashboard') }}">Home</a></li>
+        <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
         {{-- --- AKHIR PERUBAHAN --- --}}
         <li><a href="{{ route('admin.dosen.index') }}">Manajemen Dosen</a></li>
         <li><a href="{{ route('admin.mata_kuliah.index') }}">Manajemen Mata Kuliah</a></li>

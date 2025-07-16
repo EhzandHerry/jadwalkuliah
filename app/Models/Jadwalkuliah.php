@@ -13,7 +13,7 @@ class JadwalKuliah extends Model
 
     protected $fillable = [
         'hari',
-        'kode_matkul',  // Ini sudah dikonfirmasi ada di tabel
+        'kode_matkul', 
         'kelas',
         'nama_ruangan',
         'nidn',

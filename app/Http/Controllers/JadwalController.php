@@ -187,16 +187,15 @@ private function getAvailableRoomsForTimeSlot($hari, $startTime, $endTime, $exis
 
     public function assignRuang(Request $request, $kelasId)
 {
-    // 1) Load Kelas + MataKuliah + Dosen
+    // Load data kelas
     $kelas = Kelas::with(['mataKuliah','dosen'])->findOrFail($kelasId);
 
-    // 2) Pastikan dosen sudah di‐assign
     if (! $kelas->nidn) {
         return redirect()->route('admin.jadwal.index')
                          ->with('error', "Dosen untuk \"{$kelas->mataKuliah->nama_matkul}\" (Kelas {$kelas->kelas}) belum dipilih.");
     }
 
-    // 3) Validasi input
+    // Validasi input
     $data = $request->validate([
         'nama_ruangan' => 'required|string|exists:ruang_kelas,nama_ruangan',
         'hari'         => 'required|string|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu',
@@ -205,7 +204,7 @@ private function getAvailableRoomsForTimeSlot($hari, $startTime, $endTime, $exis
         'jam.regex' => 'Format jam harus "HH:mm - HH:mm", misal "07:00 - 07:50".'
     ]);
 
-    // 4) Daftar sesi master & Hitung jam range baru
+    // Hitung jam range
     $sessions = [
         "07:00 - 07:50","07:50 - 08:40","08:50 - 09:40","09:40 - 10:30",
         "10:40 - 11:30","12:10 - 13:10","13:20 - 14:10","14:10 - 15:00",
@@ -221,39 +220,46 @@ private function getAvailableRoomsForTimeSlot($hari, $startTime, $endTime, $exis
     [, $eNew] = explode(' - ', $sessions[$endIdx]);
     $jamRange = "{$sNew} - {$eNew}";
 
-    // 5) Helper untuk cek tumpang tindih waktu
+    // Helper untuk cek overlap
     $overlaps = function($oldRange) use($sNew, $eNew) {
         list($sOld, $eOld) = explode(' - ', $oldRange);
         return !($eOld <= $sNew || $eNew <= $sOld);
     };
 
-    // --- VALIDASI KONFLIK YANG DIPERBARUI ---
+    // Ambil jadwal yang bentrok
     $allToday = JadwalKuliah::with('mataKuliah')->where('hari', $data['hari'])->get();
-    $matkulBaru = $kelas->mataKuliah;
-    $semesterBaru = $matkulBaru->semester;
-    $peminatanBaru = $matkulBaru->peminatan;
-    $kelasBaru = $kelas->kelas;
-
-    // Filter jadwal yang bentrok di waktu yang sama
     $conflictingSchedules = $allToday->filter(fn($old) => $overlaps($old->jam));
 
-    // PERBAIKAN UTAMA: Validasi Ruangan dengan pengecekan kapasitas yang KETAT
+    \Log::info("=== VALIDATION CHECK ===");
+    \Log::info("New schedule: {$kelas->mataKuliah->kode_matkul} by {$kelas->nidn} in {$data['nama_ruangan']} on {$data['hari']} at {$jamRange}");
+
+    // PERBAIKAN: Validasi dosen mengajar mata kuliah sama di ruang berbeda
+    $dosenSameSubjectConflict = $conflictingSchedules->filter(function($old) use ($kelas, $data) {
+        return $old->nidn === $kelas->nidn && 
+               $old->kode_matkul === $kelas->kode_matkul && 
+               $old->nama_ruangan !== $data['nama_ruangan'];
+    });
+
+    if ($dosenSameSubjectConflict->count() > 0) {
+        $conflictRooms = $dosenSameSubjectConflict->pluck('nama_ruangan')->unique()->implode(', ');
+        \Log::info("❌ Dosen already teaching same subject in other rooms: {$conflictRooms}");
+        return redirect()->route('admin.jadwal.index')
+            ->with('error', "Dosen {$kelas->dosen->nama} sudah mengajar mata kuliah {$kelas->mataKuliah->nama_matkul} di ruang lain ({$conflictRooms}) pada waktu yang sama. Dosen tidak bisa mengajar mata kuliah yang sama di ruang berbeda secara bersamaan.");
+    }
+
+    // Validasi ruangan
     $ruang = RuangKelas::where('nama_ruangan', $data['nama_ruangan'])->first();
     $schedulesInSameRoom = $conflictingSchedules->where('nama_ruangan', $data['nama_ruangan']);
     
-    // Logging untuk debugging
-    \Log::info("=== ROOM CAPACITY CHECK ===");
     \Log::info("Room: {$data['nama_ruangan']}, Capacity: {$ruang->kapasitas_kelas}");
     \Log::info("Existing schedules in room: " . $schedulesInSameRoom->count());
-    \Log::info("Current subject: {$matkulBaru->kode_matkul}, Lecturer: {$kelas->nidn}");
     
-    // PENGECEKAN KETAT: Jika jumlah jadwal sudah mencapai kapasitas
+    // Jika ruang sudah mencapai kapasitas
     if ($schedulesInSameRoom->count() >= $ruang->kapasitas_kelas) {
         \Log::info("Room at capacity, checking for parallel classes...");
         
-        // Cek apakah SEMUA jadwal yang ada di ruang tersebut adalah kelas paralel
-        $isAllParallelClass = $schedulesInSameRoom->every(function($j) use ($matkulBaru, $kelas) {
-            $isParallel = ($j->kode_matkul === $matkulBaru->kode_matkul && $j->nidn === $kelas->nidn);
+        $isAllParallelClass = $schedulesInSameRoom->every(function($j) use ($kelas) {
+            $isParallel = ($j->kode_matkul === $kelas->kode_matkul && $j->nidn === $kelas->nidn);
             \Log::info("Schedule {$j->id}: {$j->kode_matkul} by {$j->nidn} - Is parallel: " . ($isParallel ? 'YES' : 'NO'));
             return $isParallel;
         });
@@ -263,18 +269,44 @@ private function getAvailableRoomsForTimeSlot($hari, $startTime, $endTime, $exis
             return redirect()->route('admin.jadwal.index')
                 ->with('error', "Ruangan {$data['nama_ruangan']} sudah penuh (kapasitas: {$ruang->kapasitas_kelas}). Tidak dapat menambahkan jadwal karena ada mata kuliah/dosen lain yang menggunakan ruang ini di waktu yang sama.");
         } else {
-            \Log::info("✅ All existing schedules are parallel classes, allowing addition");
+            // PERBAIKAN: Bahkan untuk kelas paralel, jika ruang sudah penuh, tidak boleh tambah lagi
+            \Log::info("❌ Room full even with parallel classes");
+            return redirect()->route('admin.jadwal.index')
+                ->with('error', "Ruangan {$data['nama_ruangan']} sudah penuh (kapasitas: {$ruang->kapasitas_kelas}). Semua slot sudah terisi oleh kelas paralel mata kuliah ini.");
         }
-    } else {
-        // Jika belum mencapai kapasitas, cek apakah ada konflik dengan mata kuliah/dosen lain
-        $hasConflictWithOthers = $schedulesInSameRoom->filter(function($j) use ($matkulBaru, $kelas) {
-            return $j->kode_matkul !== $matkulBaru->kode_matkul || $j->nidn !== $kelas->nidn;
-        });
+    }
 
-        if ($hasConflictWithOthers->count() > 0) {
-            $remainingSlots = $ruang->kapasitas_kelas - $schedulesInSameRoom->count();
-            \Log::info("Room has other subjects/lecturers, remaining slots: {$remainingSlots}");
+    // Validasi konflik lainnya
+    foreach ($conflictingSchedules as $old) {
+        // Validasi dosen mengajar mata kuliah berbeda
+        if ($old->nidn === $kelas->nidn && $old->kode_matkul !== $kelas->kode_matkul) {
+            return redirect()->route('admin.jadwal.index')
+                ->with('error', 'Jadwal bentrok: dosen sudah memiliki jadwal mata kuliah lain di slot waktu ini.');
+        }
+
+        // Validasi mahasiswa
+        if (optional($old->mataKuliah)->semester === $kelas->mataKuliah->semester && $old->kelas === $kelas->kelas) {
+            $peminatanLama = optional($old->mataKuliah)->peminatan;
+            $peminatanBaru = $kelas->mataKuliah->peminatan;
+            $isNewWajib = is_null($peminatanBaru);
+            $isOldWajib = is_null($peminatanLama);
+
+            if ($isNewWajib && $isOldWajib) {
+                return redirect()->route('admin.jadwal.index')
+                    ->with('error', "Jadwal bentrok: Mahasiswa Kelas {$kelas->kelas} sudah memiliki mata kuliah wajib lain di waktu ini.");
+            }
+
+            if (!$isNewWajib && !$isOldWajib && $peminatanBaru === $peminatanLama) {
+                return redirect()->route('admin.jadwal.index')
+                    ->with('error', "Jadwal bentrok: Mahasiswa Kelas {$kelas->kelas} sudah mengambil mata kuliah peminatan '{$peminatanBaru}' lain di waktu ini.");
+            }
+        }
+
+        // PERBAIKAN: Validasi ruang dengan mata kuliah/dosen berbeda
+        if ($old->nama_ruangan === $data['nama_ruangan'] && 
+            !($old->kode_matkul === $kelas->kode_matkul && $old->nidn === $kelas->nidn)) {
             
+            $remainingSlots = $ruang->kapasitas_kelas - $schedulesInSameRoom->count();
             if ($remainingSlots <= 0) {
                 return redirect()->route('admin.jadwal.index')
                     ->with('error', "Ruangan {$data['nama_ruangan']} tidak memiliki slot tersisa untuk mata kuliah/dosen yang berbeda.");
@@ -282,34 +314,7 @@ private function getAvailableRoomsForTimeSlot($hari, $startTime, $endTime, $exis
         }
     }
 
-    // Validasi Dosen dan Mahasiswa (tetap seperti sebelumnya)
-    foreach ($conflictingSchedules as $old) {
-        // A. Validasi Dosen
-        if ($old->nidn === $kelas->nidn && $old->kode_matkul !== $kelas->kode_matkul) {
-            return redirect()->route('admin.jadwal.index')
-                ->with('error', 'Jadwal bentrok: dosen sudah memiliki jadwal lain di slot waktu ini.');
-        }
-
-        // C. Validasi Mahasiswa
-        if (optional($old->mataKuliah)->semester === $semesterBaru && $old->kelas === $kelasBaru) {
-            $peminatanLama = optional($old->mataKuliah)->peminatan;
-            $isNewWajib = is_null($peminatanBaru);
-            $isOldWajib = is_null($peminatanLama);
-
-            if ($isNewWajib && $isOldWajib) {
-                return redirect()->route('admin.jadwal.index')
-                    ->with('error', "Jadwal bentrok: Mahasiswa Kelas {$kelasBaru} sudah memiliki mata kuliah wajib lain di waktu ini.");
-            }
-
-            if (!$isNewWajib && !$isOldWajib && $peminatanBaru === $peminatanLama) {
-                return redirect()->route('admin.jadwal.index')
-                    ->with('error', "Jadwal bentrok: Mahasiswa Kelas {$kelasBaru} sudah mengambil mata kuliah peminatan '{$peminatanBaru}' lain di waktu ini.");
-            }
-        }
-    }
-    // --- AKHIR VALIDASI ---
-
-    // Jika semua validasi lolos, simpan jadwal
+    // Simpan jadwal jika semua validasi lolos
     $newJadwal = JadwalKuliah::create([
         'hari'         => $data['hari'],
         'kode_matkul'  => $kelas->kode_matkul,
@@ -323,7 +328,7 @@ private function getAvailableRoomsForTimeSlot($hari, $startTime, $endTime, $exis
 
     return redirect()->route('admin.jadwal.index')
                      ->with('success', "Jadwal berhasil ditambahkan ({$jamRange}).");
-}   
+}
 
     public function edit($jadwalId)
 {

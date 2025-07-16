@@ -8,8 +8,8 @@
 <body>
     <div class="login-container">
         <div class="login-box">
-            <h2>Welcome Back!</h2>
-            <p>Please login to your account</p>
+            <h2>Selamat Datang Kembali!</h2>
+            <p>Silahkan login menggunakan akunmu yang terdaftar!</p>
 
             {{-- ====================================================== --}}
             {{-- PENAMBAHAN DI SINI: Blok untuk Menampilkan Error --}}
@@ -27,8 +27,8 @@
 
             <form action="/login" method="POST">
                 @csrf
-                <input type="email" name="email" placeholder="Enter your email address" required value="{{ old('email') }}">
-                <input type="password" name="password" placeholder="Enter your password" required>
+                <input type="email" name="email" placeholder="Masukkan email" required value="{{ old('email') }}">
+                <input type="password" name="password" placeholder="Masukkan password" required>
                 <button type="submit">Masuk</button>
             </form>
         </div>

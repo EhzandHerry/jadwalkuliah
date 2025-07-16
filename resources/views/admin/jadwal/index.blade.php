@@ -12,13 +12,13 @@
             <i class="fas fa-table"></i> Preview Matrix Jadwal
         </a>
         <div class="form-group">
+            <input type="text" name="search" id="search" class="form-control" placeholder="Nama mata kuliah..." value="{{ request('search') }}">
+        </div>
+        <div class="form-group">
             <select name="semester_type" id="semester_type" class="form-control">
                 <option value="gasal" {{ request('semester_type', 'genap') == 'gasal' ? 'selected' : '' }}>Gasal</option>
                 <option value="genap" {{ request('semester_type', 'genap') == 'genap' ? 'selected' : '' }}>Genap</option>
             </select>
-        </div>
-        <div class="form-group">
-            <input type="text" name="search" id="search" class="form-control" placeholder="Nama mata kuliah..." value="{{ request('search') }}">
         </div>
         <button type="submit" class="btn btn-apply-filter">
             <i class="fas fa-filter"></i> Terapkan Filter
@@ -189,9 +189,27 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // PERBAIKAN KETAT: Function untuk cek slot ruang yang benar-benar ketat
+    // PERBAIKAN: Function untuk cek konflik dosen dengan mata kuliah sama di ruang berbeda
+    function hasDosenSameSubjectConflict(dosenNidn, hari, startTime, endTime, currentMatkul, currentRuang) {
+        const conflictingSchedules = existingJadwals.filter(jadwal => 
+            jadwal.dosen === dosenNidn && 
+            jadwal.hari === hari && 
+            jadwal.matkul === currentMatkul &&
+            jadwal.ruang !== currentRuang && // Ruang berbeda
+            timeOverlaps(startTime, endTime, jadwal.start, jadwal.end)
+        );
+        
+        console.log(`🔍 Checking same subject conflict for ${currentMatkul} by ${dosenNidn}:`);
+        console.log(`   Found ${conflictingSchedules.length} conflicts in other rooms`);
+        if (conflictingSchedules.length > 0) {
+            console.log(`   Conflicting rooms: ${conflictingSchedules.map(j => j.ruang).join(', ')}`);
+        }
+        
+        return conflictingSchedules.length > 0;
+    }
+
+    // PERBAIKAN: Function untuk cek slot ruang yang lebih ketat
     function checkRoomSlotAvailability(ruang, hari, startTime, endTime, dosenNidn, currentMatkul) {
-        // Ambil kapasitas ruang
         const roomCapacity = roomCapacities[ruang] || 1;
         
         console.log(`\n🔍 Checking room ${ruang} (capacity: ${roomCapacity})`);
@@ -208,42 +226,65 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log(`   - ${schedule.matkul} by ${schedule.dosen} (${schedule.start} - ${schedule.end})`);
         });
 
-        // ATURAN KETAT: Jika jumlah jadwal sudah mencapai atau melebihi kapasitas ruangan
-        if (conflictingSchedules.length >= roomCapacity) {
-            console.log(`❌ Room at/over capacity (${conflictingSchedules.length}/${roomCapacity})`);
-            
-            // BAHKAN UNTUK KELAS PARALEL: Jika ruangan sudah penuh, TIDAK BOLEH menambah lagi
-            // Tidak peduli apakah itu mata kuliah dan dosen yang sama
-            console.log(`❌ Room full - no more classes allowed regardless of parallel status`);
+        // PERBAIKAN: Cek apakah dosen sudah mengajar mata kuliah sama di ruang lain
+        if (hasDosenSameSubjectConflict(dosenNidn, hari, startTime, endTime, currentMatkul, ruang)) {
+            console.log(`❌ Lecturer already teaching same subject in another room at this time`);
             return false;
         }
 
-        // Jika belum mencapai kapasitas, cek apakah masih ada slot
-        console.log(`✅ Room has available slots (${conflictingSchedules.length}/${roomCapacity})`);
-        return true;
-    }
-
-    // TAMBAHAN: Function untuk cek apakah ini akan jadi kelas paralel
-    function isParallelClass(ruang, hari, startTime, endTime, dosenNidn, currentMatkul) {
-        const conflictingSchedules = existingJadwals.filter(jadwal => 
-            jadwal.ruang === ruang && 
-            jadwal.hari === hari && 
-            timeOverlaps(startTime, endTime, jadwal.start, jadwal.end)
-        );
-
-        // Jika ada jadwal lain di ruang dan waktu yang sama
-        if (conflictingSchedules.length > 0) {
-            // Cek apakah semua jadwal adalah dari mata kuliah dan dosen yang sama
+        // Jika sudah mencapai atau melebihi kapasitas
+        if (conflictingSchedules.length >= roomCapacity) {
+            console.log(`❌ Room at/over capacity (${conflictingSchedules.length}/${roomCapacity})`);
+            
+            // Cek apakah semua jadwal yang ada adalah mata kuliah dan dosen yang sama (kelas paralel)
             const allSameSubjectAndLecturer = conflictingSchedules.every(jadwal => 
                 jadwal.dosen === dosenNidn && jadwal.matkul === currentMatkul
             );
             
-            return allSameSubjectAndLecturer;
+            if (!allSameSubjectAndLecturer) {
+                console.log(`❌ Room full with different subjects/lecturers`);
+                return false;
+            }
+            
+            // PERBAIKAN: Bahkan untuk kelas paralel, jika ruang sudah penuh tidak boleh tambah lagi
+            console.log(`❌ Room full - no more parallel classes allowed`);
+            return false;
         }
-        
-        return false;
+
+        // Cek apakah ada mata kuliah/dosen lain di ruang ini di waktu yang sama
+        const hasOtherSubjectsOrLecturers = conflictingSchedules.some(jadwal => 
+            jadwal.dosen !== dosenNidn || jadwal.matkul !== currentMatkul
+        );
+
+        if (hasOtherSubjectsOrLecturers) {
+            console.log(`❌ Room has other subjects/lecturers at this time`);
+            return false;
+        }
+
+        console.log(`✅ Room has available slots (${conflictingSchedules.length}/${roomCapacity})`);
+        return true;
     }
 
+    // Helper function untuk info kelas paralel
+    function getParallelClassInfo(ruang, hari, startTime, endTime, dosenNidn, currentMatkul) {
+        const parallelClasses = existingJadwals
+            .filter(jadwal => 
+                jadwal.ruang === ruang && 
+                jadwal.hari === hari && 
+                jadwal.dosen === dosenNidn &&
+                jadwal.matkul === currentMatkul &&
+                timeOverlaps(startTime, endTime, jadwal.start, jadwal.end)
+            )
+            .map(jadwal => jadwal.kelas);
+
+        if (parallelClasses.length > 0) {
+            return `(Paralel: ${parallelClasses.join(', ')})`;
+        }
+        
+        return null;
+    }
+
+    // Event listeners untuk setiap baris kelas
     document.querySelectorAll('tr[data-kelas-id]').forEach(row => {
         const hariEl = row.querySelector('select[name="hari"]');
         if (!hariEl) return;
@@ -300,13 +341,19 @@ document.addEventListener('DOMContentLoaded', function () {
                     continue;
                 }
 
-                // 3. PENGECEKAN KETAT: Cek slot ruang kelas
+                // 3. PERBAIKAN: Cek konflik dosen mengajar mata kuliah sama di ruang lain
+                if (hasDosenSameSubjectConflict(dosenNidn, hari, startTime, endTime, matkul, ruang)) {
+                    console.log(`❌ Lecturer already teaching same subject in another room: ${timeSlot}`);
+                    continue;
+                }
+
+                // 4. Cek slot ruang kelas
                 if (!checkRoomSlotAvailability(ruang, hari, startTime, endTime, dosenNidn, matkul)) {
                     console.log(`❌ Room slot not available: ${timeSlot}`);
                     continue;
                 }
 
-                // 4. Jika semua pengecekan lolos
+                // 5. Jika semua pengecekan lolos
                 console.log(`✅ Time slot available: ${timeSlot}`);
                 hasAvailableSlots = true;
                 
@@ -315,20 +362,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 option.textContent = timeSlot;
 
                 // Tambahkan info jika ini akan jadi kelas paralel
-                if (isParallelClass(ruang, hari, startTime, endTime, dosenNidn, matkul)) {
-                    const parallelClasses = existingJadwals
-                        .filter(jadwal => 
-                            jadwal.ruang === ruang && 
-                            jadwal.hari === hari && 
-                            jadwal.dosen === dosenNidn &&
-                            jadwal.matkul === matkul &&
-                            timeOverlaps(startTime, endTime, jadwal.start, jadwal.end)
-                        )
-                        .map(jadwal => jadwal.kelas);
-
-                    if (parallelClasses.length > 0) {
-                        option.textContent += ` (Paralel: ${parallelClasses.join(', ')})`;
-                    }
+                const parallelInfo = getParallelClassInfo(ruang, hari, startTime, endTime, dosenNidn, matkul);
+                if (parallelInfo) {
+                    option.textContent += ` ${parallelInfo}`;
                 }
                 
                 jamEl.appendChild(option);
@@ -338,13 +374,28 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!hasAvailableSlots) {
                 const roomCapacity = roomCapacities[ruang] || 1;
                 
-                // Hitung berapa banyak slot yang terpakai di hari ini
+                // Hitung berapa banyak slot yang terpakai di hari ini untuk ruang ini
                 const usedSlots = existingJadwals.filter(jadwal => 
                     jadwal.ruang === ruang && jadwal.hari === hari
                 ).length;
                 
-                jamEl.innerHTML = `<option value="">Tidak ada waktu tersedia (Ruang penuh: ${usedSlots}/${roomCapacity} slot terpakai)</option>`;
-                console.log(`❌ No available time slots - room capacity exceeded`);
+                // Cek apakah ada konflik mata kuliah sama di ruang lain
+                const sameSubjectInOtherRoom = existingJadwals.some(jadwal => 
+                    jadwal.dosen === dosenNidn && 
+                    jadwal.matkul === matkul && 
+                    jadwal.hari === hari &&
+                    jadwal.ruang !== ruang
+                );
+
+                let errorMessage = '';
+                if (sameSubjectInOtherRoom) {
+                    errorMessage = 'Dosen sudah mengajar mata kuliah ini di ruang lain pada hari ini';
+                } else {
+                    errorMessage = `Tidak ada waktu tersedia (Ruang penuh: ${usedSlots}/${roomCapacity} slot terpakai)`;
+                }
+                
+                jamEl.innerHTML = `<option value="">${errorMessage}</option>`;
+                console.log(`❌ No available time slots - ${errorMessage}`);
             }
         }
         
