@@ -64,23 +64,24 @@
             </div>
             
             <!-- NIDN Field -->
-            <div class="form-group">
-                <label for="nidn">NIDN (Minimal 10 digit)</label>
-                <input type="number" name="nidn" id="nidn" value="{{ old('nidn', $dosen->nidn) }}" required 
-                       class="form-control @error('nidn') is-invalid @enderror @if(session('error_nidn_kelas')) is-invalid @endif" 
-                       oninput="this.value = this.value.replace(/[^0-9]/g, '')" minlength="10"
-                       @if($dosenTerdaftarDiKelas) data-original-nidn="{{ $dosen->nidn }}" @endif>
-                @error('nidn')
-                    <span class="invalid-feedback">{{ $message }}</span>
-                @enderror
-                @if(session('error_nidn_kelas'))
-                    <span class="invalid-feedback">{{ session('error_nidn_kelas') }}</span>
-                @endif
-                <small class="form-text text-muted">
-                    NIDN harus terdiri dari minimal 10 digit angka
-                    
-                </small>
-            </div>
+<div class="form-group">
+    <label for="nidn">NIDN (Harus 10 digit)</label>
+    <input type="number" name="nidn" id="nidn" value="{{ old('nidn', $dosen->nidn) }}" required 
+           class="form-control @error('nidn') is-invalid @enderror @if(session('error_nidn_kelas')) is-invalid @endif" 
+           oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
+           minlength="10" 
+           maxlength="10"
+           @if($dosenTerdaftarDiKelas) data-original-nidn="{{ $dosen->nidn }}" @endif>
+    @error('nidn')
+        <span class="invalid-feedback">{{ $message }}</span>
+    @enderror
+    @if(session('error_nidn_kelas'))
+        <span class="invalid-feedback">{{ session('error_nidn_kelas') }}</span>
+    @endif
+    <small class="form-text text-muted">
+        NIDN harus terdiri dari tepat 10 digit angka
+    </small>
+</div>
             
             <!-- Submit & Cancel Buttons -->
             <div class="form-actions">

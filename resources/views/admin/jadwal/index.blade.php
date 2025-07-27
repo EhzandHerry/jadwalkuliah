@@ -16,8 +16,9 @@
         </div>
         <div class="form-group">
             <select name="semester_type" id="semester_type" class="form-control">
-                <option value="gasal" {{ request('semester_type', 'genap') == 'gasal' ? 'selected' : '' }}>Gasal</option>
-                <option value="genap" {{ request('semester_type', 'genap') == 'genap' ? 'selected' : '' }}>Genap</option>
+                <option value="semua" {{ request('semester_type', 'semua') == 'semua' ? 'selected' : '' }}>Semua</option>
+                <option value="gasal" {{ request('semester_type', 'semua') == 'gasal' ? 'selected' : '' }}>Gasal</option>
+                <option value="genap" {{ request('semester_type', 'semua') == 'genap' ? 'selected' : '' }}>Genap</option>
             </select>
         </div>
         <button type="submit" class="btn btn-apply-filter">
@@ -51,6 +52,7 @@
                 <tr>
                     <th>Kode MK</th>
                     <th>Nama Mata Kuliah</th>
+                    <th>Semester</th>
                     <th>Kelas</th>
                     <th>SKS</th>
                     <th>Nama Dosen</th>
@@ -65,6 +67,11 @@
                 <tr data-kelas-id="{{ $k->id }}" data-kode-matkul="{{ optional($k->mataKuliah)->kode_matkul }}" data-nidn="{{ $k->nidn }}">
                     <td>{{ optional($k->mataKuliah)->kode_matkul ?? '-' }}</td>
                     <td>{{ optional($k->mataKuliah)->nama_matkul ?? '-' }}</td>
+                    <td>
+                        <span class="badge badge-{{ optional($k->mataKuliah)->semester % 2 == 1 ? 'primary' : 'success' }}">
+                            {{ optional($k->mataKuliah)->semester ?? '-' }} 
+                        </span>
+                    </td>
                     <td>{{ $k->kelas }}</td>
                     <td data-sks="{{ optional($k->mataKuliah)->sks ?? 0 }}">{{ optional($k->mataKuliah)->sks ?? '-' }}</td>
                     <td>{{ optional($k->dosen)->nama ?? '-' }}</td>
@@ -118,7 +125,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="9" class="text-center py-4">
+                    <td colspan="10" class="text-center py-4">
                         <strong>Tidak ada data yang cocok dengan filter yang diterapkan.</strong>
                     </td>
                 </tr>
@@ -189,13 +196,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // PERBAIKAN: Function untuk cek konflik dosen dengan mata kuliah sama di ruang berbeda
     function hasDosenSameSubjectConflict(dosenNidn, hari, startTime, endTime, currentMatkul, currentRuang) {
         const conflictingSchedules = existingJadwals.filter(jadwal => 
             jadwal.dosen === dosenNidn && 
             jadwal.hari === hari && 
             jadwal.matkul === currentMatkul &&
-            jadwal.ruang !== currentRuang && // Ruang berbeda
+            jadwal.ruang !== currentRuang && 
             timeOverlaps(startTime, endTime, jadwal.start, jadwal.end)
         );
         
@@ -208,13 +214,11 @@ document.addEventListener('DOMContentLoaded', function () {
         return conflictingSchedules.length > 0;
     }
 
-    // PERBAIKAN: Function untuk cek slot ruang yang lebih ketat
     function checkRoomSlotAvailability(ruang, hari, startTime, endTime, dosenNidn, currentMatkul) {
         const roomCapacity = roomCapacities[ruang] || 1;
         
         console.log(`\n🔍 Checking room ${ruang} (capacity: ${roomCapacity})`);
         
-        // Ambil semua jadwal yang bentrok di ruang dan waktu yang sama
         const conflictingSchedules = existingJadwals.filter(jadwal => 
             jadwal.ruang === ruang && 
             jadwal.hari === hari && 
@@ -226,17 +230,14 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log(`   - ${schedule.matkul} by ${schedule.dosen} (${schedule.start} - ${schedule.end})`);
         });
 
-        // PERBAIKAN: Cek apakah dosen sudah mengajar mata kuliah sama di ruang lain
         if (hasDosenSameSubjectConflict(dosenNidn, hari, startTime, endTime, currentMatkul, ruang)) {
             console.log(`❌ Lecturer already teaching same subject in another room at this time`);
             return false;
         }
 
-        // Jika sudah mencapai atau melebihi kapasitas
         if (conflictingSchedules.length >= roomCapacity) {
             console.log(`❌ Room at/over capacity (${conflictingSchedules.length}/${roomCapacity})`);
             
-            // Cek apakah semua jadwal yang ada adalah mata kuliah dan dosen yang sama (kelas paralel)
             const allSameSubjectAndLecturer = conflictingSchedules.every(jadwal => 
                 jadwal.dosen === dosenNidn && jadwal.matkul === currentMatkul
             );
@@ -246,12 +247,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 return false;
             }
             
-            // PERBAIKAN: Bahkan untuk kelas paralel, jika ruang sudah penuh tidak boleh tambah lagi
             console.log(`❌ Room full - no more parallel classes allowed`);
             return false;
         }
 
-        // Cek apakah ada mata kuliah/dosen lain di ruang ini di waktu yang sama
         const hasOtherSubjectsOrLecturers = conflictingSchedules.some(jadwal => 
             jadwal.dosen !== dosenNidn || jadwal.matkul !== currentMatkul
         );
@@ -265,7 +264,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
-    // Helper function untuk info kelas paralel
     function getParallelClassInfo(ruang, hari, startTime, endTime, dosenNidn, currentMatkul) {
         const parallelClasses = existingJadwals
             .filter(jadwal => 
@@ -284,7 +282,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return null;
     }
 
-    // Event listeners untuk setiap baris kelas
     document.querySelectorAll('tr[data-kelas-id]').forEach(row => {
         const hariEl = row.querySelector('select[name="hari"]');
         if (!hariEl) return;
@@ -329,31 +326,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 console.log(`\n⏰ Checking slot: ${timeSlot}`);
 
-                // 1. Cek ketersediaan dosen
                 if (!isDosenAvailable(dosenNidn, hari, startTime, endTime)) {
                     console.log(`❌ Lecturer not available: ${timeSlot}`);
                     continue;
                 }
 
-                // 2. Cek konflik jadwal dosen dengan mata kuliah lain
                 if (hasDosenConflict(dosenNidn, hari, startTime, endTime, matkul)) {
                     console.log(`❌ Lecturer has other class: ${timeSlot}`);
                     continue;
                 }
 
-                // 3. PERBAIKAN: Cek konflik dosen mengajar mata kuliah sama di ruang lain
                 if (hasDosenSameSubjectConflict(dosenNidn, hari, startTime, endTime, matkul, ruang)) {
                     console.log(`❌ Lecturer already teaching same subject in another room: ${timeSlot}`);
                     continue;
                 }
 
-                // 4. Cek slot ruang kelas
                 if (!checkRoomSlotAvailability(ruang, hari, startTime, endTime, dosenNidn, matkul)) {
                     console.log(`❌ Room slot not available: ${timeSlot}`);
                     continue;
                 }
 
-                // 5. Jika semua pengecekan lolos
                 console.log(`✅ Time slot available: ${timeSlot}`);
                 hasAvailableSlots = true;
                 
@@ -361,7 +353,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 option.value = ALL_SLOTS[i];
                 option.textContent = timeSlot;
 
-                // Tambahkan info jika ini akan jadi kelas paralel
                 const parallelInfo = getParallelClassInfo(ruang, hari, startTime, endTime, dosenNidn, matkul);
                 if (parallelInfo) {
                     option.textContent += ` ${parallelInfo}`;
@@ -370,16 +361,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 jamEl.appendChild(option);
             }
 
-            // Jika tidak ada slot yang tersedia
             if (!hasAvailableSlots) {
                 const roomCapacity = roomCapacities[ruang] || 1;
                 
-                // Hitung berapa banyak slot yang terpakai di hari ini untuk ruang ini
                 const usedSlots = existingJadwals.filter(jadwal => 
                     jadwal.ruang === ruang && jadwal.hari === hari
                 ).length;
                 
-                // Cek apakah ada konflik mata kuliah sama di ruang lain
                 const sameSubjectInOtherRoom = existingJadwals.some(jadwal => 
                     jadwal.dosen === dosenNidn && 
                     jadwal.matkul === matkul && 
@@ -403,7 +391,6 @@ document.addEventListener('DOMContentLoaded', function () {
         ruangEl.addEventListener('change', populateTimeSlots);
     });
 
-    // Debug info
     console.log('🏢 Room Capacities:', roomCapacities);
     console.log('📅 Existing Jadwals:', existingJadwals);
     console.log('⏰ Available Times:', availableTimes);

@@ -22,11 +22,12 @@ class JadwalController extends Controller
 public function index(Request $request)
 {
     $search = $request->input('search');
-    $semesterType = $request->input('semester_type', 'genap');
+    $semesterType = $request->input('semester_type', 'semua');
 
     $query = Kelas::query()->has('mataKuliah');
 
-    if ($semesterType) {
+    // Modifikasi untuk menangani pilihan "semua"
+    if ($semesterType && $semesterType !== 'semua') {
         $query->whereHas('mataKuliah', function ($q) use ($semesterType) {
             if ($semesterType === 'gasal') {
                 $q->whereRaw('semester % 2 != 0');
@@ -62,10 +63,10 @@ public function index(Request $request)
     $roomCapacities = $ruangKelasList->pluck('kapasitas_kelas', 'nama_ruangan');
     $allDosen = User::where('is_admin', false)->with('available')->get();
     
-    // [MODIFIKASI] Ambil semua jadwal yang ada untuk filtering yang lebih akurat
+    // Modifikasi untuk existing jadwals dengan filter "semua"
     $existingJadwalsQuery = JadwalKuliah::with('mataKuliah');
 
-    if ($semesterType) {
+    if ($semesterType && $semesterType !== 'semua') {
         $existingJadwalsQuery->whereHas('mataKuliah', function ($q) use ($semesterType) {
             if ($semesterType === 'gasal') {
                 $q->whereRaw('semester % 2 != 0');
@@ -89,12 +90,10 @@ public function index(Request $request)
         ];
     })->toArray();
 
-    // [BARU] Buat mapping waktu tersedia per dosen dengan logic yang lebih cerdas
     $availableTimes = [];
     foreach ($allDosen as $dosen) {
         $dosenAvailableTimes = [];
         
-        // Ambil semua waktu available dosen dari tabel available
         $dosenSchedules = $dosen->available->groupBy('hari');
         
         foreach ($dosenSchedules as $hari => $times) {
@@ -105,7 +104,6 @@ public function index(Request $request)
                 $slotEnd = $timeSlot->waktu_selesai;
                 $timeRange = $slotStart . ' - ' . $slotEnd;
                 
-                // Cek apakah dosen sudah ada jadwal di waktu ini
                 $conflictingSchedules = collect($existingJadwals)->where('dosen', $dosen->nidn)
                     ->where('hari', $hari)
                     ->filter(function($schedule) use ($slotStart, $slotEnd) {
@@ -113,10 +111,8 @@ public function index(Request $request)
                     });
                 
                 if ($conflictingSchedules->isEmpty()) {
-                    // Tidak ada conflict, waktu tersedia
                     $dayAvailableTimes[] = $timeRange;
                 } else {
-                    // Ada conflict, cek apakah masih bisa mengajar mata kuliah yang sama
                     $availableRooms = $this->getAvailableRoomsForTimeSlot(
                         $hari, 
                         $slotStart, 
@@ -127,7 +123,6 @@ public function index(Request $request)
                     );
                     
                     if (!empty($availableRooms)) {
-                        // Masih ada ruang available, tambahkan dengan info ruang
                         $dayAvailableTimes[] = [
                             'time' => $timeRange,
                             'available_rooms' => $availableRooms,

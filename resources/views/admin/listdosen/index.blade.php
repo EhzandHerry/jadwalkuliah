@@ -13,6 +13,11 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    {{-- Notifikasi Error --}}
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+
     <!-- Form Search -->
     <form method="GET" action="{{ route('admin.dosen.index') }}" class="mb-3">
       <div class="input-group" style="max-width: 400px;">
@@ -56,7 +61,8 @@
               <form action="{{ route('admin.dosen.delete', $item->id) }}"
                     method="POST" style="display:inline-block;"
                     onsubmit="return confirm('Yakin ingin menghapus dosen ini?')">
-                @csrf @method('DELETE')
+                @csrf
+                @method('DELETE')
                 <button type="submit" class="btn btn-danger btn-sm mr-1">Hapus</button>
               </form>
 

@@ -11,6 +11,7 @@ use App\Models\Available;
 use App\Models\JadwalKuliah;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 
 
 class AdminController extends Controller
@@ -185,23 +186,26 @@ public function indexMatKulDosen(Request $request)
     }
 
      public function storeMataKuliah(Request $request)
-    {
-        $request->validate([
-            'kode_matkul'  => 'required|unique:mata_kuliah,kode_matkul',
-            'nama_matkul'  => 'required',
-            'sks'          => 'required|integer',
-            'semester'     => 'required|integer',
-            'jumlah_kelas' => 'required|integer|min:1',
-            // Menambahkan validasi untuk peminatan (boleh null)
-            'peminatan'    => 'nullable|string|in:Programming,Data,UX,Network',
-        ]);
+{
+    $request->validate([
+        'kode_matkul'  => 'required|unique:mata_kuliah,kode_matkul',
+        'nama_matkul'  => 'required',
+        'sks'          => 'required|integer',
+        'semester'     => 'required|integer',
+        'jumlah_kelas' => 'required|integer|min:1',
+        'peminatan'    => 'nullable|string|in:Programming,Data,UX,Network',
+    ]);
 
-        // Menambahkan 'peminatan' ke dalam data yang akan dibuat
+    try {
+        DB::beginTransaction();
+        
+        // Cek dan hapus kelas lama jika ada (untuk kasus data tidak konsisten)
+        Kelas::where('kode_matkul', $request->kode_matkul)->delete();
+        
         $mk = MataKuliah::create($request->only(
             'kode_matkul','nama_matkul','sks','semester','peminatan','jumlah_kelas'
         ));
 
-        // Logika pembuatan kelas tidak perlu diubah
         $huruf = range('A','Z');
         for ($i = 0; $i < $mk->jumlah_kelas; $i++) {
             Kelas::create([
@@ -209,11 +213,21 @@ public function indexMatKulDosen(Request $request)
                 'kelas'       => $huruf[$i],
             ]);
         }
+        
+        DB::commit();
 
         return redirect()
             ->route('admin.mata_kuliah.index')
             ->with('success', 'Mata Kuliah berhasil ditambahkan.');
+            
+    } catch (\Exception $e) {
+        DB::rollback();
+        
+        return redirect()
+            ->route('admin.mata_kuliah.index')
+            ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
     }
+}
 
     public function editMataKuliah($id)
     {
@@ -266,11 +280,29 @@ public function indexMatKulDosen(Request $request)
     }
 
     public function destroyMataKuliah($id)
-    {
-        MataKuliah::findOrFail($id)->delete();
+{
+    try {
+        DB::beginTransaction();
+        
+        $mataKuliah = MataKuliah::findOrFail($id);
+        
+        // Hapus semua kelas yang terkait
+        Kelas::where('kode_matkul', $mataKuliah->kode_matkul)->delete();
+        
+        // Hapus mata kuliah
+        $mataKuliah->delete();
+        
+        DB::commit();
+        
         return redirect()->route('admin.mata_kuliah.index')
-                         ->with('success','Mata Kuliah berhasil dihapus.');
+                         ->with('success', 'Mata Kuliah beserta kelasnya berhasil dihapus.');
+    } catch (\Exception $e) {
+        DB::rollback();
+        
+        return redirect()->route('admin.mata_kuliah.index')
+                         ->with('error', 'Terjadi kesalahan saat menghapus mata kuliah: ' . $e->getMessage());
     }
+}
 
     //
     // === CRUD RUANG KELAS ===
@@ -441,19 +473,20 @@ public function indexMatKulDosen(Request $request)
     $request->validate([
         'nama' => 'required|string|max:255',
         'email' => "required|email|unique:dosen,email,{$id}",
-        'nidn' => "required|numeric|min_digits:10|unique:dosen,nidn,{$id}",
+        'nidn' => "required|numeric|min_digits:10|max_digits:10|unique:dosen,nidn,{$id}",
     ], [
         'nama.required' => 'Nama dosen wajib diisi.',
         'email.unique' => 'Email ini sudah terdaftar.',
         'nidn.unique' => 'NIDN ini sudah terdaftar.',
         'nidn.numeric' => 'NIDN harus berupa angka.',
         'nidn.min_digits' => 'NIDN harus terdiri dari minimal 10 digit.',
+        'nidn.max_digits' => 'NIDN tidak boleh lebih dari 10 digit.',
     ]);
 
     $dosen = User::findOrFail($id);
     $oldNidn = $dosen->nidn;
     
-   // Jika NIDN akan diubah dan ada referensi di kelas
+    // Jika NIDN akan diubah dan ada referensi di kelas
     if ($dosen->nidn != $request->nidn) {
         $nidnExistsInKelas = DB::table('kelas')->where('nidn', $oldNidn)->exists();
 
@@ -479,8 +512,19 @@ public function indexMatKulDosen(Request $request)
 
     public function deleteDosen($id)
     {
-        User::findOrFail($id)->delete();
-        return redirect()->route('admin.dosen.index')->with('success','Dosen berhasil dihapus.');
+        try {
+            // Menggunakan model User sesuai kode Anda, pastikan ini benar
+            User::findOrFail($id)->delete();
+            return redirect()->route('admin.dosen.index')->with('success', 'Dosen berhasil dihapus.');
+        } catch (QueryException $e) {
+            // Cek apakah error code adalah 1451 (foreign key constraint violation)
+            if ($e->errorInfo[1] == 1451) {
+                return redirect()->route('admin.dosen.index')->with('error', 'Dosen tidak dapat dihapus karena masih terdaftar di kelas.');
+            }
+
+            // Jika error selain constraint, lempar kembali exception
+            throw $e;
+        }
     }
 
     //
