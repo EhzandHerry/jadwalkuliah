@@ -8,34 +8,33 @@ class ChangeNidnToNumericInDosenTable extends Migration
 {
     public function up()
     {
-        // Drop foreign key constraint dari tabel kelas
-        Schema::table('kelas', function ($table) {
-            $table->dropForeign(['nidn']); // sesuaikan nama kolomnya
-        });
+        // 1. Drop FK constraint secara aman via raw SQL (kalau ada)
+        DB::statement('ALTER TABLE kelas DROP CONSTRAINT IF EXISTS kelas_nidn_foreign');
 
-        // Ubah tipe kolom nidn di dosen
+        // 2. Ubah tipe data nidn di dosen
         DB::statement('ALTER TABLE dosen ALTER COLUMN nidn TYPE bigint USING nidn::bigint');
 
-        // Ubah tipe kolom nidn di kelas juga (agar cocok untuk relasi foreign key)
+        // 3. Ubah tipe data nidn di kelas agar cocok
         DB::statement('ALTER TABLE kelas ALTER COLUMN nidn TYPE bigint USING nidn::bigint');
 
-        // Tambahkan kembali foreign key
+        // 4. Tambahkan kembali foreign key
         Schema::table('kelas', function ($table) {
-            $table->foreign('nidn')->references('nidn')->on('dosen');
+            $table->foreign('nidn')->references('nidn')->on('dosen')->onDelete('cascade');
         });
     }
 
     public function down()
     {
-        Schema::table('kelas', function ($table) {
-            $table->dropForeign(['nidn']);
-        });
+        // Drop FK jika ada
+        DB::statement('ALTER TABLE kelas DROP CONSTRAINT IF EXISTS kelas_nidn_foreign');
 
+        // Revert tipe data
         DB::statement('ALTER TABLE dosen ALTER COLUMN nidn TYPE varchar(255)');
         DB::statement('ALTER TABLE kelas ALTER COLUMN nidn TYPE varchar(255)');
 
+        // Tambahkan lagi FK
         Schema::table('kelas', function ($table) {
-            $table->foreign('nidn')->references('nidn')->on('dosen');
+            $table->foreign('nidn')->references('nidn')->on('dosen')->onDelete('cascade');
         });
     }
 }
